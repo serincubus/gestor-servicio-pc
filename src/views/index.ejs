@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <style>
+      body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+      .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+      form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+      input, textarea { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+      button { background: #007bff; color: white; border: none; padding: 10px; cursor: pointer; }
+      .reparacion-card { border-left: 5px solid #007bff; padding: 10px; margin-bottom: 10px; background: #fafafa; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1><%= title %></h1>
+
+      <!-- Formulario para nueva reparación -->
+      <h3>Registrar Ingreso</h3>
+      <form action="/guardar" method="POST">
+        <input type="text" name="nombre" placeholder="Nombre del Cliente" required>
+        <input type="text" name="equipo" placeholder="Equipo (Ej: Notebook Bangho)" required>
+        <textarea name="falla" placeholder="Descripción del problema"></textarea>
+        <button type="submit">Guardar en Base de Datos</button>
+      </form>
+
+      <hr>
+
+      <h2>Equipos en el Taller</h2>
+      <div id="lista-reparaciones">
+        <% if (lista.length > 0) { %>
+          <% lista.forEach(cliente => { %>
+            <div class="reparacion-card">
+              <strong><%= cliente.nombre %></strong> - <span><%= cliente.equipo %></span>
+              <p>Falla: <%= cliente.falla %></p>
+              <small>Estado: <b><%= cliente.estado %></b></small>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p>No hay equipos registrados todavía.</p>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>
