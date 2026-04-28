@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-db.sync({ force: true }) 
+db.sync({ alter: true }) 
     .then(() => {
         console.log('✅ TABLA CREADA EXITOSAMENTE EN LA NUBE');
     })
