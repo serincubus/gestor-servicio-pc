@@ -1,0 +1,27 @@
+form { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    margin-bottom: 30px; 
+}
+
+      input, textarea { 
+        padding: 8px; 
+        border: 1px solid #ddd; 
+        border-radius: 4px; 
+    }
+
+      button { 
+        background: #007bff; 
+        color: white; 
+        border: none; 
+        padding: 10px; 
+        cursor: pointer; 
+    }
+
+      .reparacion-card { 
+        border-left: 5px solid #007bff; 
+        padding: 10px; 
+        margin-bottom: 10px; 
+        background: #fafafa; 
+    }

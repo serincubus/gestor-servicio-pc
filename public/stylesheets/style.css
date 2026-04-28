@@ -1,8 +1,21 @@
+@import url("/stylesheets/formCliente.css");
+
+
+
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font-family: sans-serif; 
+  padding: 20px; 
+  background: #f4f4f4;
+  
 }
 
 a {
   color: #00B7FF;
 }
+
+.container { 
+  background: white; 
+  padding: 20px; 
+  border-radius: 8px; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+ }
