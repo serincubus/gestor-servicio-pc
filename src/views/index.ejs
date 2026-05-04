@@ -27,6 +27,7 @@
             <div class="reparacion-card">
               <strong><%= cliente.nombre %></strong> - <span><%= cliente.equipo %></span>
               <p>Falla: <%= cliente.falla %></p>
+              <a href="/editar/<%= cliente.id %>">Editar este registro</a>
               <small>Estado: <b><%= cliente.estado %></b></small>
             </div>
           <% }) %>

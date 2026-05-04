@@ -27,7 +27,32 @@ const indexController = {
         } catch (error) {
             res.send("Error al guardar cliente: " + error.message);
         }
+    },
+    edit: async (req, res) => {
+    try {
+        const cliente = await Cliente.findByPk(req.params.id);
+        res.render('edit', { title: 'Editar Cliente', cliente: cliente });
+    } catch (error) {
+        res.send("Error: " + error.message);
     }
-};
+},
+
+update: async (req, res) => {
+    try {
+        await Cliente.update({
+            nombre: req.body.nombre,
+            equipo: req.body.equipo,
+            falla: req.body.falla,
+            telefono: req.body.telefono 
+        }, {
+            where: { id: req.params.id }
+        });
+        res.redirect('/');
+    } catch (error) {
+        res.send("Error al actualizar: " + error.message);
+    }
+}
+}
+
 
 module.exports = indexController;
