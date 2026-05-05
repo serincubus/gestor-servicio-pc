@@ -4,7 +4,7 @@ const indexController = {
     // Renderiza la página y muestra la lista
     index: async (req, res) => {
         try {
-            const clientes = await Cliente.findAll();
+            const clientes = await Cliente.findAll({ raw: true });;
             res.render('index', { 
                 title: 'Servicio Técnico PC - Gestión', 
                 lista: clientes 
@@ -30,7 +30,7 @@ const indexController = {
     },
     edit: async (req, res) => {
     try {
-        const cliente = await Cliente.findByPk(req.params.id);
+        const cliente = await Cliente.findByPk(req.params.id_cliente);
         res.render('edit', { title: 'Editar Cliente', cliente: cliente });
     } catch (error) {
         res.send("Error: " + error.message);
@@ -45,13 +45,25 @@ update: async (req, res) => {
             falla: req.body.falla,
             telefono: req.body.telefono 
         }, {
-            where: { id: req.params.id }
+            where: { id_cliente: req.params.id_cliente }
         });
         res.redirect('/');
     } catch (error) {
         res.send("Error al actualizar: " + error.message);
     }
+},
+
+delete: async (req, res) => {
+    try {
+        await Cliente.destroy({
+            where: { id_cliente: req.params.id_cliente }
+        });
+        res.redirect('/'); // Volvemos a la lista principal
+    } catch (error) {
+        res.send("Error al eliminar: " + error.message);
+    }
 }
+
 }
 
 

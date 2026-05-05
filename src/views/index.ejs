@@ -27,7 +27,13 @@
             <div class="reparacion-card">
               <strong><%= cliente.nombre %></strong> - <span><%= cliente.equipo %></span>
               <p>Falla: <%= cliente.falla %></p>
-              <a href="/editar/<%= cliente.id %>">Editar este registro</a>
+              
+              <a href="/editar/<%= cliente.id_cliente %>">Editar este registro</a>
+              <a href="/eliminar/<%= cliente.id_cliente %>" 
+                  style="color: red; margin-left: 10px;" 
+                  onclick="return confirm('¿Estás seguro de eliminar este cliente?')">
+           Eliminar
+        </a>
               <small>Estado: <b><%= cliente.estado %></b></small>
             </div>
           <% }) %>

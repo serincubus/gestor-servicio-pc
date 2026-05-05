@@ -5,8 +5,10 @@ const indexControllers = require('../controllers/indexControllers')
 /* GET home page. */
 router.get('/', indexControllers.index);
 router.post('/guardar', indexControllers.store); // <--- Esta vincula el botón con la base de datos
-router.get('/editar/:id', indexController.edit);
-router.post('/actualizar/:id', indexController.update);
+router.get('/editar/:id_cliente', indexControllers.edit);
+router.post('/actualizar/:id_cliente', indexControllers.update);
+router.get('/eliminar/:id_cliente', indexControllers.delete);
+
 
 
 module.exports = router;

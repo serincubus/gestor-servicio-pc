@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <div class="container">
+      <h1><%= title %></h1>
+      
+      <div class="edit-box">
+        <h3>Modificar datos de: <%= cliente.nombre %></h3>
+        
+        <!-- El action apunta a /actualizar/ seguido del ID del cliente -->
+        <form action="/actualizar/<%= cliente.id_cliente %>" method="POST">
+          
+          <label>Nombre del Cliente:</label>
+          <input type="text" name="nombre" value="<%= cliente.nombre %>" required>
+
+          <label>Equipo:</label>
+          <input type="text" name="equipo" value="<%= cliente.equipo %>" required>
+
+          <label>Descripción de la Falla:</label>
+          <textarea name="falla" rows="4"><%= cliente.falla %></textarea>
+
+          <label>Teléfono:</label>
+          <input type="text" name="telefono" value="<%= cliente.telefono %>">
+
+          <div class="botones-container">
+            <button type="submit" class="btn-guardar">Actualizar Datos</button>
+            <a href="/" class="btn-cancelar">Cancelar</a>
+          </div>
+          
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
