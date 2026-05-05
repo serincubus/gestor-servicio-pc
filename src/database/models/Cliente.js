@@ -24,7 +24,17 @@ const Cliente = db.define('Cliente', {
     estado: {
         type: DataTypes.STRING,
         defaultValue: 'Ingresado' // Estados: Ingresado, En Revisión, Listo, Entregado
-    }
+    },
+    // Añade esto dentro de db.define
+presupuesto: {
+    type: DataTypes.DECIMAL(10, 2), // Para guardar dinero (ej: 1500.50)
+    defaultValue: 0.00
+},
+confirmado: {
+    type: DataTypes.BOOLEAN, // true o false
+    defaultValue: false
+}
+
     },
      {
     tableName: 'clientes', // <--- FORZAMOS minúsculas

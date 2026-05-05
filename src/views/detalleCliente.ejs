@@ -1,0 +1,23 @@
+<!-- Dentro de tu formulario en detalle.ejs -->
+<form action="/actualizar-estado/<%= cliente.id_cliente %>" method="POST">
+    <label>Estado actual:</label>
+    <select name="estado" id="select-estado">
+        <option value="Ingresado" <%= cliente.estado == 'Ingresado' ? 'selected' : '' %>>Ingresado</option>
+        <option value="En Revisión" <%= cliente.estado == 'En Revisión' ? 'selected' : '' %>>En Revisión</option>
+        <option value="En Reparación" <%= cliente.estado == 'En Reparación' ? 'selected' : '' %>>En Reparación</option>
+        <option value="Listo" <%= cliente.estado == 'Listo' ? 'selected' : '' %>>Listo</option>
+    </select>
+
+    <!-- Sección de Presupuesto (puedes ocultarla o mostrarla según el estado) -->
+    <div id="seccion-presupuesto" style="margin-top: 15px; padding: 10px; border: 1px dashed #ccc;">
+        <label>Presupuesto ($):</label>
+        <input type="number" name="presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
+        
+        <br><br>
+        
+        <label>¿Cliente confirmó el trabajo?</label>
+        <input type="checkbox" name="confirmado" value="true" <%= cliente.confirmado ? 'checked' : '' %>> Sí, aceptado
+    </div>
+
+    <button type="submit" class="btn-guardar">Guardar Cambios</button>
+</form>
