@@ -22,7 +22,9 @@
             <div class="reparacion-card">
               <strong><%= cliente.nombre %></strong> - <span><%= cliente.equipo %></span>
               <p>Falla: <%= cliente.falla %></p>
-              
+               <!-- Asegúrate de que el enlace incluya el id_cliente -->
+              <a href="/detalle/<%= cliente.id_cliente %>">Ver Detalle</a>
+
               <a href="/editar/<%= cliente.id_cliente %>">Editar este registro</a>
               <a href="/eliminar/<%= cliente.id_cliente %>" 
                   style="color: red; margin-left: 10px;" 

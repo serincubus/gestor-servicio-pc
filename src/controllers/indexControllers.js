@@ -63,22 +63,31 @@ delete: async (req, res) => {
         res.send("Error al eliminar: " + error.message);
     }
 },
+detalle: async (req, res) => {
+    try {
+        const cliente = await Cliente.findByPk(req.params.id_cliente);
+        res.render('detalleCliente', { title: 'Detalle del Cliente', cliente: cliente });
+    } catch (error) {
+        res.send("Error: " + error.message);
+    }
+},      
 
 updateStatus: async (req, res) => {
     try {
         await Cliente.update({
             estado: req.body.estado,
             presupuesto: req.body.presupuesto,
-            // Si el checkbox no se marca, llega como undefined, por eso validamos:
             confirmado: req.body.confirmado === 'true' 
         }, {
             where: { id_cliente: req.params.id_cliente }
         });
-        res.redirect('/detalle/' + req.params.id_cliente);
+        // Redirigimos pasando el parámetro "actualizado"
+        res.redirect('/detalle/' + req.params.id_cliente + '?actualizado=true');
     } catch (error) {
-        res.send("Error al actualizar estado y presupuesto: " + error.message);
+        res.send("Error al actualizar: " + error.message);
     }
 }
+
 
 
 }

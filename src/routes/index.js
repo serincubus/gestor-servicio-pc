@@ -8,6 +8,9 @@ router.post('/guardar', indexControllers.store); // <--- Esta vincula el botón 
 router.get('/editar/:id_cliente', indexControllers.edit);
 router.post('/actualizar/:id_cliente', indexControllers.update);
 router.get('/eliminar/:id_cliente', indexControllers.delete);
+router.get('/detalle/:id_cliente', indexControllers.detalle);
+router.post('/actualizar-estado/:id_cliente', indexControllers.updateStatus);
+
 
 
 
