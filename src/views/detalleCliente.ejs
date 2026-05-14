@@ -1,23 +1,17 @@
 <%- include('./partials/head.ejs') %>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    // Leemos los parámetros directamente al cargar el script
-    const urlParams = new URLSearchParams(window.location.search);
+<div class="container-detalle">
     
-    if (urlParams.get('actualizado') === 'true') {
-        Swal.fire({
-            title: '¡Cambios Guardados!',
-            text: 'La ficha del cliente se actualizó con éxito.',
-            icon: 'success',
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'Genial'
-        }).then(() => {
-            // Limpia el ?actualizado=true de la barra de direcciones para evitar repeticiones
-            window.history.replaceState({}, document.title, window.location.pathname);
-        });
-    }
-</script>
+    <div class="ficha-beneficiario">
+        <h2>Ficha de Ingreso #<%= cliente.id_cliente %></h2>
+        <p class="ficha-campo"><strong>Beneficiario / Cliente:</strong> <%= cliente.nombre %></p>
+        <p class="ficha-campo"><strong>Teléfono de Contacto:</strong> <%= cliente.telefono ? cliente.telefono : 'No registrado' %></p>
+        <p class="ficha-campo"><strong>Equipo a Reparar:</strong> <%= cliente.equipo %></p>
+        <p class="ficha-campo"><strong>Falla Reportada:</strong> <%= cliente.falla %></p>
+        <p class="ficha-campo"><small>Registrado el: <%= new Date(cliente.createdAt).toLocaleDateString('es-AR') %></small></p>
+    </div>
+
 
 
 
@@ -43,5 +37,27 @@
     </div>
     
 
+    <div class="botones-container">
     <button type="submit" class="btn-guardar">Guardar Cambios</button>
+    <a href="/" class="btn-link-cancelar">Volver al Inicio</a>
+</div>
+
+    <script>
+    // Leemos los parámetros directamente al cargar el script
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('actualizado') === 'true') {
+        Swal.fire({
+            title: '¡Cambios Guardados!',
+            text: 'La ficha del cliente se actualizó con éxito.',
+            icon: 'success',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Genial'
+        }).then(() => {
+            // Limpia el ?actualizado=true de la barra de direcciones para evitar repeticiones
+            window.history.replaceState({}, document.title, window.location.pathname);
+        });
+    }
+</script>
 </form>
+</div>
