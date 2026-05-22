@@ -1,0 +1,84 @@
+/* public/stylesheets/historial.css */
+
+.container-historial {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.btn-volver-panel {
+    display: inline-block;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.btn-volver-panel:hover {
+    color: #0056b3;
+}
+
+.tabla-grafica {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tabla-grafica th {
+    background-color: #007bff;
+    color: #ffffff;
+    text-align: left;
+    padding: 14px 16px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tabla-grafica td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eef2f5;
+    color: #333333;
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+.tabla-grafica tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-grafica tr:hover {
+    background-color: #f8fafc;
+}
+
+.td-cliente {
+    font-weight: 600;
+    color: #111111;
+}
+
+.td-falla {
+    color: #666666;
+    font-style: italic;
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.td-pago {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.info-confirmacion {
+    display: block;
+    color: #6c757d;
+    font-weight: normal;
+    font-size: 12px;
+    margin-top: 4px;
+}

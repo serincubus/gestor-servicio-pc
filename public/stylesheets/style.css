@@ -1,5 +1,6 @@
 @import url("formCliente.css");
 @import url("detalleCliente.css");
+@import url("historial.css");npm stat
 
 body {
   font-family: sans-serif; 
@@ -18,3 +19,31 @@ a {
   border-radius: 8px; 
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
  }
+
+ .panel-navegacion {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 15px;
+}
+
+.btn-navegar-historial {
+    display: inline-block;
+    background-color: #28a745; /* Color verde para reportes/pagos */
+    color: #ffffff !important;
+    text-decoration: none;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-navegar-historial:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+.btn-navegar-historial:active {
+    transform: translateY(0);
+}

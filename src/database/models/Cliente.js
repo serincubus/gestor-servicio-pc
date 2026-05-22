@@ -25,6 +25,10 @@ const Cliente = db.define('Cliente', {
         type: DataTypes.STRING,
         defaultValue: 'Ingresado' // Estados: Ingresado, En Revisión, Listo, Entregado
     },
+    fecha_egreso: {
+    type: DataTypes.DATEONLY, // Guarda solo la fecha (AAAA-MM-DD) sin la hora
+    allowNull: true
+},
     // Añade esto dentro de db.define
 presupuesto: {
     type: DataTypes.DECIMAL(10, 2), // Para guardar dinero (ej: 1500.50)

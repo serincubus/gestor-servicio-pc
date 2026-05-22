@@ -1,0 +1,50 @@
+<%- include('./partials/head.ejs') %>
+
+<div class="container-historial">
+    <h1>Historial de Reparaciones y Pagos</h1>
+    <a href="/" class="btn-volver-panel">← Volver al Panel Principal</a>
+
+    <table class="tabla-grafica">
+        <thead>
+            <tr>
+                <th>Fecha Ingreso</th>
+                <th>Cliente</th>
+                <th>Equipo</th>
+                <th>Descripción Falla</th>
+                <th>Fecha Egreso</th>
+                <th>Pago Recibido</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (lista.length > 0) { %>
+                <% lista.forEach(cliente => { %>
+                    <tr>
+                        <td>
+                            <%= new Date(cliente.createdAt).toLocaleDateString('es-AR') %>
+                        </td>
+                        <td class="td-cliente"><%= cliente.nombre %></td>
+                        <td><%= cliente.equipo %></td>
+                        <td class="td-falla" title="<%= cliente.falla %>"><%= cliente.falla %></td>
+                        <td>
+                            <%= cliente.fecha_egreso ? new Date(cliente.fecha_egreso).toLocaleDateString('es-AR') : 'Pendiente ⏳' %>
+                        </td>
+                        <td class="td-pago">
+                            $<%= cliente.presupuesto %>
+                            <span class="info-confirmacion">
+                                <%= cliente.confirmado ? 'Aprobado ✅' : 'No Confirmado ❌' %>
+                            </span>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #999; padding: 30px;">
+                        No hay registros en el historial todavía.
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

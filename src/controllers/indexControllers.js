@@ -86,9 +86,19 @@ updateStatus: async (req, res) => {
     } catch (error) {
         res.send("Error al actualizar: " + error.message);
     }
+},
+history: async (req, res) => {
+    try {
+        const clientes = await Cliente.findAll({ raw: true });;
+        res.render('historial', { 
+            title: 'Historial de Clientes', 
+            lista: clientes 
+        });
+    } catch (error) {
+        res.send("Error al cargar EJS: " + error.message);
+    }
+
 }
-
-
 
 }
 
