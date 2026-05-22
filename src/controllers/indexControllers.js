@@ -74,28 +74,28 @@ detalle: async (req, res) => {
 
 updateStatus: async (req, res) => {
     try {
-        // LÓGICA INTELIGENTE: Si pasa a 'Listo', guardamos la fecha de hoy. 
-        // Si elige otro estado, la fecha vuelve a quedar vacía (null)
+        // Captura la fecha actual en formato AAAA-MM-DD si el estado pasa a 'Listo'
         let fechaEgreso = null;
         if (req.body.estado === 'Listo') {
-            fechaEgreso = new Date().toISOString().slice(0, 10); // Genera formato AAAA-MM-DD
+            fechaEgreso = new Date().toISOString().slice(0, 10); 
         }
 
         await Cliente.update({
             estado: req.body.estado,
             presupuesto: req.body.presupuesto,
-            confirmado: req.body.confirmado === 'true',
-            fecha_egreso: fechaEgreso // <--- AHORA SÍ LE PASAMOS LA FECHA A MYSQL
+            // Aseguramos la evaluación correcta del checkbox
+            confirmado: req.body.confirmado === 'true' || req.body.confirmado === true,
+            fecha_egreso: fechaEgreso // <--- Aquí enviamos la fecha a MySQL
         }, {
             where: { id_cliente: req.params.id_cliente }
         });
         
-        // Redirigimos pasando el parámetro "actualizado"
         res.redirect('/detalle/' + req.params.id_cliente + '?actualizado=true');
     } catch (error) {
-        res.send("Error al actualizar estado y fecha de egreso: " + error.message);
+        res.send("Error al actualizar estado y fecha: " + error.message);
     }
 }
+
 ,
 history: async (req, res) => {
     try {
