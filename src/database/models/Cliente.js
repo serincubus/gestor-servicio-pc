@@ -34,6 +34,10 @@ presupuesto: {
     type: DataTypes.DECIMAL(10, 2), // Para guardar dinero (ej: 1500.50)
     defaultValue: 0.00
 },
+pago_parcial: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+},
 confirmado: {
     type: DataTypes.BOOLEAN, // true o false
     defaultValue: false

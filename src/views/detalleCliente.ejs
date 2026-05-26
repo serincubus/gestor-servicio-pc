@@ -1,6 +1,6 @@
 <%- include('./partials/head.ejs') %>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://jsdelivr.net"></script>
 <div class="container-detalle">
     
     <div class="ficha-beneficiario">
@@ -12,52 +12,58 @@
         <p class="ficha-campo"><small>Registrado el: <%= new Date(cliente.createdAt).toLocaleDateString('es-AR') %></small></p>
     </div>
 
+    <!-- Formulario en detalle.ejs -->
+    <form action="/actualizar-estado/<%= cliente.id_cliente %>" method="POST">
+        <label>Estado actual:</label>
+        <select name="estado" id="select-estado">
+            <option value="Ingresado" <%= cliente.estado == 'Ingresado' ? 'selected' : '' %>>Ingresado</option>
+            <option value="En Revisión" <%= cliente.estado == 'En Revisión' ? 'selected' : '' %>>En Revisión</option>
+            <option value="En Reparación" <%= cliente.estado == 'En Reparación' ? 'selected' : '' %>>En Reparación</option>
+            <option value="Listo" <%= cliente.estado == 'Listo' ? 'selected' : '' %>>Listo</option>
+        </select>
 
+        <!-- NUEVA SECCIÓN DE PRESUPUESTO COMPLETA CON PAGO PARCIAL -->
+        <div id="seccion-presupuesto" class="seccion-presupuesto" style="margin-top: 15px; padding: 15px; border: 1px dashed #ccc; border-radius: 4px; background-color: #fff;">
+            <label style="display:block; margin-bottom: 5px;"><strong>Presupuesto Total ($):</strong></label>
+            <input type="number" name="presupuesto" value="<%= cliente.presupuesto %>" step="0.01" style="padding: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px;">
+            
+            <label style="display:block; margin-bottom: 5px;"><strong>Pago Parcial / Adelanto ($):</strong></label>
+            <input type="number" name="pago_parcial" value="<%= cliente.pago_parcial %>" step="0.01" style="padding: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px;">
 
-
-<!-- Dentro de tu formulario en detalle.ejs -->
-<form action="/actualizar-estado/<%= cliente.id_cliente %>" method="POST">
-    <label>Estado actual:</label>
-    <select name="estado" id="select-estado">
-        <option value="Ingresado" <%= cliente.estado == 'Ingresado' ? 'selected' : '' %>>Ingresado</option>
-        <option value="En Revisión" <%= cliente.estado == 'En Revisión' ? 'selected' : '' %>>En Revisión</option>
-        <option value="En Reparación" <%= cliente.estado == 'En Reparación' ? 'selected' : '' %>>En Reparación</option>
-        <option value="Listo" <%= cliente.estado == 'Listo' ? 'selected' : '' %>>Listo</option>
-    </select>
-
-    <!-- Sección de Presupuesto (puedes ocultarla o mostrarla según el estado) -->
-    <div id="seccion-presupuesto" style="margin-top: 15px; padding: 10px; border: 1px dashed #ccc;">
-        <label>Presupuesto ($):</label>
-        <input type="number" name="presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
+            <!-- CÁLCULO VISUAL DE DEUDA -->
+            <% let pendiente = Number(cliente.presupuesto) - Number(cliente.pago_parcial); %>
+            <div class="estado-cuenta" style="margin: 15px 0; padding: 10px; border-radius: 4px; background-color: <%= pendiente <= 0 ? '#d4edda' : '#f8d7da' %>; color: <%= pendiente <= 0 ? '#155724' : '#721c24' %>;">
+                <% if (pendiente <= 0) { %>
+                    <span>✅ <strong>¡Equipo totalmente saldado!</strong> No registra deuda.</span>
+                <% } else { %>
+                    <span>⚠️ <strong>Pago Pendiente:</strong> Le resta abonar <strong>$<%= pendiente.toFixed(2) %></strong></span>
+                <% } %>
+            </div>
+            
+            <label>
+                <input type="checkbox" name="confirmado" value="true" <%= cliente.confirmado ? 'checked' : '' %>> 
+                ¿Cliente confirmó el trabajo?
+            </label>
+        </div>
         
-        <br><br>
-        
-        <label>¿Cliente confirmó el trabajo?</label>
-        <input type="checkbox" name="confirmado" value="true" <%= cliente.confirmado ? 'checked' : '' %>> Sí, aceptado
-    </div>
-    
+        <div class="botones-container">
+            <button type="submit" class="btn-guardar">Guardar Cambios</button>
+            <a href="/" class="btn-link-cancelar">Volver al Inicio</a>
+        </div>
 
-    <div class="botones-container">
-    <button type="submit" class="btn-guardar">Guardar Cambios</button>
-    <a href="/" class="btn-link-cancelar">Volver al Inicio</a>
-</div>
-
-    <script>
-    // Leemos los parámetros directamente al cargar el script
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    if (urlParams.get('actualizado') === 'true') {
-        Swal.fire({
-            title: '¡Cambios Guardados!',
-            text: 'La ficha del cliente se actualizó con éxito.',
-            icon: 'success',
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'Genial'
-        }).then(() => {
-            // Limpia el ?actualizado=true de la barra de direcciones para evitar repeticiones
-            window.history.replaceState({}, document.title, window.location.pathname);
-        });
-    }
-</script>
-</form>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('actualizado') === 'true') {
+                Swal.fire({
+                    title: '¡Cambios Guardados!',
+                    text: 'La ficha del cliente se actualizó con éxito.',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Genial'
+                }).then(() => {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
+            }
+        </script>
+    </form>
 </div>

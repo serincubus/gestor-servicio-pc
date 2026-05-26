@@ -12,7 +12,7 @@
                 <th>Equipo</th>
                 <th>Descripción Falla</th>
                 <th>Fecha Egreso</th>
-                <th>Pago Recibido</th>
+                <th>Estado de Cuentas</th>
             </tr>
         </thead>
         <tbody>
@@ -29,9 +29,28 @@
                             <%= cliente.fecha_egreso ? new Date(cliente.fecha_egreso).toLocaleDateString('es-AR') : 'Pendiente ⏳' %>
                         </td>
                         <td class="td-pago">
-                            $<%= cliente.presupuesto %>
-                            <span class="info-confirmacion">
-                                <%= cliente.confirmado ? 'Aprobado ✅' : 'No Confirmado ❌' %>
+                            <!-- Presupuesto Base -->
+                            <small style="color: #666; display: block; margin-bottom: 2px;">Total: $<%= Number(cliente.presupuesto).toFixed(2) %></small>
+                            
+                            <!-- Adelanto Cobrado -->
+                            <span style="color: #28a745; font-weight: bold; display: block;">
+                                Cobrado: $<%= Number(cliente.pago_parcial || 0).toFixed(2) %>
+                            </span>
+                            
+                            <!-- Cálculo y Desglose de Deuda -->
+                            <% let restante = Number(cliente.presupuesto) - Number(cliente.pago_parcial || 0); %>
+                            <% if (restante > 0) { %>
+                                <span style="color: #dc3545; font-size: 13px; font-weight: bold; display: block; margin-top: 4px;">
+                                    Resta: $<%= restante.toFixed(2) %> ⏳
+                                </span>
+                            <% } else { %>
+                                <span style="color: #28a745; font-size: 12px; font-weight: bold; display: block; margin-top: 4px;">
+                                    Saldado ✅
+                                </span>
+                            <% } %>
+
+                            <span class="info-confirmacion" style="display: block; margin-top: 6px;">
+                                <%= cliente.confirmado ? 'Presupuesto Aprobado 👍' : 'Sin Confirmar 👎' %>
                             </span>
                         </td>
                     </tr>
