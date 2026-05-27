@@ -1,6 +1,10 @@
 <%- include('./partials/head.ejs') %>
+<!-- Vinculamos la hoja de estilos externa limpia -->
+<link rel='stylesheet' href='/stylesheets/detalleCliente.css' />
 
-<script src="https://jsdelivr.net"></script>
+<!-- Importación robusta de SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="container-detalle">
     
     <div class="ficha-beneficiario">
@@ -12,9 +16,9 @@
         <p class="ficha-campo"><small>Registrado el: <%= new Date(cliente.createdAt).toLocaleDateString('es-AR') %></small></p>
     </div>
 
-    <!-- Formulario en detalle.ejs -->
+    <!-- Formulario en detalleCliente.ejs -->
     <form action="/actualizar-estado/<%= cliente.id_cliente %>" method="POST">
-        <label>Estado actual:</label>
+        <label for="select-estado">Estado actual:</label>
         <select name="estado" id="select-estado">
             <option value="Ingresado" <%= cliente.estado == 'Ingresado' ? 'selected' : '' %>>Ingresado</option>
             <option value="En Revisión" <%= cliente.estado == 'En Revisión' ? 'selected' : '' %>>En Revisión</option>
@@ -22,17 +26,17 @@
             <option value="Listo" <%= cliente.estado == 'Listo' ? 'selected' : '' %>>Listo</option>
         </select>
 
-        <!-- NUEVA SECCIÓN DE PRESUPUESTO COMPLETA CON PAGO PARCIAL -->
-        <div id="seccion-presupuesto" class="seccion-presupuesto" style="margin-top: 15px; padding: 15px; border: 1px dashed #ccc; border-radius: 4px; background-color: #fff;">
-            <label style="display:block; margin-bottom: 5px;"><strong>Presupuesto Total ($):</strong></label>
-            <input type="number" name="presupuesto" value="<%= cliente.presupuesto %>" step="0.01" style="padding: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px;">
+        <!-- SECCIÓN DE PRESUPUESTO CONTROLADA POR CLASES CSS -->
+        <div id="seccion-presupuesto" class="seccion-presupuesto">
+            <label><strong>Presupuesto Total ($):</strong></label>
+            <input type="number" name="presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
             
-            <label style="display:block; margin-bottom: 5px;"><strong>Pago Parcial / Adelanto ($):</strong></label>
-            <input type="number" name="pago_parcial" value="<%= cliente.pago_parcial %>" step="0.01" style="padding: 6px; width: 100%; box-sizing: border-box; margin-bottom: 10px;">
+            <label><strong>Pago Parcial / Adelanto ($):</strong></label>
+            <input type="number" name="pago_parcial" value="<%= cliente.pago_parcial %>" step="0.01">
 
-            <!-- CÁLCULO VISUAL DE DEUDA -->
+            <!-- CÁLCULO VISUAL DE DEUDA UTILIZANDO CLASES DEL CSS -->
             <% let pendiente = Number(cliente.presupuesto) - Number(cliente.pago_parcial); %>
-            <div class="estado-cuenta" style="margin: 15px 0; padding: 10px; border-radius: 4px; background-color: <%= pendiente <= 0 ? '#d4edda' : '#f8d7da' %>; color: <%= pendiente <= 0 ? '#155724' : '#721c24' %>;">
+            <div class="estado-cuenta <%= pendiente <= 0 ? 'cuenta-saldada' : 'cuenta-pendiente' %>">
                 <% if (pendiente <= 0) { %>
                     <span>✅ <strong>¡Equipo totalmente saldado!</strong> No registra deuda.</span>
                 <% } else { %>

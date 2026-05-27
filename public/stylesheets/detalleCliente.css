@@ -1,69 +1,143 @@
 /* public/stylesheets/detalleCliente.css */
 
 .container-detalle {
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 0 15px;
-    font-family: Arial, sans-serif;
+    max-width: 650px;
+    margin: 30px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Ficha de Información del Cliente */
 .ficha-beneficiario {
     background-color: #f8f9fa;
     padding: 20px;
     border-radius: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     border-left: 5px solid #007bff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .ficha-beneficiario h2 {
     margin-top: 0;
-    color: #333;
+    margin-bottom: 15px;
+    color: #2d3748;
 }
 
 .ficha-campo {
-    margin: 8px 0;
-    color: #444;
+    margin: 10px 0;
+    color: #4a5568;
+    font-size: 15px;
 }
 
-.form-estado {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.seccion-presupuesto {
-    margin-top: 15px;
-    padding: 15px;
-    border: 1px dashed #ccc;
-    background-color: #fff;
+/* Formulario y Selectores */
+form select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #cbd5e0;
     border-radius: 4px;
+    font-size: 15px;
 }
 
+form label {
+    font-weight: bold;
+    color: #4a5568;
+}
+
+/* Contenedor de Presupuesto */
+.seccion-presupuesto {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px dashed #cbd5e0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.seccion-presupuesto label {
+    display: block;
+    margin-bottom: 6px;
+    color: #2d3748;
+}
+
+.seccion-presupuesto input[type="number"] {
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+.seccion-presupuesto input[type="checkbox"] {
+    margin-right: 6px;
+    transform: scale(1.1);
+}
+
+/* Cuadro de Estado de Cuenta Dinámico */
+.estado-cuenta {
+    margin: 20px 0;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+/* Clases de utilidad calculadas dinámicamente */
+.cuenta-saldada {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.cuenta-pendiente {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+/* Botones y Navegación */
 .botones-container {
     margin-top: 25px;
     display: flex;
     align-items: center;
     gap: 15px;
-    width: 100%;
+}
+
+.btn-guardar {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-guardar:hover {
+    background-color: #0056b3;
 }
 
 .btn-link-cancelar {
     display: inline-block;
     text-decoration: none;
     text-align: center;
-    color: #333 !important; /* Forzamos color oscuro para el texto */
-    padding: 10px 20px;
-    border: 1px solid #999 !important;
+    color: #4a5568;
+    padding: 9px 18px;
+    border: 1px solid #cbd5e0;
     border-radius: 4px;
-    background-color: #eaeaea !important; /* Fondo gris visible */
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
+    background-color: #edf2f7;
+    font-size: 15px;
+    font-weight: 500;
     transition: background 0.2s;
 }
 
 .btn-link-cancelar:hover {
-    background-color: #d4d4d4 !important;
-    color: #000 !important;
+    background-color: #e2e8f0;
+    color: #2d3748;
 }
