@@ -11,7 +11,7 @@ router.get('/eliminar/:id_cliente', indexControllers.delete);
 router.get('/detalle/:id_cliente', indexControllers.detalle);
 router.post('/actualizar-estado/:id_cliente', indexControllers.updateStatus);
 router.get('/history', indexControllers.history);
-
+router.get('/search', indexControllers.search); // <--- Ruta para búsqueda
 
 
 

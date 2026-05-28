@@ -1,8 +1,11 @@
+const { Op } = require('sequelize');
+const db = require('../database/db.js');
 const Cliente = require('../database/models/Cliente.js');
+
 
 const indexController = {
     // Renderiza la página y muestra la lista
-    index: async (req, res) => {
+index: async (req, res) => {
         try {
             const clientes = await Cliente.findAll({ raw: true });;
             res.render('index', { 
@@ -15,7 +18,7 @@ const indexController = {
     },
 
     // Recibe los datos del formulario y los guarda en Clever Cloud
-    store: async (req, res) => {
+store: async (req, res) => {
         try {
             await Cliente.create({
                 nombre: req.body.nombre,
@@ -27,8 +30,9 @@ const indexController = {
         } catch (error) {
             res.send("Error al guardar cliente: " + error.message);
         }
-    },
-    edit: async (req, res) => {
+},
+    
+edit: async (req, res) => {
     try {
         const cliente = await Cliente.findByPk(req.params.id_cliente);
         res.render('edit', { title: 'Editar Cliente', cliente: cliente });
@@ -63,6 +67,7 @@ delete: async (req, res) => {
         res.send("Error al eliminar: " + error.message);
     }
 },
+
 detalle: async (req, res) => {
     try {
         const cliente = await Cliente.findByPk(req.params.id_cliente);
@@ -93,10 +98,8 @@ updateStatus: async (req, res) => {
     } catch (error) {
         res.send("Error al actualizar estado y pagos: " + error.message);
     }
-}
+},
 
-
-,
 history: async (req, res) => {
     try {
         const clientes = await Cliente.findAll({ raw: true });;
@@ -108,8 +111,25 @@ history: async (req, res) => {
         res.send("Error al cargar EJS: " + error.message);
     }
 
-}
+},
 
+search: async (req, res) => {
+    try {
+        const query = req.query.q;  
+
+        const clientes = await Cliente.findAll({
+            where: {
+                nombre: {
+                            [Op.like]: `%${query}%` // <-- Usar Op directamente aquí
+                         }
+            },
+            raw: true
+        });
+        res.render('index', { title: 'Resultados de Búsqueda', lista: clientes });
+    } catch (error) {
+        res.send("Error en búsqueda: " + error.message);
+    }
+}
 }
 
 

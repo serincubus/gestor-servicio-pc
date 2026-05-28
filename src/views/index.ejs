@@ -1,51 +1,88 @@
 <%- include('./partials/head.ejs') %>
-  <body>
-  <body>
-    <div class="container">
-      <h1><%= title %></h1>
+<!-- Vinculamos las hojas de estilos externas -->
+<link rel='stylesheet' href='/stylesheets/style.css' />
+<link rel='stylesheet' href='/stylesheets/formCliente.css' />
 
-      <!-- Formulario para nueva reparación -->
-      <h3>Registrar Ingreso</h3>
-      <form action="/guardar" method="POST">
-        <input type="text" name="nombre" placeholder="Nombre del Cliente" required>
-        <input type="text" name="telefono" placeholder="Telefono del Cliente" required>
-        <input type="text" name="equipo" placeholder="Equipo (Ej: Notebook Bangho)" required>
-        <textarea name="falla" placeholder="Descripción del problema"></textarea>
-        <button type="submit">Guardar en Base de Datos</button>
-      </form>
+<body>
+  <div class="container">
+    <h1><%= title %></h1>
 
-      <hr>
+    <!-- SECCIÓN DE ACCIONES: BOTONES DE CONTROL SUPERIORES -->
+    <div class="acciones-principales" style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center;">
+        <button id="btn-toggle-registro" class="btn-guardar" style="background-color: #007bff; margin: 0; padding: 10px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            ➕ Registrar Nuevo Ingreso
+        </button>
+        
+        <a href="/history" class="btn-navegar-historial" style="background-color: #28a745; color: white; text-decoration: none; padding: 10px 15px; border-radius: 4px; font-weight: bold;">
+            📊 Ver Historial y Reporte de Pagos
+        </a>
+    </div>
 
-      <!-- BLOQUE NUEVO: BOTÓN DE ACCESO AL HISTORIAL -->
-  <div class="panel-navegacion" style="margin-bottom: 20px;">
-      <a href="/history" class="btn-navegar-historial">
-          📊 Ver Historial Completo y Reporte de Pagos
-      </a>
+    <!-- CONTENEDOR DESPLEGABLE DEL FORMULARIO DE INGRESO -->
+    <div id="contenedor-formulario-registro" class="contenedor-desplegable-registro" style="display: none; background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #cbd5e0;">
+        <h3>Registrar Ingreso de Equipo</h3>
+        <form action="/guardar" method="POST">
+          <input type="text" name="nombre" placeholder="Nombre del Cliente" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+          <input type="text" name="telefono" placeholder="Teléfono del Cliente" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+          <input type="text" name="equipo" placeholder="Equipo (Ej: Notebook Bangho)" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+          <textarea name="falla" placeholder="Descripción del problema" style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; height: 80px;"></textarea>
+          <button type="submit" class="btn-guardar-completo" style="width: 100%; background-color: #007bff; color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold;">Guardar en Base de Datos</button>
+        </form>
+    </div>
+
+    <hr style="margin: 25px 0; border: 0; border-top: 1px solid #ddd;">
+
+    <!-- BARRA DE BÚSQUEDA INTEGRADA -->
+    <form action="/search" method="GET" style="margin-bottom: 25px; display: flex; gap: 10px;">
+        <input type="text" name="q" placeholder="🔍 Buscar cliente por nombre..." required style="flex-grow: 1; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 16px;">
+        <button type="submit" class="btn-guardar" style="margin: 0; padding: 0 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Buscar</button>
+        <a href="/" class="btn-link-cancelar" style="text-decoration: none; padding: 12px 15px; border: 1px solid #ccc; background-color: #fff; color: #333; border-radius: 4px; font-weight: bold;">Limpiar</a>
+    </form>
+
+    <!-- LISTADO GENERAL DE TARJETAS DE REPARACIÓN -->
+    <h2>Equipos en el Taller</h2>
+    <div id="lista-reparaciones">
+      <% if (lista.length > 0) { %>
+        <% lista.forEach(cliente => { %>
+          <div class="reparacion-card" style="border-left: 5px solid #007bff; padding: 15px; margin-bottom: 15px; background: #fafafa; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            <strong style="font-size: 16px; color: #333;"><%= cliente.nombre %></strong> - <span style="color: #555;"><%= cliente.equipo %></span>
+            <p style="margin: 8px 0; color: #666;">Falla: <%= cliente.falla %></p>
+            
+            <div class="acciones-tarjeta" style="margin-top: 12px; display: flex; gap: 12px; align-items: center;">
+                <a href="/detalle/<%= cliente.id_cliente %>" style="color: #007bff; font-weight: bold; text-decoration: none;">Ver Detalle</a>
+                <a href="/editar/<%= cliente.id_cliente %>" style="color: #555; text-decoration: none;">Editar</a>
+                <a href="/eliminar/<%= cliente.id_cliente %>" style="color: red; text-decoration: none;" onclick="return confirm('¿Estás seguro de eliminar este cliente?')">Eliminar</a>
+            </div>
+            
+            <div style="margin-top: 10px; text-align: right;">
+                <small style="background-color: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #4a5568;">Estado: <%= cliente.estado %></small>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p style="color: #718096; font-style: italic;">No hay equipos registrados todavía.</p>
+      <% } %>
+    </div>
   </div>
 
-      <h2>Equipos en el Taller</h2>
-      <div id="lista-reparaciones">
-        <% if (lista.length > 0) { %>
-          <% lista.forEach(cliente => { %>
-            <div class="reparacion-card">
-              <strong><%= cliente.nombre %></strong> - <span><%= cliente.equipo %></span>
-              <p>Falla: <%= cliente.falla %></p>
-               <!-- Asegúrate de que el enlace incluya el id_cliente -->
-              <a href="/detalle/<%= cliente.id_cliente %>">Ver Detalle</a>
+  <!-- SCRIPT PARA EL COMPORTAMIENTO DESPLEGABLE -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnToggle = document.getElementById('btn-toggle-registro');
+      const formulario = document.getElementById('contenedor-formulario-registro');
 
-              <a href="/editar/<%= cliente.id_cliente %>">Editar este registro</a>
-              <a href="/eliminar/<%= cliente.id_cliente %>" 
-                  style="color: red; margin-left: 10px;" 
-                  onclick="return confirm('¿Estás seguro de eliminar este cliente?')">
-           Eliminar
-        </a>
-              <small>Estado: <b><%= cliente.estado %></b></small>
-            </div>
-          <% }) %>
-        <% } else { %>
-          <p>No hay equipos registrados todavía.</p>
-        <% } %>
-      </div>
-    </div>
-  </body>
+      btnToggle.addEventListener('click', () => {
+        if (formulario.style.display === 'none' || formulario.style.display === '') {
+          formulario.style.display = 'block';
+          btnToggle.textContent = '❌ Cerrar Formulario';
+          btnToggle.style.backgroundColor = '#dc3545';
+        } else {
+          formulario.style.display = 'none';
+          btnToggle.textContent = '➕ Registrar Nuevo Ingreso';
+          btnToggle.style.backgroundColor = '#007bff';
+        }
+      });
+    });
+  </script>
+</body>
 </html>

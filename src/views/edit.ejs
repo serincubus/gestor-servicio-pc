@@ -1,36 +1,35 @@
 <%- include('./partials/head.ejs') %>
-  <body>
-    <div class="container">
-      <h1><%= title %></h1>
+<!-- Vinculamos la hoja de estilos externa para la edición -->
+<link rel='stylesheet' href='/stylesheets/edit.css' />
+
+<body>
+  <div class="container-edit">
+    <h1><%= title %></h1>
+    
+    <div class="edit-box">
+      <h3>Modificar datos de: <%= cliente.nombre %></h3>
       
-      <div class="edit-box">
-        <h3>Modificar datos de: <%= cliente.nombre %></h3>
+      <form action="/actualizar/<%= cliente.id_cliente %>" method="POST" class="form-edit">
         
-        <!-- El action apunta a /actualizar/ seguido del ID del cliente -->
-        <form action="/actualizar/<%= cliente.id_cliente %>" method="POST">
-          
-          <label>Nombre del Cliente:</label>
-          <input type="text" name="nombre" value="<%= cliente.nombre %>" required>
+        <label>Nombre del Cliente:</label>
+        <input type="text" name="nombre" value="<%= cliente.nombre %>" required>
 
-          <label>Telefono:</label>
-          <input type="text" name="telefono" value="<%= cliente.telefono %>" required>
+        <label>Teléfono de Contacto:</label>
+        <input type="text" name="telefono" value="<%= cliente.telefono %>" required>
 
-          <label>Equipo:</label>
-          <input type="text" name="equipo" value="<%= cliente.equipo %>" required>
+        <label>Equipo:</label>
+        <input type="text" name="equipo" value="<%= cliente.equipo %>" required>
 
-          <label>Descripción de la Falla:</label>
-          <textarea name="falla" rows="4"><%= cliente.falla %></textarea>
+        <label>Descripción de la Falla:</label>
+        <textarea name="falla" rows="4"><%= cliente.falla %></textarea>
 
-          <label>Teléfono:</label>
-          <input type="text" name="telefono" value="<%= cliente.telefono %>">
-
-          <div class="botones-container">
-            <button type="submit" class="btn-guardar">Actualizar Datos</button>
-            <a href="/" class="btn-cancelar">Cancelar</a>
-          </div>
-          
-        </form>
-      </div>
+        <div class="botones-container">
+          <button type="submit" class="btn-actualizar">Actualizar Datos</button>
+          <a href="/" class="btn-cancelar-edit">Cancelar</a>
+        </div>
+        
+      </form>
     </div>
-  </body>
+  </div>
+</body>
 </html>

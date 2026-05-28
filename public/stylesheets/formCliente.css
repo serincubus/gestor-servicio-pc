@@ -1,15 +1,15 @@
-form { 
+/*form { 
     display: flex; 
     flex-direction: column; 
     gap: 10px; 
     margin-bottom: 30px; 
 }
-
       input, textarea { 
         padding: 8px; 
         border: 1px solid #ddd; 
         border-radius: 4px; 
-    }
+    }*/
+
 
       button { 
         background: #007bff; 
@@ -25,3 +25,56 @@ form {
         margin-bottom: 10px; 
         background: #fafafa; 
     }
+    /* public/stylesheets/formCliente.css */
+
+/* Contenedor principal del formulario (Inicia oculto) */
+.contenedor-desplegable-registro {
+    display: none;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid #cbd5e0;
+}
+
+/* Campos de entrada dentro del bloque desplegable */
+.contenedor-desplegable-registro input,
+.contenedor-desplegable-registro textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+.contenedor-desplegable-registro textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+/* Botón de envío que ocupa el ancho completo */
+.btn-guardar-completo {
+    width: 100%;
+    font-weight: bold;
+}
+
+/* Fila superior para los botones de acción del sistema */
+.acciones-principales {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.btn-navegar-historial {
+    display: inline-block;
+    background-color: #28a745;
+    color: #ffffff !important;
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 13.5px;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.btn-navegar-historial:hover {
+    background-color: #218838;
+}
