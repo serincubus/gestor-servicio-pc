@@ -4,6 +4,40 @@
     <h1>Historial de Reparaciones y Pagos</h1>
     <a href="/" class="btn-volver-panel">← Volver al Panel Principal</a>
 
+    <!-- MÓDULO ESTADÍSTICO MENSUAL RECIBIDO DESDE EL SERVIDOR -->
+    <div class="contenedor-estadisticas" style="margin-bottom: 30px;">
+        <h2 style="margin-bottom: 15px; color: #333;">📊 Resumen de Caja Mensual</h2>
+        
+        <% if (Object.keys(estadisticas).length > 0) { %>
+            <div class="grilla-meses" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                <% for (let mes in estadisticas) { %>
+                    <div class="tarjeta-mes" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-top: 4px solid #007bff;">
+                        <h3 style="margin: 0 0 10px 0; color: #2d3748; border-bottom: 1px solid #edf2f7; padding-bottom: 5px;"><%= mes %></h3>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; background-color: #f8fafc; padding: 6px; border-radius: 4px;">
+                            <span style="color: #4a5568; font-weight: bold;">Monto Mensual:</span>
+                            <strong style="color: #007bff;">$<%= estadisticas[mes].montoTotalMensual.toFixed(2) %></strong>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 0 6px;">
+                            <span style="color: #4a5568;">Total Cobrado:</span>
+                            <strong style="color: #28a745;">$<%= estadisticas[mes].cobrado.toFixed(2) %></strong>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; padding: 0 6px;">
+                            <span style="color: #4a5568;">Por Recaudar:</span>
+                            <strong style="color: #dc3545;">$<%= estadisticas[mes].pendiente.toFixed(2) %></strong>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        <% } else { %>
+            <p style="color: #718096; font-style: italic;">No hay datos financieros suficientes para generar el reporte mensual.</p>
+        <% } %>
+    </div>
+
+    <!-- TABLA GRÁFICA DETALLADA -->
+    <h2 style="margin-top: 40px; color: #333;">📋 Detalle de Movimientos</h2>
     <table class="tabla-grafica">
         <thead>
             <tr>
@@ -29,15 +63,11 @@
                             <%= cliente.fecha_egreso ? new Date(cliente.fecha_egreso).toLocaleDateString('es-AR') : 'Pendiente ⏳' %>
                         </td>
                         <td class="td-pago">
-                            <!-- Presupuesto Base -->
                             <small style="color: #666; display: block; margin-bottom: 2px;">Total: $<%= Number(cliente.presupuesto).toFixed(2) %></small>
-                            
-                            <!-- Adelanto Cobrado -->
                             <span style="color: #28a745; font-weight: bold; display: block;">
                                 Cobrado: $<%= Number(cliente.pago_parcial || 0).toFixed(2) %>
                             </span>
                             
-                            <!-- Cálculo y Desglose de Deuda -->
                             <% let restante = Number(cliente.presupuesto) - Number(cliente.pago_parcial || 0); %>
                             <% if (restante > 0) { %>
                                 <span style="color: #dc3545; font-size: 13px; font-weight: bold; display: block; margin-top: 4px;">

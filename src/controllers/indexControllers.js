@@ -102,15 +102,40 @@ updateStatus: async (req, res) => {
 
 history: async (req, res) => {
     try {
-        const clientes = await Cliente.findAll({ raw: true });;
+        const clientes = await Cliente.findAll({ raw: true });
+        
+        // MÓDULO ESTADÍSTICO: Procesamiento de sumas en el servidor
+        let estadisticasMensuales = {};
+        
+        clientes.forEach(cliente => {
+            let fecha = new Date(cliente.createdAt);
+            let mesAnio = fecha.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+            mesAnio = mesAnio.charAt(0).toUpperCase() + mesAnio.slice(1);
+
+            let totalPresupuesto = Number(cliente.presupuesto || 0);
+            let totalCobrado = Number(cliente.pago_parcial || 0);
+            let totalPendiente = totalPresupuesto - totalCobrado;
+
+            if (!estadisticasMensuales[mesAnio]) {
+                estadisticasMensuales[mesAnio] = { cobrado: 0, pendiente: 0, montoTotalMensual: 0 };
+            }
+
+            estadisticasMensuales[mesAnio].cobrado += totalCobrado;
+            estadisticasMensuales[mesAnio].montoTotalMensual += totalPresupuesto;
+            if (totalPendiente > 0) {
+                estadisticasMensuales[mesAnio].pendiente += totalPendiente;
+            }
+        });
+
+        // Enviamos a la vista tanto la lista como el objeto de estadísticas ya resuelto
         res.render('historial', { 
             title: 'Historial de Clientes', 
-            lista: clientes 
+            lista: clientes,
+            estadisticas: estadisticasMensuales // <-- Variable nueva para EJS
         });
     } catch (error) {
-        res.send("Error al cargar EJS: " + error.message);
+        res.send("Error al cargar el historial en servidor: " + error.message);
     }
-
 },
 
 search: async (req, res) => {
