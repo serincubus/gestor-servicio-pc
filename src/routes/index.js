@@ -1,17 +1,26 @@
 var express = require('express');
 var router = express.Router();
 const indexControllers = require('../controllers/indexControllers')
+const userControllers = require('../controllers/userControllers');
+
+// FUNCIÓN CANDADO ACTUALIZADA: Si no está logueado, lo manda a /users/login
+function soloAdmin(req, res, next) {
+    if (req.session && req.session.esAdmin) {
+        return next();
+    }
+    res.redirect('/users/login'); // <-- Redirección corregida a la nueva ruta
+}
 
 /* GET home page. */
-router.get('/', indexControllers.index);
-router.post('/guardar', indexControllers.store); // <--- Esta vincula el botón con la base de datos
-router.get('/editar/:id_cliente', indexControllers.edit);
-router.post('/actualizar/:id_cliente', indexControllers.update);
-router.get('/eliminar/:id_cliente', indexControllers.delete);
-router.get('/detalle/:id_cliente', indexControllers.detalle);
-router.post('/actualizar-estado/:id_cliente', indexControllers.updateStatus);
-router.get('/history', indexControllers.history);
-router.get('/search', indexControllers.search); // <--- Ruta para búsqueda
+router.get('/', soloAdmin,indexControllers.index);
+router.post('/guardar', soloAdmin, indexControllers.store); // <--- Esta vincula el botón con la base de datos
+router.get('/editar/:id_cliente', soloAdmin, indexControllers.edit);
+router.post('/actualizar/:id_cliente', soloAdmin, indexControllers.update);
+router.get('/eliminar/:id_cliente', soloAdmin, soloAdmin, indexControllers.delete);
+router.get('/detalle/:id_cliente', soloAdmin, indexControllers.detalle);
+router.post('/actualizar-estado/:id_cliente', soloAdmin, indexControllers.updateStatus);
+router.get('/history', soloAdmin, indexControllers.history);
+router.get('/search', soloAdmin, indexControllers.search); // <--- Ruta para búsqueda
 
 
 

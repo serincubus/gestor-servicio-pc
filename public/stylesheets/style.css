@@ -1,6 +1,8 @@
 @import url("formCliente.css");
+@import url("edit.css");
 @import url("detalleCliente.css");
-@import url("historial.css");npm stat
+@import url("historial.css");
+@import url("login.css");
 
 body {
   font-family: sans-serif; 

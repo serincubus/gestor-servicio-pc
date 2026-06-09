@@ -1,0 +1,43 @@
+<%- include('./partials/head.ejs') %>
+<!-- Vinculamos las hojas de estilo externas -->
+
+
+<body>
+    <div class="container-detalle">
+        <h1 class="login-titulo"><%= title %></h1>
+
+        <!-- CONTENEDOR DE IDENTIFICACIÓN -->
+        <div class="ficha-beneficiario">
+            <h3 class="login-subtitulo">
+                🔐 Panel de Identificación Técnico
+            </h3>
+            
+            <form action="/users/login" method="POST" class="form-estado login-form">
+                <label for="password" class="login-label">
+                    Contraseña de Administrador:
+                </label>
+                
+                <input type="password" name="password" id="password" class="login-input" placeholder="••••••••" required>
+                
+                <button type="submit" class="btn-guardar login-btn">
+                    Ingresar al Sistema
+                </button>
+            </form>
+        </div>
+
+        <!-- CONTROL DE ALERTAS DE ERROR -->
+        <% if (error) { %>
+            <div class="estado-cuenta cuenta-pendiente login-error">
+                ❌ <%= error %>
+            </div>
+        <% } %>
+
+        <!-- ENLACE DE RETORNO PÚBLICO -->
+        <div class="login-retorno-container">
+            <a href="/consulta" class="login-link-retorno">
+                ← Volver a Consulta de Reparaciones (Clientes)
+            </a>
+        </div>
+    </div>
+</body>
+</html>
