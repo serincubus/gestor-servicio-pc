@@ -4,29 +4,29 @@
     <h1>Historial de Reparaciones y Pagos</h1>
     <a href="/" class="btn-volver-panel">← Volver al Panel Principal</a>
 
-    <!-- MÓDULO ESTADÍSTICO MENSUAL RECIBIDO DESDE EL SERVIDOR -->
-    <div class="contenedor-estadisticas" style="margin-bottom: 30px;">
-        <h2 style="margin-bottom: 15px; color: #333;">📊 Resumen de Caja Mensual</h2>
+    <!-- MÓDULO ESTADÍSTICO MENSUAL CONTROLADO POR CLASES CSS -->
+    <div class="contenedor-estadisticas">
+        <h2>📊 Resumen de Caja Mensual</h2>
         
         <% if (Object.keys(estadisticas).length > 0) { %>
-            <div class="grilla-meses" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+            <div class="grilla-meses">
                 <% for (let mes in estadisticas) { %>
-                    <div class="tarjeta-mes" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-top: 4px solid #007bff;">
-                        <h3 style="margin: 0 0 10px 0; color: #2d3748; border-bottom: 1px solid #edf2f7; padding-bottom: 5px;"><%= mes %></h3>
+                    <div class="tarjeta-mes">
+                        <h3><%= mes %></h3>
                         
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; background-color: #f8fafc; padding: 6px; border-radius: 4px;">
-                            <span style="color: #4a5568; font-weight: bold;">Monto Mensual:</span>
-                            <strong style="color: #007bff;">$<%= estadisticas[mes].montoTotalMensual.toFixed(2) %></strong>
+                        <div class="fila-monto-total">
+                            <span>Monto Mensual:</span>
+                            <strong>$<%= estadisticas[mes].montoTotalMensual.toFixed(2) %></strong>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 0 6px;">
-                            <span style="color: #4a5568;">Total Cobrado:</span>
-                            <strong style="color: #28a745;">$<%= estadisticas[mes].cobrado.toFixed(2) %></strong>
+                        <div class="fila-estadistica">
+                            <span>Total Cobrado:</span>
+                            <strong class="txt-cobrado">$<%= estadisticas[mes].cobrado.toFixed(2) %></strong>
                         </div>
                         
-                        <div style="display: flex; justify-content: space-between; padding: 0 6px;">
-                            <span style="color: #4a5568;">Por Recaudar:</span>
-                            <strong style="color: #dc3545;">$<%= estadisticas[mes].pendiente.toFixed(2) %></strong>
+                        <div class="fila-estadistica">
+                            <span>Por Recaudar:</span>
+                            <strong class="txt-pendiente">$<%= estadisticas[mes].pendiente.toFixed(2) %></strong>
                         </div>
                     </div>
                 <% } %>
@@ -64,22 +64,22 @@
                         </td>
                         <td class="td-pago">
                             <small style="color: #666; display: block; margin-bottom: 2px;">Total: $<%= Number(cliente.presupuesto).toFixed(2) %></small>
-                            <span style="color: #28a745; font-weight: bold; display: block;">
+                            <span class="txt-cobrado" style="display: block; font-weight: bold;">
                                 Cobrado: $<%= Number(cliente.pago_parcial || 0).toFixed(2) %>
                             </span>
                             
                             <% let restante = Number(cliente.presupuesto) - Number(cliente.pago_parcial || 0); %>
                             <% if (restante > 0) { %>
-                                <span style="color: #dc3545; font-size: 13px; font-weight: bold; display: block; margin-top: 4px;">
+                                <span class="txt-pendiente" style="display: block; font-size: 13px; font-weight: bold; margin-top: 4px;">
                                     Resta: $<%= restante.toFixed(2) %> ⏳
                                 </span>
                             <% } else { %>
-                                <span style="color: #28a745; font-size: 12px; font-weight: bold; display: block; margin-top: 4px;">
+                                <span class="txt-cobrado" style="display: block; font-size: 12px; font-weight: bold; margin-top: 4px;">
                                     Saldado ✅
                                 </span>
                             <% } %>
 
-                            <span class="info-confirmacion" style="display: block; margin-top: 6px;">
+                            <span class="info-confirmacion">
                                 <%= cliente.confirmado ? 'Presupuesto Aprobado 👍' : 'Sin Confirmar 👎' %>
                             </span>
                         </td>
