@@ -1,0 +1,87 @@
+<%- include('./partials/head.ejs') %>
+<!-- Vinculamos la hoja de estilos externa unificada -->
+<link rel='stylesheet' href='/stylesheets/detalleCliente.css' />
+
+<body>
+    <div class="container-detalle">
+        <h1 style="text-align: center; color: #2d3748; margin-top: 40px; margin-bottom: 25px;"><%= title %></h1>
+
+        <!-- CONTENEDOR DEL FORMULARIO DE CONSULTA -->
+        <div class="ficha-beneficiario" style="border-left: 5px solid #28a745;">
+            <h3 style="margin-top: 0; color: #2d3748; border-bottom: 1px solid #edf2f7; padding-bottom: 10px;">
+                🔍 Seguimiento de Reparación
+            </h3>
+            <p style="color: #666; font-size: 14.5px; margin: 15px 0;">
+                Ingresá el número de ticket que te entregó el técnico al registrar tu equipo para conocer el estado actual.
+            </p>
+            
+            <form action="/consulta" method="POST" class="form-estado" style="margin-top: 15px;">
+                <label for="codigo" style="font-weight: bold; color: #4a5568; display: block; margin-bottom: 8px;">
+                    Número de Ticket:
+                </label>
+                
+                <input type="text" name="codigo" id="codigo" placeholder="Ej: TICKET-W8F4B2" required 
+                       style="width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 16px; text-transform: uppercase;">
+                
+                <button type="submit" class="btn-guardar" style="background-color: #28a745; width: 100%; padding: 12px; font-size: 16px; cursor: pointer;">
+                    Buscar Orden
+                </button>
+            </form>
+        </div>
+
+        <!-- CONTROL DE ALERTAS DE ERROR (Si el ticket no existe) -->
+        <% if (error) { %>
+            <div class="estado-cuenta cuenta-pendiente" style="text-align: center; margin-top: 15px;">
+                ⚠️ <%= error %>
+            </div>
+        <% } %>
+
+        <!-- FICHA TÉCNICA EN PANTALLA (Se muestra solo si se encontró el ticket) -->
+        <% if (cliente) { %>
+            <div class="ficha-beneficiario" style="margin-top: 25px; border-left: 5px solid #007bff; background-color: #ffffff;">
+                <h2 style="margin-top: 0; color: #2d3748;">Ticket N°: <span style="color: #007bff;"><%= cliente.codigo_seguimiento %></span></h2>
+                
+                <div style="margin: 15px 0;">
+                    <span style="font-weight: bold; color: #4a5568;">Estado de la Orden:</span>
+                    <span style="background-color: #e2e8f0; padding: 6px 12px; border-radius: 4px; font-weight: bold; color: #2d3748; margin-left: 10px; display: inline-block;">
+                        <%= cliente.estado %>
+                    </span>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 20px 0;">
+                
+                <p class="ficha-campo"><strong>Titular:</strong> <%= cliente.nombre %></p>
+                <p class="ficha-campo"><strong>Dispositivo:</strong> <%= cliente.equipo %></p>
+                <p class="ficha-campo"><strong>Inconveniente Reportado:</strong> <%= cliente.falla %></p>
+                
+                <!-- Sección de cuentas de solo lectura para el cliente -->
+                <div id="seccion-presupuesto" class="seccion-presupuesto" style="margin-top: 20px; background-color: #f8f9fa;">
+                    <p class="ficha-campo"><strong>Costo Total del Servicio:</strong> $<%= Number(cliente.presupuesto).toFixed(2) %></p>
+                    <p class="ficha-campo"><strong>Seña / Adelanto Entregado:</strong> $<%= Number(cliente.pago_parcial).toFixed(2) %></p>
+                    
+                    <% let deuda = Number(cliente.presupuesto) - Number(cliente.pago_parcial); %>
+                    <div class="estado-cuenta <%= deuda <= 0 ? 'cuenta-saldada' : 'cuenta-pendiente' %>" style="margin-top: 15px;">
+                        <% if (deuda <= 0) { %>
+                            <span>✅ El servicio se encuentra completamente abonado. ¡Muchas gracias!</span>
+                        <% } else { %>
+                            <span>⚠️ Saldo pendiente a abonar al retirar: <strong>$<%= deuda.toFixed(2) %></strong></span>
+                        <% } %>
+                    </div>
+                    
+                    <p class="ficha-campo" style="margin-top: 15px; font-size: 14px; color: #666;">
+                        <strong>Aprobación técnica:</strong> 
+                        <%= cliente.confirmado ? 'Presupuesto aprobado por el cliente. ✅' : 'Esperando confirmación del presupuesto. ⏳' %>
+                    </p>
+                </div>
+            </div>
+        <% } %>
+        
+        <!-- ENLACE DE REDIRECCIÓN AL PANEL TÉCNICO -->
+        <div style="text-align: center; margin-top: 30px; margin-bottom: 40px;">
+            <a href="/users/login" style="color: #66c; text-decoration: none; font-size: 14px; font-weight: 500;">
+                Acceso Exclusivo Personal Técnico →
+            </a>
+        </div>
+    </div>
+</body>
+</html>

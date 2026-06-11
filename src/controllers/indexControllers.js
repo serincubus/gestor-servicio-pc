@@ -261,7 +261,66 @@ const indexController = {
         } catch (error) {
             res.send("Error en el historial: " + error.message);
         }
+    },
+
+        // Muestra la vista del formulario de consulta pública para el cliente
+    consultaReparacion: (req, res) => {
+        try {
+            // Buscamos el archivo views/consultaPublica.ejs
+            res.render('consultaPublica', { 
+                title: 'Consulta de Reparación', 
+                cliente: null, 
+                error: null 
+            });
+        } catch (error) {
+            res.send("Error al cargar la vista de consulta: " + error.message);
+        }
+    },
+        buscarEstadoCliente: async (req, res) => {
+        try {
+            // Captura el ticket enviado por el formulario (Ej: TICKET-A4F8)
+            const ticketIngresado = req.body.codigo.toUpperCase().trim();
+            
+            // Buscamos el ticket e incluimos los datos fijos de su dueño (Cliente)
+            const ticket = await Ticket.findOne({
+                where: { codigo_seguimiento: ticketIngresado },
+                include: [{ model: Cliente, as: 'cliente' }],
+                nest: true
+            });
+
+            // Si el ticket no existe en Clever Cloud, recargamos con el mensaje de error
+            if (!ticket) {
+                return res.render('consultaPublica', { 
+                    title: 'Consulta de Reparación', 
+                    cliente: null, 
+                    error: 'El número de ticket ingresado no existe. Por favor, verifíquelo.' 
+                });
+            }
+
+            // Si existe, armamos el objeto limpio y seguro (solo lectura) para el cliente
+            const mapeoPublico = {
+                codigo_seguimiento: ticket.codigo_seguimiento,
+                estado: ticket.estado,
+                nombre: ticket.cliente.nombre,
+                equipo: ticket.equipo,
+                falla: ticket.falla,
+                presupuesto: ticket.presupuesto,
+                pago_parcial: ticket.pago_parcial,
+                confirmado: ticket.confirmado
+            };
+
+            // Renderizamos la plantilla con los datos del equipo encontrados
+            res.render('consultaPublica', { 
+                title: 'Consulta de Reparación', 
+                cliente: mapeoPublico, 
+                error: null 
+            });
+        } catch (error) {
+            res.send("Error al consultar ticket público: " + error.message);
+        }
     }
+
+
 };
 
 module.exports = indexController;

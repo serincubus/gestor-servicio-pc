@@ -12,8 +12,8 @@ function soloAdmin(req, res, next) {
 }
 
 /* RUTAS PÚBLICAS DE CONSULTA PARA CLIENTES */
-/*router.get('/consulta', indexControllers.consultaReparacion);
-router.post('/consulta', indexControllers.buscarEstadoCliente);*/
+router.get('/consulta', indexControllers.consultaReparacion);
+router.post('/consulta', indexControllers.buscarEstadoCliente);
 
 /* GET home page. */
 router.get('/', soloAdmin,indexControllers.index);
