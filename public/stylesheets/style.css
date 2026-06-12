@@ -3,6 +3,7 @@
 @import url("detalleCliente.css");
 @import url("historial.css");
 @import url("login.css");
+@import url("consultaPublica.css");
 
 body {
   font-family: sans-serif; 
