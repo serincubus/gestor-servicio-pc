@@ -12,7 +12,41 @@
     <div class="ficha-beneficiario">
         <h2>Ficha de Ingreso #<%= cliente.id_cliente %></h2>
         <p class="ficha-campo"><strong>Beneficiario / Cliente:</strong> <%= cliente.nombre %></p>
-        <p class="ficha-campo"><strong>Teléfono de Contacto:</strong> <%= cliente.telefono ? cliente.telefono : 'No registrado' %></p>
+      <p class="ficha-campo">
+    <strong>Teléfono de Contacto:</strong> <%= cliente.telefono ? cliente.telefono : 'No registrado' %>
+    
+    <% if (cliente.telefono) { %>
+        <% 
+            // 1. Removemos todo lo que no sea número
+            // 1. Removemos espacios y guiones
+    let telefonoLimpio = cliente.telefono.replace(/[^0-9]/g, '');
+    
+    // 2. Si no empieza con 54, se lo agregamos automáticamente (asumiendo formato celular 549...)
+    if (!telefonoLimpio.startsWith('54')) {
+        // Si el número empieza con 11 o 15, le anteponemos el prefijo de celular de Argentina
+        telefonoLimpio = '549' + telefonoLimpio;
+    }
+
+            // 3. Estructuracion del mensaje de la orden
+           let mensajeWhatsApp = `Hola ${cliente.nombre}, te avisamos del servicio técnico que tu equipo (${cliente.equipo}) ya ingresó en reparación en nuestro taller. Podés realizar el seguimiento en tiempo real con tu Número de Ticket: ${cliente.codigo_seguimiento} ingresando acá: http://localhost:3000/consulta`;
+            
+            // 4. Codificando el texto de forma segura
+            let mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
+        %>
+        
+       
+<a href="https://wa.me/<%= telefonoLimpio %>?text=<%= mensajeCodificado %>" 
+   target="_blank" 
+   rel="noopener noreferrer"
+   class="btn-whatsapp" 
+   title="Notificar ingreso al cliente por WhatsApp">
+    💬 Enviar Ticket por WhatsApp
+</a>
+
+    <% } %>
+</p>
+
+
         <p class="ficha-campo"><strong>Equipo a Reparar:</strong> <%= cliente.equipo %></p>
         <p class="ficha-campo"><strong>Falla Reportada:</strong> <%= cliente.falla %></p>
         <p class="ficha-campo"><small>Registrado el: <%= new Date(cliente.createdAt).toLocaleDateString('es-AR') %></small></p>

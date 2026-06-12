@@ -141,3 +141,30 @@ form label {
     background-color: #e2e8f0;
     color: #2d3748;
 }
+
+/*boton whatsapp*/
+.btn-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    background-color: #25d366; /* Verde oficial WhatsApp */
+    color: #ffffff !important;
+    text-decoration: none;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-left: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s, transform 0.1s;
+    vertical-align: middle;
+}
+
+.btn-whatsapp:hover {
+    background-color: #128c7e; /* Verde oscuro al pasar el cursor */
+    transform: translateY(-1px);
+}
+
+.btn-whatsapp:active {
+    transform: translateY(0);
+}
+
