@@ -20,7 +20,7 @@ router.get('/', soloAdmin,indexControllers.index);
 router.post('/guardar', soloAdmin, indexControllers.store); // <--- Esta vincula el botón con la base de datos
 router.get('/editar/:id_cliente', soloAdmin, indexControllers.edit);
 router.post('/actualizar/:id_cliente', soloAdmin, indexControllers.update);
-router.get('/eliminar/:id_cliente', soloAdmin, indexControllers.delete);
+router.post('/eliminar/:id_cliente', soloAdmin, indexControllers.delete);
 router.get('/detalle/:id_cliente', soloAdmin, indexControllers.detalle);
 router.post('/actualizar-estado/:id_cliente', soloAdmin, indexControllers.updateStatus);
 router.get('/history', soloAdmin, indexControllers.history);

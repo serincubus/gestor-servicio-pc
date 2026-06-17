@@ -1,6 +1,6 @@
 // src/controllers/indexControllers.js
 const { Op } = require('sequelize');
-const { Cliente, Ticket } = require('../database/models/asociaciones'); // Importamos ambos modelos con sus asociaciones
+const { Cliente, Ticket} = require('../database/models/asociaciones'); // Importamos ambos modelos con sus asociaciones
 
 const indexController = {
     // 1. Muestra todos los tickets activos en el taller con los datos de sus dueños
@@ -323,4 +323,4 @@ const indexController = {
 
 };
 
-module.exports = indexController;
+module.exports = indexController
