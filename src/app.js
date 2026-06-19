@@ -23,12 +23,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
 
+app.set('trust proxy', 1); 
 app.use(session({
     secret: 'clave-secreta-taller-pc', // Llave de encriptación
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 3600000 } // La sesión expira en 1 hora de inactividad
 }));
+
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
