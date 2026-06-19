@@ -8,6 +8,7 @@ const indexController = {
         try {
             const ticketsTaller = await Ticket.findAll({
                 include: [{ model: Cliente, as: 'cliente' }], // Trae los datos del dueño asociados
+                order: [['id_ticket', 'DESC']], // ⬅️ ORDENA POR ID DE FORMA DESCENDENTE (Último ingresado arriba)  
                 raw: true,
                 nest: true // Organiza el objeto para que no se mezclen las columnas
             });

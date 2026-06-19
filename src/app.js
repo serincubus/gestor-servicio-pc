@@ -8,8 +8,11 @@ require('dotenv').config(); // IMPORTANTE: Esto debe ir al principio
 const db = require('./database/db.js');
 const Cliente = require('./database/models/Cliente.js'); // O la ruta correcta a tu modelo
  // Esto ejecutará el código de conexión
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const hardwareRouter = require('./routes/hardware');
+
+
 
 var app = express();
 
@@ -34,6 +37,7 @@ app.use(session({
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/hardware', hardwareRouter);
 
 db.sync({ alter: true }) 
     .then(() => {
