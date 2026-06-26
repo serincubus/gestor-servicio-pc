@@ -1,10 +1,12 @@
 /* public/stylesheets/hardware.css */
+
 .contenedor-hardware {
     display: flex;
     gap: 25px;
     margin-top: 20px;
     flex-wrap: wrap;
 }
+
 .bloque-formulario {
     flex: 1;
     min-width: 300px;
@@ -13,10 +15,12 @@
     border-radius: 8px;
     border: 1px solid #cbd5e0;
 }
+
 .bloque-tabla {
     flex: 2;
     min-width: 500px;
 }
+
 .form-hardware input, .form-hardware select {
     width: 100%;
     padding: 10px;
@@ -25,6 +29,7 @@
     border: 1px solid #cbd5e0;
     border-radius: 4px;
 }
+
 .tabla-hardware {
     width: 100%;
     border-collapse: collapse;
@@ -33,19 +38,105 @@
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
+
 .tabla-hardware th, .tabla-hardware td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #edf2f7;
 }
+
 .tabla-hardware th {
     background-color: #4a5568;
     color: white;
 }
+
 .stock-alerta {
     color: #c53030;
     font-weight: bold;
     background-color: #fff5f5;
     padding: 2px 6px;
     border-radius: 4px;
+}
+
+/* --- CLASES LIMPIADAS DE LA VISTA HARDWARE.EJS --- */
+
+.cabecera-hardware {
+    margin-bottom: 20px;
+}
+
+.contenedor-vista-previa-edicion {
+    margin-bottom: 12px; 
+    text-align: center;
+}
+
+.txt-foto-actual {
+    color: #666; 
+    display: block; 
+    margin-bottom: 5px;
+}
+
+.img-vista-previa-edicion {
+    width: 70px; 
+    height: 70px; 
+    object-fit: cover; 
+    border-radius: 4px; 
+    border: 1px solid #cbd5e0;
+}
+
+.label-subida-imagen {
+    font-weight: bold; 
+    margin-top: 5px; 
+    display: block;
+}
+
+.input-file-hardware {
+    padding: 5px 0; 
+    width: 100%;
+}
+
+.btn-registrar-hardware {
+    background-color: #28a745; 
+    margin-top: 10px;
+}
+
+.btn-cancelar-edicion-hw {
+    display: block; 
+    text-align: center; 
+    margin-top: 10px;
+}
+
+.columna-imagen-th {
+    width: 70px; 
+    text-align: center;
+}
+
+.celda-imagen-td {
+    text-align: center; 
+    vertical-align: middle;
+}
+
+.img-miniatura-tabla {
+    width: 45px; 
+    height: 45px; 
+    object-fit: cover; 
+    border-radius: 4px; 
+    border: 1px solid #e2e8f0; 
+    display: block; 
+    margin: 0 auto;
+}
+
+.contenedor-acciones-tabla {
+    display: flex; 
+    gap: 5px;
+}
+
+.btn-accion-tabla {
+    padding: 4px 8px; 
+    font-size: 12px;
+}
+
+.celda-sin-registros {
+    text-align: center; 
+    color: #718096; 
+    font-style: italic;
 }

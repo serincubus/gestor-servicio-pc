@@ -28,6 +28,11 @@ module.exports = (sequelize, dataTypes) => {
             type: dataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
+        },
+         imagen: {
+            type: dataTypes.STRING(255),
+            allowNull: true,
+            defaultValue: 'default-hardware.png' // Imagen comodín por defecto
         }
     };
     const config = {

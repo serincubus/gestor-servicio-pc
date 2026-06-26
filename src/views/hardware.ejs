@@ -1,11 +1,11 @@
 <%- include('./partials/head.ejs') %>
 <link rel='stylesheet' href='/stylesheets/style.css' />
 <link rel='stylesheet' href='/stylesheets/hardware.css' />
-<script src="https://jsdelivr.net"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <body>
   <div class="container">
-    <div class="contenedor-acciones-flex" style="margin-bottom: 20px;">
+    <div class="contenedor-acciones-flex cabecera-hardware">
         <h1><%= title %></h1>
         <a href="/" class="btn-ux btn-ux-editar">⬅️ Volver al Inicio</a>
     </div>
@@ -23,7 +23,11 @@
         <div class="bloque-formulario">
             <h3><%= hardwareEditar ? '📝 Modificar Componente' : '➕ Agregar Componente' %></h3>
             
-            <form action="/hardware/<%= hardwareEditar ? 'editar/' + hardwareEditar.id_hardware : 'guardar' %>" method="POST" class="form-hardware">
+            <form action="/hardware/<%= hardwareEditar ? 'editar/' + hardwareEditar.id_hardware : 'guardar' %>" 
+                  method="POST" 
+                  enctype="multipart/form-data" 
+                  class="form-hardware">
+                
                 <label>Nombre del Componente:</label>
                 <input type="text" name="componente" placeholder="Ej: Memoria RAM Kingston 8GB DDR4" required value="<%= hardwareEditar ? hardwareEditar.componente : '' %>">
                 
@@ -35,6 +39,7 @@
                     <option value="Combos de Actualización" <%= hardwareEditar && hardwareEditar.categoria === 'Combos de Actualización' ? 'selected' : '' %>>Combos de Actualización</option>
                     <option value="Placas de Video" <%= hardwareEditar && hardwareEditar.categoria === 'Placas de Video' ? 'selected' : '' %>>Placas de Video</option>
                     <option value="Fuentes de Alimentación" <%= hardwareEditar && hardwareEditar.categoria === 'Fuentes de Alimentación' ? 'selected' : '' %>>Fuentes de Alimentación</option>
+                    <option value="Pantallas de Notebook" <%= hardwareEditar && hardwareEditar.categoria === 'Pantallas de Notebook' ? 'selected' : '' %>>Pantallas de Notebook</option>
                 </select>
 
                 <label>Precio de Costo ($):</label>
@@ -46,21 +51,34 @@
                 <label>Stock Inicial (Unidades):</label>
                 <input type="number" name="stock" required value="<%= hardwareEditar ? hardwareEditar.stock : '0' %>">
 
-                <button type="submit" class="btn-guardar-completo" style="background-color: #28a745;">
+                <!-- Vista previa de miniatura actual si estamos editando -->
+                <% if (hardwareEditar && hardwareEditar.imagen) { %>
+                    <div class="contenedor-vista-previa-edicion">
+                        <small class="txt-foto-actual">Foto actual:</small>
+                        <img src="/images/hardware/<%= hardwareEditar.imagen %>" alt="Actual" class="img-vista-previa-edicion">
+                    </div>
+                <% } %>
+
+                <!-- Input File para Multer -->
+                <label for="imagen-repuesto" class="label-subida-imagen">Foto del Componente (Opcional):</label>
+                <input type="file" name="imagen" id="imagen-repuesto" accept="image/png, image/jpeg, image/jpg, image/webp" class="input-file-hardware">
+
+                <button type="submit" class="btn-guardar-completo btn-registrar-hardware">
                     <%= hardwareEditar ? 'Guardar Cambios' : 'Registrar Componente' %>
                 </button>
                 <% if(hardwareEditar) { %>
-                    <a href="/hardware" class="btn-ux btn-ux-editar" style="display:block; text-align:center; margin-top:10px;">Cancelar Edición</a>
+                    <a href="/hardware" class="btn-ux btn-ux-editar btn-cancelar-edicion-hw">Cancelar Edición</a>
                 <% } %>
             </form>
         </div>
 
-        <!-- COLUMNA DERECHA: TABLA DE INVENTARIO -->
+        <!-- COLUMNA DERECHA: TABLA DE INVENTARIO CON MINIATURAS -->
         <div class="bloque-tabla">
             <h3>Inventario en Taller</h3>
             <table class="tabla-hardware">
                 <thead>
                     <tr>
+                        <th class="columna-imagen-th">Imagen</th>
                         <th>Categoría</th>
                         <th>Componente</th>
                         <th>Costo</th>
@@ -73,6 +91,12 @@
                     <% if(listaHardware.length > 0) { %>
                         <% listaHardware.forEach(item => { %>
                             <tr>
+                                <!-- Renderizado de miniatura subida o imagen por defecto -->
+                                <td class="celda-imagen-td">
+                                    <img src="/images/hardware/<%= item.imagen || 'default-hardware.png' %>" 
+                                         alt="<%= item.componente %>" 
+                                         class="img-miniatura-tabla">
+                                </td>
                                 <td><small class="badge-estado-inicio"><%= item.categoria %></small></td>
                                 <td><strong><%= item.componente %></strong></td>
                                 <td>$<%= Number(item.precio_costo).toFixed(2) %></td>
@@ -83,9 +107,9 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div style="display:flex; gap:5px;">
-                                        <a href="/hardware/editar/<%= item.id_hardware %>" class="btn-ux btn-ux-editar" style="padding:4px 8px; font-size:12px;">✏️</a>
-                                        <button type="button" class="btn-eliminar-flex" style="padding:4px 8px; font-size:12px;" onclick="eliminarComponente('<%= item.id_hardware %>')">🗑️</button>
+                                    <div class="contenedor-acciones-tabla">
+                                        <a href="/hardware/editar/<%= item.id_hardware %>" class="btn-ux btn-ux-editar btn-accion-tabla">✏️</a>
+                                        <button type="button" class="btn-eliminar-flex btn-accion-tabla" onclick="eliminarComponente('<%= item.id_hardware %>')">🗑️</button>
                                         <form id="form-eliminar-hw-<%= item.id_hardware %>" action="/hardware/eliminar/<%= item.id_hardware %>" method="POST" style="display:none;"></form>
                                     </div>
                                 </td>
@@ -93,7 +117,7 @@
                         <% }) %>
                     <% } else { %>
                         <tr>
-                            <td colspan="6" style="text-align:center; color:#718096; font-style:italic;">No hay componentes registrados en esta categoría.</td>
+                            <td colspan="7" class="celda-sin-registros">No hay componentes registrados en esta categoría.</td>
                         </tr>
                     <% } %>
                 </tbody>
