@@ -1,3 +1,6 @@
+const path = require('path');
+const fs=require('fs');
+
 // src/controllers/hardwareController.js (Líneas iniciales corregidas al 100%)
 const { Op, DataTypes } = require('sequelize');
 
@@ -72,24 +75,25 @@ const hardwareController = {
         }
     },
 
-     // Actualizar datos del componente e imagen vieja
+       // Actualizar datos del componente e imagen vieja (Versión Optimizada)
     update: async (req, res) => {
         try {
-            // Buscamos el registro actual para saber si ya tenía una foto asignada
-            const componenteActual = await Hardware.findByPk(req.params.id);
+            // Buscamos el registro actual asegurando que req.params.id sea un entero
+            const idComponente = parseInt(req.params.id);
+            const componenteActual = await Hardware.findByPk(idComponente);
             
             if (!componenteActual) {
-                return res.send("No se encontró el componente a actualizar.");
+                return res.send("Error: No se encontró el componente en el catálogo de Clever Cloud.");
             }
 
-            // Determinamos qué imagen se va a guardar
+            // Determinamos qué imagen se va a mantener o actualizar
             let nombreImagen = componenteActual.imagen; 
 
-            // Si el usuario subió una nueva foto en este envío
+            // Si el técnico adjuntó un nuevo archivo en este envío de edición
             if (req.file) {
                 nombreImagen = req.file.filename;
 
-                // Borramos la foto anterior del servidor si no era la por defecto
+                // Borramos la foto anterior del disco del servidor para no acumular basura
                 if (componenteActual.imagen && componenteActual.imagen !== 'default-hardware.png') {
                     const rutaFotoVieja = path.join(__dirname, '../../public/images/hardware', componenteActual.imagen);
                     if (fs.existsSync(rutaFotoVieja)) {
@@ -98,21 +102,28 @@ const hardwareController = {
                 }
             }
 
+            // Ejecutamos la actualización en MySQL
             await Hardware.update({
                 componente: req.body.componente.trim(),
                 categoria: req.body.categoria,
                 precio_costo: parseFloat(req.body.precio_costo),
                 precio_venta: parseFloat(req.body.precio_venta),
                 stock: parseInt(req.body.stock),
-                imagen: nombreImagen // Guardamos el nombre actualizado
+                imagen: nombreImagen
             }, {
-                where: { id_hardware: req.params.id }
+                // CRÍTICO: Asegúrate de que tu modelo use exactamente 'id_hardware' como clave primaria
+                where: { id_hardware: idComponente }
             });
+
+            // Redirección exitosa (Esto generará el código 302 en tu consola)
             res.redirect('/hardware');
+            
         } catch (error) {
-            res.send("Error al actualizar el componente: " + error.message);
+            // Si algo falla, ahora nos mostrará un mensaje más descriptivo en el navegador
+            res.send("Error crítico al procesar la actualización en la base de datos: " + error.message);
         }
     },
+
 
     // Eliminar componente físico del catálogo y borrar su imagen del disco
     delete: async (req, res) => {

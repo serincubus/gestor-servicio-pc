@@ -4,10 +4,19 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <body>
+  <!-- Fondo oscuro de respaldo para el Drawer -->
+  <div id="drawer-overlay" class="drawer-overlay"></div>
+
   <div class="container">
     <div class="contenedor-acciones-flex cabecera-hardware">
         <h1><%= title %></h1>
-        <a href="/" class="btn-ux btn-ux-editar">⬅️ Volver al Inicio</a>
+        <div style="display: flex; gap: 10px;">
+            <!-- BOTÓN QUE DISPARA EL DRAWER DE ALTA -->
+            <button type="button" id="btn-abrir-alta" class="btn-ux btn-ux-nuevo" style="padding: 10px 15px;">
+                ➕ Registrar Componente
+            </button>
+            <a href="/" class="btn-ux btn-ux-editar" style="padding: 10px 15px;">⬅️ Volver al Inicio</a>
+        </div>
     </div>
 
     <!-- Buscador de Repuestos -->
@@ -19,9 +28,12 @@
 
     <div class="contenedor-hardware">
         
-        <!-- COLUMNA IZQUIERDA: FORMULARIO DINÁMICO -->
-        <div class="bloque-formulario">
-            <h3><%= hardwareEditar ? '📝 Modificar Componente' : '➕ Agregar Componente' %></h3>
+        <!-- DRAWER LATERAL DERECHO (FORMULARIO OCULTO) -->
+        <div class="bloque-formulario hardware-drawer" id="hardware-drawer">
+            <div class="drawer-header">
+                <h3><%= hardwareEditar ? '📝 Modificar Componente' : '➕ Agregar Componente' %></h3>
+                <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer">✕</button>
+            </div>
             
             <form action="/hardware/<%= hardwareEditar ? 'editar/' + hardwareEditar.id_hardware : 'guardar' %>" 
                   method="POST" 
@@ -51,7 +63,6 @@
                 <label>Stock Inicial (Unidades):</label>
                 <input type="number" name="stock" required value="<%= hardwareEditar ? hardwareEditar.stock : '0' %>">
 
-                <!-- Vista previa de miniatura actual si estamos editando -->
                 <% if (hardwareEditar && hardwareEditar.imagen) { %>
                     <div class="contenedor-vista-previa-edicion">
                         <small class="txt-foto-actual">Foto actual:</small>
@@ -59,20 +70,20 @@
                     </div>
                 <% } %>
 
-                <!-- Input File para Multer -->
                 <label for="imagen-repuesto" class="label-subida-imagen">Foto del Componente (Opcional):</label>
                 <input type="file" name="imagen" id="imagen-repuesto" accept="image/png, image/jpeg, image/jpg, image/webp" class="input-file-hardware">
 
                 <button type="submit" class="btn-guardar-completo btn-registrar-hardware">
                     <%= hardwareEditar ? 'Guardar Cambios' : 'Registrar Componente' %>
                 </button>
+                
                 <% if(hardwareEditar) { %>
                     <a href="/hardware" class="btn-ux btn-ux-editar btn-cancelar-edicion-hw">Cancelar Edición</a>
                 <% } %>
             </form>
         </div>
 
-        <!-- COLUMNA DERECHA: TABLA DE INVENTARIO CON MINIATURAS -->
+        <!-- COLUMNA DERECHA COMPLETA: TABLA DE INVENTARIO -->
         <div class="bloque-tabla">
             <h3>Inventario en Taller</h3>
             <table class="tabla-hardware">
@@ -91,11 +102,8 @@
                     <% if(listaHardware.length > 0) { %>
                         <% listaHardware.forEach(item => { %>
                             <tr>
-                                <!-- Renderizado de miniatura subida o imagen por defecto -->
                                 <td class="celda-imagen-td">
-                                    <img src="/images/hardware/<%= item.imagen || 'default-hardware.png' %>" 
-                                         alt="<%= item.componente %>" 
-                                         class="img-miniatura-tabla">
+                                    <img src="/images/hardware/<%= item.imagen || 'default-hardware.png' %>" alt="<%= item.componente %>" class="img-miniatura-tabla">
                                 </td>
                                 <td><small class="badge-estado-inicio"><%= item.categoria %></small></td>
                                 <td><strong><%= item.componente %></strong></td>
@@ -126,7 +134,46 @@
     </div>
   </div>
 
-  <script>
+  <!-- CONTROL DE COMPORTAMIENTO INTERACTIVO DEL DRAWER -->
+ <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const drawer = document.getElementById('hardware-drawer');
+      const overlay = document.getElementById('drawer-overlay');
+      const btnAbrirAlta = document.getElementById('btn-abrir-alta');
+      const btnCerrar = document.getElementById('btn-cerrar-drawer');
+
+      // Evaluamos desde el servidor si la pantalla cargó en modo Edición o modo Alta estándar
+      const estaEditando = <%= hardwareEditar ? 'true' : 'false' %>;
+
+      // Función unificada para abrir el panel lateral
+      const abrirDrawer = () => {
+         drawer.classList.add('open');
+         overlay.classList.add('open');
+      };
+
+      // Función unificada para cerrar o abortar la acción actual
+      const cerrarDrawer = () => {
+         // SI ESTÁ EDITANDO: Al cerrar el panel o tocar el fondo, limpia la URL y restablece el título "Catálogo..."
+         if (estaEditando) {
+             window.location.href = '/hardware';
+         } else {
+             // SI ES UN ALTA COMÚN: Solo esconde el panel de forma visual sin recargar la página
+             drawer.classList.remove('open');
+             overlay.classList.remove('open');
+         }
+      };
+
+      // Escuchadores de eventos para clicks en la interfaz
+      if(btnAbrirAlta) btnAbrirAlta.addEventListener('click', abrirDrawer);
+      if(btnCerrar) btnCerrar.addEventListener('click', cerrarDrawer);
+      if(overlay) overlay.addEventListener('click', cerrarDrawer);
+
+      // CRÍTICO UX: Si el controlador mandó datos para editar, abrimos el Drawer automáticamente al cargar
+      if (estaEditando) {
+         abrirDrawer();
+      }
+    });
+
     function eliminarComponente(id) {
         Swal.fire({
             title: '¿Eliminar componente?',
