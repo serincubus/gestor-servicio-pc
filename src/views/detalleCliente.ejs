@@ -64,8 +64,90 @@
 
         <!-- SECCIÓN DE PRESUPUESTO CONTROLADA POR CLASES CSS -->
         <div id="seccion-presupuesto" class="seccion-presupuesto">
+
+                                                         <!-- ➕ SELECTOR MULTINIVEL DE HARDWARE: CATEGORÍAS PRIMERO (IDs Corregidos por Índice) -->
+            <div class="componente-hardware-seccion-ux" style="margin-bottom: 20px; position: relative;">
+                <label style="color: #4a5568; font-weight: bold; display: block; margin-bottom: 8px;">
+                    🛠️ Presupuestar Hardware del Catálogo:
+                </label>
+                
+                <!-- Botón Disparador Principal del Menú -->
+                <button type="button" id="btn-disparador-hardware" class="btn-ux" style="width: 100%; justify-content: space-between; background-color: #f7fafc; border: 1px solid #cbd5e0; color: #4a5568; padding: 10px 15px; font-size: 14px;">
+                    <span id="txt-disparador-actual">🔍 Elegir por Categoría...</span>
+                    <span>▼</span>
+                </button>
+
+                <!-- Persiana Desplegable Centralizada -->
+                <div id="dropdown-lista-hardware" class="dropdown-hardware-persiana" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 1000; max-height: 320px; overflow-y: auto; margin-top: 5px; padding: 5px 0;">
+                    
+                    <% if (typeof listaHardware !== 'undefined' && listaHardware.length > 0) { %>
+                        <% 
+                            // Agrupamos el hardware por categoría en la plantilla
+                            let gruposHardware = {};
+                            listaHardware.forEach(prod => {
+                                if (!gruposHardware[prod.categoria]) {
+                                    gruposHardware[prod.categoria] = [];
+                                }
+                                gruposHardware[prod.categoria].push(prod);
+                            });
+                        %>
+
+                        <!-- VISTA 1: LISTADO DE CATEGORÍAS (Se ve primero) -->
+                        <div id="panel-categorias-raiz">
+                            <% 
+                                let numCat = 0;
+                                for (let nombreCat in gruposHardware) { 
+                                    numCat++;
+                            %>
+                                <div class="item-categoria-click" onclick="mostrarSubmenuComponentes('panel-cat-<%= numCat %>')" style="padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #2d3748; font-weight: 600;">
+                                    <span>📦 <%= nombreCat %></span>
+                                    <span style="color: #3182ce; font-size: 12px;"><%= gruposHardware[nombreCat].length %> artículos ➡️</span>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <!-- VISTA 2: SUBMENÚS DE COMPONENTES POR CATEGORÍA (Ocultos inicialmente) -->
+                        <% 
+                            let numPanel = 0;
+                            for (let nombreCat in gruposHardware) { 
+                                numPanel++;
+                        %>
+                            <div id="panel-cat-<%= numPanel %>" class="panel-componentes-oculto" style="display: none;">
+                                <!-- Botón superior para volver al menú de categorías -->
+                                <div onclick="regresarAlMenuCategorias()" style="padding: 10px 15px; background-color: #ebf8ff; color: #2b6cb0; font-size: 13px; font-weight: bold; cursor: pointer; border-bottom: 1px solid #bee3f8; display: flex; align-items: center; gap: 5px;">
+                                    ⬅️ Volver a Categorías
+                                </div>
+                                
+                                <% gruposHardware[nombreCat].forEach(prod => { %>
+                                    <div style="padding: 12px 15px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                                        <div style="font-size: 13.5px; color: #2d3748;">
+                                            <strong><%= prod.componente %></strong>
+                                            <small style="display: block; color: #a0aec0; font-size: 11px; margin-top: 2px;">Disponibles: <%= prod.stock %> un.</small>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-weight: bold; color: #2b6cb0; font-size: 14px;">$<%= Number(prod.precio_venta).toFixed(2) %></span>
+                                            <button type="button" 
+                                                    class="btn-ux" 
+                                                    style="background-color: #3182ce; color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; white-space: nowrap; border:none; cursor:pointer;"
+                                                    onclick="sumarAlPresupuestoDirecto('<%= prod.precio_venta %>')">
+                                                ➕ Cargar
+                                            </button>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } %>
+
+                    <% } else { %>
+                        <div style="padding: 15px; text-align: center; color: #718096; font-style: italic; font-size: 14px;">No hay repuestos registrados en el catálogo.</div>
+                    <% } %>
+                </div>
+            </div>
+
+
+
             <label><strong>Presupuesto Total ($):</strong></label>
-            <input type="number" name="presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
+            <input type="number" name="presupuesto" id="input-presupuesto"  value="<%= cliente.presupuesto %>" step="0.01">
             
             <label><strong>Pago Parcial / Adelanto ($):</strong></label>
             <input type="number" name="pago_parcial" value="<%= cliente.pago_parcial %>" step="0.01">
@@ -91,19 +173,128 @@
             <a href="/" class="btn-link-cancelar">Volver al Inicio</a>
         </div>
 
-        <script>
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('actualizado') === 'true') {
-                Swal.fire({
-                    title: '¡Cambios Guardados!',
-                    text: 'La ficha del cliente se actualizó con éxito.',
-                    icon: 'success',
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'Genial'
-                }).then(() => {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                });
-            }
-        </script>
+       <script>
+    // 1. Oculta el listado principal y abre la lista de hardware de la categoría elegida
+    function mostrarSubmenuComponentes(idPanelCategoria) {
+        // Escondemos la raíz de categorías
+        document.getElementById('panel-categorias-raiz').style.display = 'none';
+        
+        // Escondemos cualquier otro submenú abierto por seguridad
+        const todosLosPaneles = document.querySelectorAll('.panel-componentes-oculto');
+        todosLosPaneles.forEach(p => p.style.display = 'none');
+        
+        // Mostramos el panel de componentes seleccionado
+        const panelDestino = document.getElementById(idPanelCategoria);
+        if (panelDestino) {
+            panelDestino.style.display = 'block';
+        }
+    }
+
+    // 2. Vuelve a mostrar las categorías iniciales y esconde el submenú de componentes
+    function regresarAlMenuCategorias() {
+        document.getElementById('panel-categorias-raiz').style.display = 'block';
+        const todosLosPaneles = document.querySelectorAll('.panel-componentes-oculto');
+        todosLosPaneles.forEach(p => p.style.display = 'none');
+    }
+
+    // 3. Inyecta el PVP del repuesto elegido al presupuesto total
+    function sumarAlPresupuestoDirecto(precio) {
+        const inputPresupuesto = document.getElementById('input-presupuesto');
+        if (inputPresupuesto) {
+            const precioRepuesto = parseFloat(precio) || 0;
+            const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
+            
+            const nuevoTotal = presupuestoActual + precioRepuesto;
+            inputPresupuesto.value = nuevoTotal.toFixed(2);
+            
+            // Notificación rápida flotante Toast (Corregida con sus comillas simples)
+            Swal.fire({
+                title: '¡Repuesto Sumado!',
+                text: 'Se añadieron $' + precioRepuesto.toFixed(2) + ' al presupuesto total.',
+                icon: 'success',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2200
+            });
+        }
+    }
+
+    // Inicialización de eventos al cargar el documento
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnDisparador = document.getElementById('btn-disparador-hardware');
+        const dropdownLista = document.getElementById('dropdown-lista-hardware');
+
+        if (btnDisparador && dropdownLista) {
+            // Abre y cierra la persiana principal al hacer clic
+            btnDisparador.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (dropdownLista.style.display === 'none' || dropdownLista.style.display === '') {
+                    dropdownLista.style.display = 'block';
+                    regresarAlMenuCategorias(); // Forzamos que siempre abra desde la raíz de categorías
+                } else {
+                    dropdownLista.style.display = 'none';
+                }
+            });
+
+            // Evita que al hacer clic dentro de la caja se cierre la persiana completa
+            dropdownLista.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            // Cierra el menú si se hace clic afuera del casillero
+            document.addEventListener('click', () => {
+                dropdownLista.style.display = 'none';
+            });
+        }
+
+        // ALERTA DE NUEVO REGISTRO GUARDADO EXCEPCIONAL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('actualizado') === 'true') {
+            Swal.fire({
+                title: '¡Cambios Guardados!',
+                text: 'La ficha del cliente se actualizó con éxito.',
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Genial'
+            }).then(() => {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            });
+        }
+    });
+
+    // 3. Inyecta el PVP del repuesto elegido al presupuesto total (Versión Blindada)
+    function sumarAlPresupuestoDirecto(precio) {
+        const inputPresupuesto = document.getElementById('input-presupuesto');
+        if (inputPresupuesto) {
+            // Convertimos el precio del hardware a flotante puro
+            const precioRepuesto = parseFloat(precio) || 0;
+            
+            // Leemos el valor actual del input (si está vacío o tiene texto inválido, toma 0)
+            const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
+            
+            // Realizamos la suma matemática relacional
+            const nuevoTotal = presupuestoActual + precioRepuesto;
+            
+            // Inyectamos el resultado formateado a dos decimales (.toFixed)
+            inputPresupuesto.value = nuevoTotal.toFixed(2);
+            
+            // Notificación rápida flotante Toast de éxito
+            Swal.fire({
+                title: '¡Repuesto Sumado!',
+                text: 'Se añadieron $' + precioRepuesto.toFixed(2) + ' al presupuesto total.',
+                icon: 'success',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2200
+            });
+        } else {
+            console.error("Error UX: No se encontró el input con id='input-presupuesto' en la pantalla.");
+        }
+    }
+</script>
+
+
     </form>
 </div>

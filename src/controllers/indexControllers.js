@@ -158,17 +158,29 @@ const indexController = {
 
 
     // 3. Muestra la ficha de detalle de un ticket específico
+        // 7. Muestra la ficha de detalle de un ticket específico (Modificado para traer repuestos)
+        // 7. Muestra la ficha de detalle de un ticket específico (Solución de visualización total de stock)
     detalle: async (req, res) => {
         try {
-            const ticket = await Ticket.findByPk(req.params.id_cliente, { // Nota: req.params.id_cliente sigue viniendo de tus rutas
+            const ticket = await Ticket.findByPk(req.params.id_cliente, { 
                 include: [{ model: Cliente, as: 'cliente' }],
                 raw: true,
                 nest: true
             });
             
-            // Renombramos temporalmente para que tu vista detalleCliente.ejs siga funcionando sin romper variables
+            // Importamos el modelo y la conexión directa a db.js
+            const HardwareModel = require('../database/models/Hardware');
+            const db = require('../database/db');
+            const Hardware = HardwareModel(db, require('sequelize').DataTypes);
+            
+            // 🔍 EXPLICACIÓN: Quitamos el "where: { stock... }" para que traiga TODO el inventario de Clever Cloud
+            const repuestosDisponibles = await Hardware.findAll({
+                order: [['categoria', 'ASC'], ['componente', 'ASC']], // Ordena alfabéticamente por grupos
+                raw: true
+            });
+            
             const mapeoClienteCompatibilidad = {
-                id_cliente: ticket.id_ticket, // Para la acción del formulario
+                id_cliente: ticket.id_ticket,
                 nombre: ticket.cliente.nombre,
                 telefono: ticket.cliente.telefono,
                 equipo: ticket.equipo,
@@ -181,11 +193,17 @@ const indexController = {
                 createdAt: ticket.createdAt
             };
 
-            res.render('detalleCliente', { title: 'Detalle del Ticket', cliente: mapeoClienteCompatibilidad });
+            res.render('detalleCliente', { 
+                title: 'Detalle del Ticket', 
+                cliente: mapeoClienteCompatibilidad,
+                listaHardware: repuestosDisponibles // Ahora viajan TODOS los componentes con o sin stock
+            });
         } catch (error) {
-            res.send("Error al cargar detalle: " + error.message);
+            res.send("Error al cargar detalle con catálogo completo: " + error.message);
         }
     },
+
+
 
     // 4. Actualiza los estados financieros del ticket
     updateStatus: async (req, res) => {
