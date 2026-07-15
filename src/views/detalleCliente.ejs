@@ -1,51 +1,34 @@
 <%- include('./partials/head.ejs') %>
 <!-- Vinculamos la hoja de estilos externa limpia -->
+<link rel='stylesheet' href='/stylesheets/detalleCliente.css' />
 <!-- Importación robusta de SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<div class="container-detalle">
+<div class="container-details container-detalle">
 
-        <p class="ficha-campo" style="background-color: #e2e8f0; padding: 8px; border-radius: 4px; display: inline-block; font-weight: bold; color: #007bff; margin-bottom: 15px;">
-            🎫 Código de Seguimiento: <%= cliente.codigo_seguimiento %>
-        </p>
+    <p class="badge-codigo-seguimiento">
+        🎫 Código de Seguimiento: <%= cliente.codigo_seguimiento %>
+    </p>
     
     <div class="ficha-beneficiario">
         <h2>Ficha de Ingreso #<%= cliente.id_cliente %></h2>
         <p class="ficha-campo"><strong>Beneficiario / Cliente:</strong> <%= cliente.nombre %></p>
-      <p class="ficha-campo">
-    <strong>Teléfono de Contacto:</strong> <%= cliente.telefono ? cliente.telefono : 'No registrado' %>
-    
-    <% if (cliente.telefono) { %>
-        <% 
-            // 1. Removemos todo lo que no sea número
-            // 1. Removemos espacios y guiones
-    let telefonoLimpio = cliente.telefono.replace(/[^0-9]/g, '');
-    
-    // 2. Si no empieza con 54, se lo agregamos automáticamente (asumiendo formato celular 549...)
-    if (!telefonoLimpio.startsWith('54')) {
-        // Si el número empieza con 11 o 15, le anteponemos el prefijo de celular de Argentina
-        telefonoLimpio = '549' + telefonoLimpio;
-    }
-
-            // 3. Estructuracion del mensaje de la orden
-           let mensajeWhatsApp = `Hola ${cliente.nombre}, te avisamos del servicio técnico que tu equipo (${cliente.equipo}) ya ingresó en reparación en nuestro taller. Podés realizar el seguimiento en tiempo real con tu Número de Ticket: ${cliente.codigo_seguimiento} ingresando acá: http://localhost:3000/consulta`;
-            
-            // 4. Codificando el texto de forma segura
-            let mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
-        %>
-        
-       
-<a href="https://wa.me/<%= telefonoLimpio %>?text=<%= mensajeCodificado %>" 
-   target="_blank" 
-   rel="noopener noreferrer"
-   class="btn-whatsapp" 
-   title="Notificar ingreso al cliente por WhatsApp">
-    💬 Enviar Ticket por WhatsApp
-</a>
-
-    <% } %>
-</p>
-
+        <p class="ficha-campo">
+            <strong>Teléfono de Contacto:</strong> <%= cliente.telefono ? cliente.telefono : 'No registrado' %>
+            <% if (cliente.telefono) { %>
+                <% 
+                    let telefonoLimpio = cliente.telefono.replace(/[^0-9]/g, '');
+                    if (!telefonoLimpio.startsWith('54')) {
+                        telefonoLimpio = '549' + telefonoLimpio;
+                    }
+                    let mensajeWhatsApp = `Hola ${cliente.nombre}, te avisamos del servicio técnico que tu equipo (${cliente.equipo}) ya ingresó en reparación en nuestro taller. Podés realizar el seguimiento en tiempo real con tu Número de Ticket: ${cliente.codigo_seguimiento} ingresando acá: http://localhost:3000/consulta`;
+                    let mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
+                %>
+                <a href="https://wa.me<%= telefonoLimpio %>?text=<%= mensajeCodificado %>" target="_blank" rel="noopener noreferrer" class="btn-whatsapp" title="Notificar ingreso al cliente por WhatsApp">
+                    💬 Enviar Ticket por WhatsApp
+                </a>
+            <% } %>
+        </p>
 
         <p class="ficha-campo"><strong>Equipo a Reparar:</strong> <%= cliente.equipo %></p>
         <p class="ficha-campo"><strong>Falla Reportada:</strong> <%= cliente.falla %></p>
@@ -64,25 +47,19 @@
 
         <!-- SECCIÓN DE PRESUPUESTO CONTROLADA POR CLASES CSS -->
         <div id="seccion-presupuesto" class="seccion-presupuesto">
-
-                                                         <!-- ➕ SELECTOR MULTINIVEL DE HARDWARE: CATEGORÍAS PRIMERO (IDs Corregidos por Índice) -->
-            <div class="componente-hardware-seccion-ux" style="margin-bottom: 20px; position: relative;">
-                <label style="color: #4a5568; font-weight: bold; display: block; margin-bottom: 8px;">
-                    🛠️ Presupuestar Hardware del Catálogo:
-                </label>
-                
+            <!-- SELECTOR MULTINIVEL DE HARDWARE: CATEGORÍAS PRIMERO -->
+            <div class="componente-hardware-seccion-ux">
+                <label>🛠️ Presupuestar Hardware del Catálogo:</label>
                 <!-- Botón Disparador Principal del Menú -->
-                <button type="button" id="btn-disparador-hardware" class="btn-ux" style="width: 100%; justify-content: space-between; background-color: #f7fafc; border: 1px solid #cbd5e0; color: #4a5568; padding: 10px 15px; font-size: 14px;">
+                <button type="button" id="btn-disparador-hardware" class="btn-ux-disparador">
                     <span id="txt-disparador-actual">🔍 Elegir por Categoría...</span>
                     <span>▼</span>
                 </button>
 
                 <!-- Persiana Desplegable Centralizada -->
-                <div id="dropdown-lista-hardware" class="dropdown-hardware-persiana" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 1000; max-height: 320px; overflow-y: auto; margin-top: 5px; padding: 5px 0;">
-                    
+                <div id="dropdown-lista-hardware" class="dropdown-hardware-persiana">
                     <% if (typeof listaHardware !== 'undefined' && listaHardware.length > 0) { %>
                         <% 
-                            // Agrupamos el hardware por categoría en la plantilla
                             let gruposHardware = {};
                             listaHardware.forEach(prod => {
                                 if (!gruposHardware[prod.categoria]) {
@@ -99,37 +76,33 @@
                                 for (let nombreCat in gruposHardware) { 
                                     numCat++;
                             %>
-                                <div class="item-categoria-click" onclick="mostrarSubmenuComponentes('panel-cat-<%= numCat %>')" style="padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #2d3748; font-weight: 600;">
+                                <div class="item-categoria-click" onclick="mostrarSubmenuComponentes('panel-cat-<%= numCat %>')">
                                     <span>📦 <%= nombreCat %></span>
-                                    <span style="color: #3182ce; font-size: 12px;"><%= gruposHardware[nombreCat].length %> artículos ➡️</span>
+                                    <span class="badge-conteo-articulos"><%= gruposHardware[nombreCat].length %> artículos ➡️</span>
                                 </div>
                             <% } %>
                         </div>
 
-                        <!-- VISTA 2: SUBMENÚS DE COMPONENTES POR CATEGORÍA (Ocultos inicialmente) -->
+                        <!-- VISTA 2: SUBMENÚS DE COMPONENTES POR CATEGORÍA -->
                         <% 
                             let numPanel = 0;
                             for (let nombreCat in gruposHardware) { 
                                 numPanel++;
                         %>
-                            <div id="panel-cat-<%= numPanel %>" class="panel-componentes-oculto" style="display: none;">
+                            <div id="panel-cat-<%= numPanel %>" class="panel-componentes-oculto">
                                 <!-- Botón superior para volver al menú de categorías -->
-                                <div onclick="regresarAlMenuCategorias()" style="padding: 10px 15px; background-color: #ebf8ff; color: #2b6cb0; font-size: 13px; font-weight: bold; cursor: pointer; border-bottom: 1px solid #bee3f8; display: flex; align-items: center; gap: 5px;">
+                                <div onclick="regresarAlMenuCategorias()" class="btn-volver-categorias">
                                     ⬅️ Volver a Categorías
                                 </div>
-                                
                                 <% gruposHardware[nombreCat].forEach(prod => { %>
-                                    <div style="padding: 12px 15px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
-                                        <div style="font-size: 13.5px; color: #2d3748;">
+                                    <div class="fila-componente-disponible">
+                                        <div class="txt-componente-info">
                                             <strong><%= prod.componente %></strong>
-                                            <small style="display: block; color: #a0aec0; font-size: 11px; margin-top: 2px;">Disponibles: <%= prod.stock %> un.</small>
+                                            <small>Disponibles: <%= prod.stock %> un.</small>
                                         </div>
-                                        <div style="display: flex; align-items: center; gap: 10px;">
-                                            <span style="font-weight: bold; color: #2b6cb0; font-size: 14px;">$<%= Number(prod.precio_venta).toFixed(2) %></span>
-                                            <button type="button" 
-                                                    class="btn-ux" 
-                                                    style="background-color: #3182ce; color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; white-space: nowrap; border:none; cursor:pointer;"
-                                                    onclick="sumarAlPresupuestoDirecto('<%= prod.precio_venta %>')">
+                                        <div class="wrapper-precio-carga">
+                                            <span class="txt-precio-venta-hardware">$<%= Number(prod.precio_venta).toFixed(2) %></span>
+                                            <button type="button" class="btn-cargar-hardware-presupuesto" onclick="sumarAlPresupuestoDirecto('<%= prod.precio_venta %>')">
                                                 ➕ Cargar
                                             </button>
                                         </div>
@@ -137,17 +110,23 @@
                                 <% }) %>
                             </div>
                         <% } %>
-
                     <% } else { %>
-                        <div style="padding: 15px; text-align: center; color: #718096; font-style: italic; font-size: 14px;">No hay repuestos registrados en el catálogo.</div>
+                        <div class="txt-catalogo-vacio">No hay repuestos registrados en el catálogo.</div>
                     <% } %>
                 </div>
             </div>
+                        <!-- ➕ NUEVA SECCIÓN: LISTA DINÁMICA DE REPUESTOS SELECCIONADOS -->
+            <div id="contenedor-items-cargados" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Las tarjetas de hardware elegido se inyectarán aquí mediante JavaScript -->
+            </div>
 
+            <!-- Tus casilleros de Presupuesto Total y Adelanto permanecen abajo -->
+            <label><strong>Presupuesto Total ($):</strong></label>
+            <input type="number" name="presupuesto" id="input-presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
 
 
             <label><strong>Presupuesto Total ($):</strong></label>
-            <input type="number" name="presupuesto" id="input-presupuesto"  value="<%= cliente.presupuesto %>" step="0.01">
+            <input type="number" name="presupuesto" id="input-presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
             
             <label><strong>Pago Parcial / Adelanto ($):</strong></label>
             <input type="number" name="pago_parcial" value="<%= cliente.pago_parcial %>" step="0.01">
@@ -162,28 +141,25 @@
                 <% } %>
             </div>
             
-            <label>
-                <input type="checkbox" name="confirmado" value="true" <%= cliente.confirmado ? 'checked' : '' %>> 
-                ¿Cliente confirmó el trabajo?
+            <label class="label-confirmado-checkbox">
+                <input type="checkbox" name="confirmado" value="true" <%= cliente.confirmado ? 'checked' : '' %>> ¿Cliente confirmó el trabajo?
             </label>
         </div>
-        
+
         <div class="botones-container">
             <button type="submit" class="btn-guardar">Guardar Cambios</button>
             <a href="/" class="btn-link-cancelar">Volver al Inicio</a>
         </div>
+    </form>
+</div>
 
-       <script>
+<!-- SECCIÓN FINAL DE CONTROL JAVASCRIPT SANITIZADA -->
+<script>
     // 1. Oculta el listado principal y abre la lista de hardware de la categoría elegida
     function mostrarSubmenuComponentes(idPanelCategoria) {
-        // Escondemos la raíz de categorías
         document.getElementById('panel-categorias-raiz').style.display = 'none';
-        
-        // Escondemos cualquier otro submenú abierto por seguridad
         const todosLosPaneles = document.querySelectorAll('.panel-componentes-oculto');
         todosLosPaneles.forEach(p => p.style.display = 'none');
-        
-        // Mostramos el panel de componentes seleccionado
         const panelDestino = document.getElementById(idPanelCategoria);
         if (panelDestino) {
             panelDestino.style.display = 'block';
@@ -197,20 +173,48 @@
         todosLosPaneles.forEach(p => p.style.display = 'none');
     }
 
-    // 3. Inyecta el PVP del repuesto elegido al presupuesto total
-    function sumarAlPresupuestoDirecto(precio) {
+    // 3. Modificado: Inyecta el PVP del repuesto elegido, crea la tarjeta visual y actualiza el total
+    function sumarAlPresupuestoDirecto(precio, nombreComponente) {
         const inputPresupuesto = document.getElementById('input-presupuesto');
-        if (inputPresupuesto) {
+        const contenedorItems = document.getElementById('contenedor-items-cargados');
+        
+        if (inputPresupuesto && contenedorItems) {
             const precioRepuesto = parseFloat(precio) || 0;
             const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
             
+            // A. Sumamos el valor monetario en el input
             const nuevoTotal = presupuestoActual + precioRepuesto;
             inputPresupuesto.value = nuevoTotal.toFixed(2);
             
-            // Notificación rápida flotante Toast (Corregida con sus comillas simples)
+            // B. Creamos un ID único temporal para esta tarjeta para poder removerla luego
+            const idItemUnico = 'item-hw-' + Date.now() + Math.floor(Math.random() * 100);
+            
+            // C. Creamos la tarjeta visual con el mismo tamaño y estilo de tus campos de texto
+            const tarjetaHardware = document.createElement('div');
+            tarjetaHardware.id = idItemUnico;
+            tarjetaHardware.className = 'tarjeta-item-agregado';
+            tarjetaHardware.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: #f8fafc; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; color: #2d3748;";
+            
+            // Estructuramos el contenido interno de la tarjeta (Componente + Valor + Botón de Remover)
+            tarjetaHardware.innerHTML = `
+                <div>
+                    ⚙️ <strong>${nombreComponente}</strong>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-weight: bold; color: #2b6cb0;">$${precioRepuesto.toFixed(2)}</span>
+                    <button type="button" class="btn-eliminar-flex" style="padding: 4px 8px; font-size: 11px; border-radius: 4px; cursor: pointer;" onclick="removerHardwareDelPresupuesto('${idItemUnico}', ${precioRepuesto})">
+                        ❌ Quitar
+                    </button>
+                </div>
+            `;
+            
+            // D. Inyectamos la tarjeta en el bloque (se van apilando una debajo de la otra)
+            contenedorItems.appendChild(tarjetaHardware);
+            
+            // Notificación rápida flotante Toast
             Swal.fire({
-                title: '¡Repuesto Sumado!',
-                text: 'Se añadieron $' + precioRepuesto.toFixed(2) + ' al presupuesto total.',
+                title: '¡Repuesto Añadido!',
+                text: `Se agregó ${nombreComponente} al presupuesto.`,
                 icon: 'success',
                 toast: true,
                 position: 'top-end',
@@ -220,35 +224,66 @@
         }
     }
 
-    // Inicialización de eventos al cargar el documento
+    // 4. NUEVO: Remueve la tarjeta elegida de la pantalla y descuenta el valor del presupuesto total
+    function removerHardwareDelPresupuesto(idTarjeta, precioARestar) {
+        const tarjeta = document.getElementById(idTarjeta);
+        const inputPresupuesto = document.getElementById('input-presupuesto');
+        
+        if (tarjeta && inputPresupuesto) {
+            const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
+            
+            // Restamos el valor matemático (asegurando que no quede en negativo)
+            let nuevoTotal = presupuestoActual - parseFloat(precioARestar);
+            if (nuevoTotal < 0) nuevoTotal = 0;
+            
+            inputPresupuesto.value = nuevoTotal.toFixed(2);
+            
+            // Sacamos la tarjeta de la pantalla de forma animada
+            tarjeta.style.transition = 'all 0.2s ease';
+            tarjeta.style.opacity = '0';
+            tarjeta.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                tarjeta.remove();
+            }, 200);
+            
+            // Toast de aviso
+            Swal.fire({
+                title: 'Repuesto Quitado',
+                text: 'El valor se descontó del presupuesto total.',
+                icon: 'info',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        }
+    }
+
+    // Inicialización de eventos dinámicos al cargar el documento
     document.addEventListener('DOMContentLoaded', () => {
         const btnDisparador = document.getElementById('btn-disparador-hardware');
         const dropdownLista = document.getElementById('dropdown-lista-hardware');
 
         if (btnDisparador && dropdownLista) {
-            // Abre y cierra la persiana principal al hacer clic
             btnDisparador.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (dropdownLista.style.display === 'none' || dropdownLista.style.display === '') {
                     dropdownLista.style.display = 'block';
-                    regresarAlMenuCategorias(); // Forzamos que siempre abra desde la raíz de categorías
+                    regresarAlMenuCategorias();
                 } else {
                     dropdownLista.style.display = 'none';
                 }
             });
 
-            // Evita que al hacer clic dentro de la caja se cierre la persiana completa
             dropdownLista.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
 
-            // Cierra el menú si se hace clic afuera del casillero
             document.addEventListener('click', () => {
                 dropdownLista.style.display = 'none';
             });
         }
 
-        // ALERTA DE NUEVO REGISTRO GUARDADO EXCEPCIONAL
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('actualizado') === 'true') {
             Swal.fire({
@@ -262,39 +297,7 @@
             });
         }
     });
-
-    // 3. Inyecta el PVP del repuesto elegido al presupuesto total (Versión Blindada)
-    function sumarAlPresupuestoDirecto(precio) {
-        const inputPresupuesto = document.getElementById('input-presupuesto');
-        if (inputPresupuesto) {
-            // Convertimos el precio del hardware a flotante puro
-            const precioRepuesto = parseFloat(precio) || 0;
-            
-            // Leemos el valor actual del input (si está vacío o tiene texto inválido, toma 0)
-            const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
-            
-            // Realizamos la suma matemática relacional
-            const nuevoTotal = presupuestoActual + precioRepuesto;
-            
-            // Inyectamos el resultado formateado a dos decimales (.toFixed)
-            inputPresupuesto.value = nuevoTotal.toFixed(2);
-            
-            // Notificación rápida flotante Toast de éxito
-            Swal.fire({
-                title: '¡Repuesto Sumado!',
-                text: 'Se añadieron $' + precioRepuesto.toFixed(2) + ' al presupuesto total.',
-                icon: 'success',
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 2200
-            });
-        } else {
-            console.error("Error UX: No se encontró el input con id='input-presupuesto' en la pantalla.");
-        }
-    }
 </script>
 
-
-    </form>
-</div>
+</body>
+</html>

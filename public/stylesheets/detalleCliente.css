@@ -1,10 +1,18 @@
-/* public/stylesheets/detalleCliente.css */
-
 .container-detalle {
     max-width: 650px;
     margin: 30px auto;
     padding: 0 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.badge-codigo-seguimiento {
+    background-color: #e2e8f0; 
+    padding: 8px; 
+    border-radius: 4px; 
+    display: inline-block; 
+    font-weight: bold; 
+    color: #007bff; 
+    margin-bottom: 15px;
 }
 
 /* Ficha de Información del Cliente */
@@ -76,6 +84,11 @@ form label {
     transform: scale(1.1);
 }
 
+.label-confirmado-checkbox {
+    margin-top: 15px; 
+    display: block;
+}
+
 /* Cuadro de Estado de Cuenta Dinámico */
 .estado-cuenta {
     margin: 20px 0;
@@ -142,7 +155,7 @@ form label {
     color: #2d3748;
 }
 
-/*boton whatsapp*/
+/* Boton whatsapp */
 .btn-whatsapp {
     display: inline-flex;
     align-items: center;
@@ -168,5 +181,177 @@ form label {
     transform: translateY(0);
 }
 
+/* --- SECTOR MULTINIVEL DE HARDWARE UX --- */
+.componente-hardware-seccion-ux {
+    margin-bottom: 20px;
+    position: relative;
+}
 
+/* Botón disparador principal */
+.btn-ux-disparador {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f7fafc;
+    border: 1px solid #cbd5e0;
+    color: #4a5568;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    transition: background-color 0.15s, border-color 0.15s;
+}
 
+.btn-ux-disparador:hover {
+    background-color: #edf2f7;
+    border-color: #a0aec0;
+}
+
+/* Persiana desplegable principal */
+.dropdown-hardware-persiana {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 320px;
+    overflow-y: auto;
+    margin-top: 5px;
+    padding: 5px 0;
+}
+
+/* Filas del listado de categorías */
+.item-categoria-click {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #edf2f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #2d3748;
+    font-weight: 600;
+    transition: background-color 0.15s;
+}
+
+.item-categoria-click:hover {
+    background-color: #f7fafc;
+    color: #3182ce;
+}
+
+.item-categoria-click:last-child {
+    border-bottom: none;
+}
+
+.badge-conteo-articulos {
+    color: #3182ce; 
+    font-size: 12px;
+}
+
+/* Contenedores ocultos de componentes */
+.panel-componentes-oculto {
+    display: none;
+}
+
+/* Botón superior de retorno */
+.btn-volver-categorias {
+    padding: 10px 15px;
+    background-color: #ebf8ff;
+    color: #2b6cb0;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    border-bottom: 1px solid #bee3f8;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+    transition: background-color 0.15s;
+}
+
+.btn-volver-categorias:hover {
+    background-color: #bee3f8;
+}
+
+/* Filas internas de componentes individuales */
+.fila-componente-disponible {
+    padding: 12px 15px;
+    border-bottom: 1px solid #edf2f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    transition: background-color 0.15s;
+}
+
+.fila-componente-disponible:hover {
+    background-color: #fcfdfd;
+}
+
+.fila-componente-disponible:last-child {
+    border-bottom: none;
+}
+
+.txt-componente-info {
+    text-align: left;
+    font-size: 13.5px;
+    color: #2d3748;
+}
+
+.txt-componente-info small {
+    display: block;
+    color: #a0aec0;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.wrapper-precio-carga {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.txt-precio-venta-hardware {
+    font-weight: bold;
+    color: #2b6cb0;
+    font-size: 14px;
+}
+
+/* Botón azul cargar repuesto */
+.btn-cargar-hardware-presupuesto {
+    background-color: #3182ce;
+    color: white;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(49, 130, 206, 0.2);
+    transition: background-color 0.15s;
+}
+
+.btn-cargar-hardware-presupuesto:hover {
+    background-color: #2b6cb0;
+}
+
+.btn-cargar-hardware-presupuesto:active {
+    transform: scale(0.97);
+}
+
+.txt-catalogo-vacio {
+    padding: 15px;
+    text-align: center;
+    color: #718096;
+    font-style: italic;
+    font-size: 14px;
+}
