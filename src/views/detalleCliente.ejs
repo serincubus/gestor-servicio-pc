@@ -102,7 +102,12 @@
                                         </div>
                                         <div class="wrapper-precio-carga">
                                             <span class="txt-precio-venta-hardware">$<%= Number(prod.precio_venta).toFixed(2) %></span>
-                                            <button type="button" class="btn-cargar-hardware-presupuesto" onclick="sumarAlPresupuestoDirecto('<%= prod.precio_venta %>')">
+                                            <button type="button" 
+                                                    class="btn-cargar-hardware-presupuesto" 
+                                                    data-precio="<%= prod.precio_venta %>"
+                                                    data-nombre="<%= prod.componente %>"
+                                                    style="background-color: #3182ce; color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; white-space: nowrap; border:none; cursor:pointer; font-weight: bold;"
+                                                    onclick="sumarAlPresupuestoDirecto(this)">
                                                 ➕ Cargar
                                             </button>
                                         </div>
@@ -121,10 +126,7 @@
             </div>
 
             <!-- Tus casilleros de Presupuesto Total y Adelanto permanecen abajo -->
-            <label><strong>Presupuesto Total ($):</strong></label>
-            <input type="number" name="presupuesto" id="input-presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
-
-
+           
             <label><strong>Presupuesto Total ($):</strong></label>
             <input type="number" name="presupuesto" id="input-presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
             
@@ -173,15 +175,25 @@
         todosLosPaneles.forEach(p => p.style.display = 'none');
     }
 
-    // 3. Modificado: Inyecta el PVP del repuesto elegido, crea la tarjeta visual y actualiza el total
-    function sumarAlPresupuestoDirecto(precio, nombreComponente) {
+   // 3. Inyecta el PVP, lee los atributos de datos y crea la tarjeta con nombre e importe
+    function sumarAlPresupuestoDirecto(elementoBoton) {
         const inputPresupuesto = document.getElementById('input-presupuesto');
         const contenedorItems = document.getElementById('contenedor-items-cargados');
         
-        if (inputPresupuesto && contenedorItems) {
-            const precioRepuesto = parseFloat(precio) || 0;
-            const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
+        if (inputPresupuesto && contenedorItems && elementoBoton) {
+            // Extraemos los datos guardados en el botón de forma limpia
+            const precioRepuesto = parseFloat(elementoBoton.getAttribute('data-precio')) || 0;
+            const nombreComponente = elementoBoton.getAttribute('data-nombre');
             
+            // Imprime en la consola del navegador para diagnóstico técnico (F12)
+            console.log("Datos capturados al hacer clic:", { nombre: nombreComponente, precio: precioRepuesto });
+
+            // Si el nombre llega a fallar por la caché, le inyectamos una descripción genérica con su precio
+            const nombreFinal = nombreComponente && nombreComponente !== 'undefined' ? nombreComponente : 'Componente de Catálogo';
+
+            // Leemos el valor monetario actual de la orden
+             const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
+
             // A. Sumamos el valor monetario en el input
             const nuevoTotal = presupuestoActual + precioRepuesto;
             inputPresupuesto.value = nuevoTotal.toFixed(2);
@@ -198,7 +210,7 @@
             // Estructuramos el contenido interno de la tarjeta (Componente + Valor + Botón de Remover)
             tarjetaHardware.innerHTML = `
                 <div>
-                    ⚙️ <strong>${nombreComponente}</strong>
+                    ⚙️ <strong>${nombreFinal}</strong>
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <span style="font-weight: bold; color: #2b6cb0;">$${precioRepuesto.toFixed(2)}</span>
@@ -214,7 +226,7 @@
             // Notificación rápida flotante Toast
             Swal.fire({
                 title: '¡Repuesto Añadido!',
-                text: `Se agregó ${nombreComponente} al presupuesto.`,
+                text: `Se agregó ${nombreFinal} al presupuesto.`,
                 icon: 'success',
                 toast: true,
                 position: 'top-end',
