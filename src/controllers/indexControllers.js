@@ -157,30 +157,35 @@ const indexController = {
 
 
 
-    // 3. Muestra la ficha de detalle de un ticket específico
-        // 7. Muestra la ficha de detalle de un ticket específico (Modificado para traer repuestos)
-        // 7. Muestra la ficha de detalle de un ticket específico (Solución de visualización total de stock)
+    // 7. Muestra la ficha de detalle (Modificado para leer componentes serializados)
     detalle: async (req, res) => {
         try {
             const ticket = await Ticket.findByPk(req.params.id_cliente, { 
                 include: [{ model: Cliente, as: 'cliente' }],
-                raw: true,
                 nest: true
             });
             
-            // Importamos el modelo y la conexión directa a db.js
+            // Requerimos e inicializamos el modelo Hardware apuntando a db.js
             const HardwareModel = require('../database/models/Hardware');
             const db = require('../database/db');
             const Hardware = HardwareModel(db, require('sequelize').DataTypes);
             
-            // 🔍 EXPLICACIÓN: Quitamos el "where: { stock... }" para que traiga TODO el inventario de Clever Cloud
             const repuestosDisponibles = await Hardware.findAll({
-                order: [['categoria', 'ASC'], ['componente', 'ASC']], // Ordena alfabéticamente por grupos
+                order: [['categoria', 'ASC'], ['componente', 'ASC']],
                 raw: true
             });
+
+            // Convertimos la cadena de texto JSON almacenada de vuelta en un array de JavaScript
+            let componentesGuardados = [];
+            try {
+                componentesGuardados = JSON.parse(ticket.componentes_json || '[]');
+            } catch (e) {
+                componentesGuardados = [];
+            }
             
             const mapeoClienteCompatibilidad = {
-                id_cliente: ticket.id_ticket,
+                id_ticket: ticket.id_ticket, // Clave primaria real del ticket
+                id_cliente: ticket.id_ticket, // Mantiene compatibilidad con tus rutas
                 nombre: ticket.cliente.nombre,
                 telefono: ticket.cliente.telefono,
                 equipo: ticket.equipo,
@@ -196,16 +201,17 @@ const indexController = {
             res.render('detalleCliente', { 
                 title: 'Detalle del Ticket', 
                 cliente: mapeoClienteCompatibilidad,
-                listaHardware: repuestosDisponibles // Ahora viajan TODOS los componentes con o sin stock
+                listaHardware: repuestosDisponibles,
+                componentesGuardados: componentesGuardados // ⬅️ Enviamos los repuestos fijos a la vista
             });
         } catch (error) {
-            res.send("Error al cargar detalle con catálogo completo: " + error.message);
+            res.send("Error al cargar detalle con persistencia: " + error.message);
         }
     },
 
 
 
-    // 4. Actualiza los estados financieros del ticket
+   // 8. Actualiza los estados financieros del ticket y guarda los repuestos
     updateStatus: async (req, res) => {
         try {
             let fechaEgreso = null;
@@ -213,20 +219,23 @@ const indexController = {
                 fechaEgreso = new Date().toISOString().slice(0, 10); 
             }
 
-            // Actualizamos la tabla de TICKETS, no la de clientes
+            // Capturamos el array de componentes oculto enviado por el formulario
+            let listaComponentesInput = req.body.componentes_array_json || '[]';
+
             await Ticket.update({
                 estado: req.body.estado,
                 presupuesto: req.body.presupuesto,
                 pago_parcial: req.body.pago_parcial, 
                 confirmado: req.body.confirmado === 'true' || req.body.confirmado === true,
-                fecha_egreso: fechaEgreso 
+                fecha_egreso: fechaEgreso,
+                componentes_json: listaComponentesInput // ⬅️ Guardamos la lista serializada en MySQL
             }, {
-                where: { id_ticket: req.params.id_cliente } // Tu parámetro de ruta se asocia al ID del ticket
+                where: { id_ticket: req.params.id_cliente } 
             });
             
-            res.redirect('/detalle/' + req.params.id_cliente + '?actualizado=true');
+            res.redirect(`/detalle/${req.params.id_cliente}?actualizado=true`);
         } catch (error) {
-            res.send("Error al actualizar estado del ticket: " + error.message);
+            res.send("Error al guardar estado y componentes: " + error.message);
         }
     },
 

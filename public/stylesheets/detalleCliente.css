@@ -355,3 +355,161 @@ form label {
     font-style: italic;
     font-size: 14px;
 }
+
+/* public/stylesheets/detalleCliente.css - Nuevas clases agregadas del script */
+
+/* Contenedor dinámico de las tarjetas apiladas */
+#contenedor-items-cargados {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Tarjeta de ítem agregado: Réplica exacta en proporciones de tus inputs de presupuesto */
+.tarjeta-item-agregado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    width: 100%;
+    color: #2d3748;
+    margin-top: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    transition: all 0.2s ease-in-out;
+}
+
+/* Clase de salida gatillada por JS para desvanecer el bloque */
+.tarjeta-item-agregado.fade-out {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+/* Botón rojo Quitar */
+.btn-quitar-item {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #fff5f5;
+    color: #c53030;
+    border: 1px solid #fed7d7;
+    font-weight: bold;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-quitar-item:hover {
+    background-color: #c53030;
+    color: #ffffff;
+}
+
+.btn-quitar-item:active {
+    transform: scale(0.95);
+}
+
+/* public/stylesheets/detalleCliente.css - Módulo de Remito de Impresión */
+
+.btn-remito-print {
+    background-color: #4a5568;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-remito-print:hover {
+    background-color: #2d3748;
+}
+
+/* 🖨️ REGLAS EXCLUSIVAS PARA LA HOJA DE PAPEL / GUARDADO EN PDF */
+@media print {
+    /* 1. Ocultamos el fondo general de la web */
+    body {
+        background: #ffffff !important;
+        padding: 0 !important;
+    }
+    
+    .container-details, .container-detalle {
+        max-width: 100% !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    /* OCTULTAMOS SOLO LOS CONTROLES DEL SISTEMA (Botones, selectores y cruz de borrar) */
+    form select, 
+    .componente-hardware-seccion-ux, 
+    .botones-container, 
+    .btn-whatsapp, 
+    .label-confirmado-checkbox,
+    #btn-disparador-hardware,
+    .btn-quitar-item { /* ⬅️ Ocultamos el botón "❌ Quitar" en el papel */
+        display: none !important; 
+    }
+
+    /* 2. Convertimos la ficha de ingreso en una boleta comercial limpia con bordes negros */
+    .ficha-beneficiario {
+        background-color: #ffffff !important;
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+        padding: 15px !important;
+        margin-top: 20px !important;
+    }
+
+    /* 3. 🛠️ VISUALIZACIÓN DEL CARRITO EN PAPEL: Forzamos que se imprima plano y prolijo */
+    #contenedor-items-cargados {
+        display: flex !important; /* ⬅️ ¡CORRECCIÓN CRÍTICA! Ahora sí es visible al imprimir */
+        margin-top: 15px !important;
+        margin-bottom: 15px !important;
+        gap: 5px !important;
+    }
+
+    .tarjeta-item-agregado {
+        background-color: #ffffff !important; /* Fondo blanco liso para no gastar tinta */
+        border: none !important;
+        border-bottom: 1px dotted #000000 !important; /* Separador prolijo de puntitos */
+        padding: 6px 0 !important;
+        box-shadow: none !important;
+        width: 100% !important;
+    }
+
+    /* 4. Volvemos los campos numéricos de dinero legibles y planos */
+    .seccion-presupuesto {
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        margin-top: 20px !important;
+        padding: 15px !important;
+    }
+
+    .seccion-presupuesto input[type="number"] {
+        border: none !important;
+        border-bottom: 1px dashed #000000 !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        background: transparent !important;
+        padding: 2px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .estado-cuenta {
+        border: 1px solid #000000 !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-weight: bold !important;
+        text-align: center !important;
+    }
+}

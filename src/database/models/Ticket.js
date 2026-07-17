@@ -40,7 +40,14 @@ const Ticket = db.define('Ticket', {
     },
     fecha_egreso: {
         type: DataTypes.DATEONLY
+    },
+    // Añadir esta columna dentro de cols en src/database/models/Ticket.js
+    componentes_json: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: '[]' // Por defecto inicia como un array vacío en formato texto
     }
+
 }, {
     tableName: 'tickets',
     timestamps: true

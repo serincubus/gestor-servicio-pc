@@ -120,6 +120,14 @@
                     <% } %>
                 </div>
             </div>
+<!-- CONTENEDOR DE ITEMS CARGADOS CON INPUT OCULTO SINCRONIZADO -->
+<div id="contenedor-items-cargados">
+    <!-- Las tarjetas se inyectarán de forma dinámica aquí -->
+</div>
+<!-- ➕ NUEVO INPUT OCULTO: Viaja hacia el backend con la estructura de texto serializada -->
+<input type="hidden" name="componentes_array_json" id="input-componentes-json" value="[]">
+
+
                         <!-- ➕ NUEVA SECCIÓN: LISTA DINÁMICA DE REPUESTOS SELECCIONADOS -->
             <div id="contenedor-items-cargados" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
                 <!-- Las tarjetas de hardware elegido se inyectarán aquí mediante JavaScript -->
@@ -148,14 +156,24 @@
             </label>
         </div>
 
+                <!-- CONTENEDOR DE BOTONES DE ACCIÓN CON VISIBILIDAD INTELIGENTE -->
         <div class="botones-container">
             <button type="submit" class="btn-guardar">Guardar Cambios</button>
+            
+            <!-- EL REMITO SOLO SE RENDERIZA SI EL ESTADO ES "LISTO" Y EL PRESUPUESTO ESTÁ CONFIRMADO -->
+            <% if (cliente.estado === 'Listo' && (cliente.confirmado === true || cliente.confirmado === 'true')) { %>
+                <button type="button" class="btn-remito-print" onclick="imprimirRemitoTaller()">
+                    🖨️ Imprimir Remito
+                </button>
+            <% } %>
+            
             <a href="/" class="btn-link-cancelar">Volver al Inicio</a>
         </div>
+
+
     </form>
 </div>
 
-<!-- SECCIÓN FINAL DE CONTROL JAVASCRIPT SANITIZADA -->
 <script>
     // 1. Oculta el listado principal y abre la lista de hardware de la categoría elegida
     function mostrarSubmenuComponentes(idPanelCategoria) {
@@ -175,58 +193,57 @@
         todosLosPaneles.forEach(p => p.style.display = 'none');
     }
 
-   // 3. Inyecta el PVP, lee los atributos de datos y crea la tarjeta con nombre e importe
+    // 3. Sincroniza la memoria del array con el input oculto del formulario en formato texto
+    function actualizarInputOculto() {
+        const inputJson = document.getElementById('input-componentes-json');
+        if (inputJson) {
+            inputJson.value = JSON.stringify(carritoRepuestos);
+        }
+    }
+
+    // 4. Dibuja una tarjeta visual en la pantalla y le asocia sus funciones de eliminación
+    function renderizarTarjetaEnPantalla(idItemUnico, nombre, precio) {
+        const contenedorItems = document.getElementById('contenedor-items-cargados');
+        if (!contenedorItems) return;
+
+        const tarjetaHardware = document.createElement('div');
+        tarjetaHardware.id = idItemUnico;
+        tarjetaHardware.className = 'tarjeta-item-agregado';
+        
+        tarjetaHardware.innerHTML = `
+            <div>
+                ⚙️ <strong>${nombre}</strong>
+            </div>
+            <div class="wrapper-precio-carga">
+                <span class="txt-precio-venta-hardware">$${precio.toFixed(2)}</span>
+                <button type="button" class="btn-quitar-item" onclick="removerHardwareDelPresupuesto('${idItemUnico}', ${precio})">
+                    ❌ Quitar
+                </button>
+            </div>
+        `;
+        contenedorItems.appendChild(tarjetaHardware);
+    }
+
+    // 5. Al presionar el botón ➕ Cargar del selector
     function sumarAlPresupuestoDirecto(elementoBoton) {
         const inputPresupuesto = document.getElementById('input-presupuesto');
-        const contenedorItems = document.getElementById('contenedor-items-cargados');
-        
-        if (inputPresupuesto && contenedorItems && elementoBoton) {
-            // Extraemos los datos guardados en el botón de forma limpia
+        if (inputPresupuesto && elementoBoton) {
             const precioRepuesto = parseFloat(elementoBoton.getAttribute('data-precio')) || 0;
-            const nombreComponente = elementoBoton.getAttribute('data-nombre');
+            const nombreComponente = elementoBoton.getAttribute('data-nombre') || 'Componente de Catálogo';
+            const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
             
-            // Imprime en la consola del navegador para diagnóstico técnico (F12)
-            console.log("Datos capturados al hacer clic:", { nombre: nombreComponente, precio: precioRepuesto });
-
-            // Si el nombre llega a fallar por la caché, le inyectamos una descripción genérica con su precio
-            const nombreFinal = nombreComponente && nombreComponente !== 'undefined' ? nombreComponente : 'Componente de Catálogo';
-
-            // Leemos el valor monetario actual de la orden
-             const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
-
-            // A. Sumamos el valor monetario en el input
-            const nuevoTotal = presupuestoActual + precioRepuesto;
-            inputPresupuesto.value = nuevoTotal.toFixed(2);
+            inputPresupuesto.value = (presupuestoActual + precioRepuesto).toFixed(2);
             
-            // B. Creamos un ID único temporal para esta tarjeta para poder removerla luego
             const idItemUnico = 'item-hw-' + Date.now() + Math.floor(Math.random() * 100);
+            const nuevoItem = { id: idItemUnico, nombre: nombreComponente, precio: precioRepuesto };
             
-            // C. Creamos la tarjeta visual con el mismo tamaño y estilo de tus campos de texto
-            const tarjetaHardware = document.createElement('div');
-            tarjetaHardware.id = idItemUnico;
-            tarjetaHardware.className = 'tarjeta-item-agregado';
-            tarjetaHardware.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: #f8fafc; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px; box-sizing: border-box; width: 100%; color: #2d3748;";
+            carritoRepuestos.push(nuevoItem);
+            actualizarInputOculto();
+            renderizarTarjetaEnPantalla(idItemUnico, nombreComponente, precioRepuesto);
             
-            // Estructuramos el contenido interno de la tarjeta (Componente + Valor + Botón de Remover)
-            tarjetaHardware.innerHTML = `
-                <div>
-                    ⚙️ <strong>${nombreFinal}</strong>
-                </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="font-weight: bold; color: #2b6cb0;">$${precioRepuesto.toFixed(2)}</span>
-                    <button type="button" class="btn-eliminar-flex" style="padding: 4px 8px; font-size: 11px; border-radius: 4px; cursor: pointer;" onclick="removerHardwareDelPresupuesto('${idItemUnico}', ${precioRepuesto})">
-                        ❌ Quitar
-                    </button>
-                </div>
-            `;
-            
-            // D. Inyectamos la tarjeta en el bloque (se van apilando una debajo de la otra)
-            contenedorItems.appendChild(tarjetaHardware);
-            
-            // Notificación rápida flotante Toast
             Swal.fire({
                 title: '¡Repuesto Añadido!',
-                text: `Se agregó ${nombreFinal} al presupuesto.`,
+                text: `Se agregó ${nombreComponente} al presupuesto.`,
                 icon: 'success',
                 toast: true,
                 position: 'top-end',
@@ -236,29 +253,23 @@
         }
     }
 
-    // 4. NUEVO: Remueve la tarjeta elegida de la pantalla y descuenta el valor del presupuesto total
+    // 6. Al presionar el botón ❌ Quitar de una tarjeta
     function removerHardwareDelPresupuesto(idTarjeta, precioARestar) {
         const tarjeta = document.getElementById(idTarjeta);
         const inputPresupuesto = document.getElementById('input-presupuesto');
         
         if (tarjeta && inputPresupuesto) {
             const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
-            
-            // Restamos el valor matemático (asegurando que no quede en negativo)
             let nuevoTotal = presupuestoActual - parseFloat(precioARestar);
             if (nuevoTotal < 0) nuevoTotal = 0;
-            
             inputPresupuesto.value = nuevoTotal.toFixed(2);
             
-            // Sacamos la tarjeta de la pantalla de forma animada
-            tarjeta.style.transition = 'all 0.2s ease';
-            tarjeta.style.opacity = '0';
-            tarjeta.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                tarjeta.remove();
-            }, 200);
+            carritoRepuestos = carritoRepuestos.filter(item => item.id !== idTarjeta);
+            actualizarInputOculto();
             
-            // Toast de aviso
+            tarjeta.classList.add('fade-out');
+            setTimeout(() => { tarjeta.remove(); }, 200);
+            
             Swal.fire({
                 title: 'Repuesto Quitado',
                 text: 'El valor se descontó del presupuesto total.',
@@ -270,6 +281,14 @@
             });
         }
     }
+
+    // ➕ CORRECCIÓN CRÍTICA: AGREGAMOS NUEVAMENTE LA FUNCIÓN DE IMPRESIÓN QUE SE HABÍA PERDIDO
+    function imprimirRemitoTaller() {
+        window.print();
+    }
+
+    // Array global que actúa como memoria intermedia del "carrito" en el navegador
+    let carritoRepuestos = [];
 
     // Inicialización de eventos dinámicos al cargar el documento
     document.addEventListener('DOMContentLoaded', () => {
@@ -286,15 +305,18 @@
                     dropdownLista.style.display = 'none';
                 }
             });
-
-            dropdownLista.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-
-            document.addEventListener('click', () => {
-                dropdownLista.style.display = 'none';
-            });
+            dropdownLista.addEventListener('click', (e) => { e.stopPropagation(); });
+            document.addEventListener('click', () => { dropdownLista.style.display = 'none'; });
         }
+
+        // RECONSTRUCCIÓN DEL CARRITO: Leemos los repuestos fijos que inyecta el backend
+        <% if (typeof componentesGuardados !== 'undefined' && componentesGuardados.length > 0) { %>
+            carritoRepuestos = <%- JSON.stringify(componentesGuardados) %>;
+            actualizarInputOculto();
+            carritoRepuestos.forEach(item => {
+                renderizarTarjetaEnPantalla(item.id, item.nombre, item.precio);
+            });
+        <% } %>
 
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('actualizado') === 'true') {
@@ -310,6 +332,5 @@
         }
     });
 </script>
-
 </body>
 </html>
