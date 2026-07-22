@@ -12,17 +12,20 @@
                 🔐 Panel de Identificación Técnico
             </h3>
             
-            <form action="/users/login" method="POST" class="form-estado login-form">
-                <label for="password" class="login-label">
-                    Contraseña de Administrador:
-                </label>
-                
-                <input type="password" name="password" id="password" class="login-input" placeholder="••••••••" required>
-                
-                <button type="submit" class="btn-guardar login-btn">
-                    Ingresar al Sistema
-                </button>
-            </form>
+            <!-- Estructura mandatoria para el login conectado a la base de datos -->
+                <form action="/users/login" method="POST">
+    
+                 <!-- CASILLERO DE USUARIO (Debe tener name="username") -->
+                     <label for="username">Nombre de Usuario:</label>
+                    <input type="text" name="username" id="username" placeholder="Ingresá tu usuario" required>
+
+                    <!-- CASILLERO DE CONTRASEÑA (Debe tener name="password") -->
+                    <label for="password">Contraseña:</label>
+                    <input type="password" name="password" id="password" placeholder="Ingresá tu contraseña" required>
+
+                    <button type="submit">Ingresar al Taller</button>
+                </form>
+
         </div>
 
         <!-- CONTROL DE ALERTAS DE ERROR -->
