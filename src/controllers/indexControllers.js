@@ -15,7 +15,8 @@ const indexController = {
             
             res.render('index', { 
                 title: 'Servicio Técnico PC - Gestión', 
-                lista: ticketsTaller 
+                lista: ticketsTaller,
+                usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA HACE QUE EL BOTÓN APAREZCA! 
             });
         } catch (error) {
             res.send("Error al cargar EJS: " + error.message);
@@ -74,7 +75,8 @@ const indexController = {
             // Renderizamos la misma vista 'index' pero pasándole solo los resultados encontrados
             res.render('index', { 
                 title: `Resultados de búsqueda: "${query}"`, 
-                lista: ticketsFiltrados 
+                lista: ticketsFiltrados,
+                usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA HACE QUE EL BOTÓN APAREZCA! 
             });
         } catch (error) {
             res.send("Error en la búsqueda del servidor: " + error.message);

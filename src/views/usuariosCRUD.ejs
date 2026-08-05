@@ -1,0 +1,164 @@
+<%- include('./partials/head.ejs') %>
+<link rel='stylesheet' href='/stylesheets/style.css' />
+<link rel='stylesheet' href='/stylesheets/hardware.css' />
+<link rel='stylesheet' href='/stylesheets/usuariosCRUD.css' />
+<script src="https://jsdelivr.net"></script>
+
+<body>
+  <div id="drawer-overlay" class="drawer-overlay"></div>
+
+  <div class="container">
+    <div class="contenedor-acciones-flex cabecera-hardware">
+        <h1><%= title %></h1>
+        <div style="display: flex; gap: 10px;">
+            <button type="button" id="btn-abrir-alta" class="btn-ux btn-ux-nuevo" style="padding: 10px 15px;">
+                ➕ Registrar Operador
+            </button>
+            <a href="/" class="btn-ux btn-ux-editar" style="padding: 10px 15px;">⬅️ Volver al Inicio</a>
+        </div>
+    </div>
+
+    <!-- Buscador de Personal -->
+    <form action="/users/management" method="GET" class="form-busqueda">
+        <input type="text" name="q" placeholder="🔍 Buscar operador por nombre de usuario..." class="input-busqueda" value="<%= busqueda %>">
+        <button type="submit" class="btn-buscar">Buscar</button>
+        <a href="/users/management" class="btn-link-cancelar">Limpiar</a>
+    </form>
+
+    <% if (error) { %>
+        <div class="cuenta-pendiente" style="padding: 12px; margin-bottom: 15px; border-radius: 4px; font-weight: bold;">
+            ⚠️ <%= error %>
+        </div>
+    <% } %>
+
+    <div class="contenedor-usuarios-crud">
+        
+        <!-- DRAWER LATERAL DERECHO (FORMULARIO) -->
+        <div class="bloque-formulario hardware-drawer" id="hardware-drawer">
+            <div class="drawer-header">
+                <h3><%= usuarioEditar ? '📝 Modificar Operador' : '➕ Agregar Nuevo Operador' %></h3>
+                <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer">✕</button>
+            </div>
+            
+            <form action="/users/management/<%= usuarioEditar ? 'editar/' + usuarioEditar.id_usuario : 'guardar' %>" 
+                  method="POST" 
+                  class="form-usuarios-input">
+                
+                <label>Nombre de Usuario (Login):</label>
+                <input type="text" name="username" placeholder="Ej: tecnico_sergio" required value="<%= usuarioEditar ? usuarioEditar.username : '' %>">
+                
+                <label>Contraseña de Acceso:</label>
+                <input type="text" name="password" placeholder="Establecer clave" required value="<%= usuarioEditar ? usuarioEditar.password : '' %>">
+                
+                <label>Rol / Permisos:</label>
+                <select name="rol" required>
+                    <option value="tecnico" <%= usuarioEditar && usuarioEditar.rol === 'tecnico' ? 'selected' : '' %>>Técnico (Operativo Común)</option>
+                    <option value="admin" <%= usuarioEditar && usuarioEditar.rol === 'admin' ? 'selected' : '' %>>Administrador (Control Total)</option>
+                </select>
+
+                <button type="submit" class="btn-guardar-completo btn-registrar-hardware">
+                    <%= usuarioEditar ? 'Guardar Cambios' : 'Registrar Miembro' %>
+                </button>
+                
+                <% if(usuarioEditar) { %>
+                    <a href="/users/management" class="btn-ux btn-ux-editar btn-cancelar-edicion-hw">❌ Cancelar Edición</a>
+                <% } %>
+            </form>
+        </div>
+
+        <!-- TABLA DE INVENTARIO DE PERSONAL -->
+        <div class="bloque-tabla-usuarios">
+            <h3>Operadores en el Sistema</h3>
+            <table class="tabla-hardware">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre de Usuario</th>
+                        <th>Contraseña</th>
+                        <th>Jerarquía</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(listaUsuarios.length > 0) { %>
+                        <% listaUsuarios.forEach(user => { %>
+                            <tr>
+                                <td>#<%= user.id_usuario %></td>
+                                <td><strong><%= user.username %></strong></td>
+                                <td style="font-family: monospace;"><%= user.password %></td>
+                                <td>
+                                    <span class="<%= user.rol === 'admin' ? 'badge-rol-admin' : 'badge-rol-tecnico' %>">
+                                        <%= user.rol === 'admin' ? '👑 Administrador' : '🛠️ Técnico' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="contenedor-acciones-tabla">
+                                        <a href="/users/management/editar/<%= user.id_usuario %>" class="btn-ux btn-ux-editar btn-accion-tabla">✏️</a>
+                                        <button type="button" class="btn-eliminar-flex btn-accion-tabla" onclick="eliminarOperador('<%= user.id_usuario %>')">🗑️</button>
+                                        <form id="form-eliminar-user-<%= user.id_usuario %>" action="/users/management/eliminar/<%= user.id_usuario %>" method="POST" style="display:none;"></form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="celda-sin-registros">No se encontraron operarios.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const drawer = document.getElementById('hardware-drawer');
+      const overlay = document.getElementById('drawer-overlay');
+      const btnAbrirAlta = document.getElementById('btn-abrir-alta');
+      const btnCerrar = document.getElementById('btn-cerrar-drawer');
+
+      const estaEditando = <%= usuarioEditar ? 'true' : 'false' %>;
+
+      const abrirDrawer = () => {
+         drawer.classList.add('open');
+         overlay.classList.add('open');
+      };
+
+      const cerrarDrawer = () => {
+         if (estaEditando) {
+             window.location.href = '/users/management';
+         } else {
+             drawer.classList.remove('open');
+             overlay.classList.remove('open');
+         }
+      };
+
+      if(btnAbrirAlta) btnAbrirAlta.addEventListener('click', abrirDrawer);
+      if(btnCerrar) btnCerrar.addEventListener('click', cerrarDrawer);
+      if(overlay) overlay.addEventListener('click', cerrarDrawer);
+
+      if (estaEditando) {
+         abrirDrawer();
+      }
+    });
+
+    function eliminarOperador(id) {
+        Swal.fire({
+            title: '¿Dar de baja al técnico?',
+            text: "Se eliminarán de Clever Cloud las credenciales de este operador de forma permanente.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-eliminar-user-' + id).submit();
+            }
+        });
+    }
+  </script>
+</body>
+</html>

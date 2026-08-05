@@ -22,6 +22,10 @@
        <a href="/hardware" class="btn-navegar-historial" style="background-color: #6b46c1;">
         💾 Catálogo y Stock de Hardware
        </a>
+       <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion.rol === 'admin') { %>
+           <a href="/users/management" class="btn-navegar-historial" style="background-color: #3182ce;">👥 Control de Técnicos</a>
+       <% } %>
+
 
     </div>
 

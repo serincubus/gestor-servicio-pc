@@ -1,0 +1,33 @@
+/* public/stylesheets/usuariosCRUD.css */
+.contenedor-usuarios-crud {
+    display: flex;
+    gap: 25px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+.bloque-tabla-usuarios {
+    flex: 1;
+    width: 100%;
+}
+.form-usuarios-input input, .form-usuarios-input select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+}
+.badge-rol-admin {
+    background-color: #e2e8f0;
+    color: #4a5568;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.badge-rol-tecnico {
+    background-color: #ebf8ff;
+    color: #2b6cb0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
