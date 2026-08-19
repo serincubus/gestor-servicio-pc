@@ -4,6 +4,7 @@
 @import url("historial.css");
 @import url("login.css");
 @import url("consultaPublica.css");
+@import url("hardware.css");
 
 body {
   font-family: sans-serif; 

@@ -29,17 +29,42 @@
 
     </div>
 
-    <!-- CONTENEDOR DESPLEGABLE DEL FORMULARIO DE INGRESO -->
-    <div id="contenedor-formulario-registro" class="contenedor-desplegable-registro">
-        <h3>Registrar Ingreso de Equipo</h3>
-        <form action="/guardar" method="POST" id="form-registro-principal">
-          <input type="text" name="nombre" id="input-nombre" placeholder="Nombre del Cliente" required>
-          <input type="text" name="telefono" id="input-telefono" placeholder="Teléfono del Cliente" required>
-          <input type="text" name="equipo" id="input-equipo" placeholder="Equipo (Ej: Notebook Bangho)" required>
-          <textarea name="falla" id="input-falla" placeholder="Descripción del problema"></textarea>
-          <button type="submit" class="btn-guardar-completo">Guardar en Base de Datos</button>
-        </form>
-    </div>
+      <!-- Fondo oscuro semitransparente de respaldo para el Drawer de Ingresos -->
+  <div id="drawer-overlay-ingreso" class="drawer-overlay"></div>
+
+  <!-- 📑 NUEVO DRAWER INTERACTIVO: FORMULARIO DE NUEVO INGRESO -->
+  <div class="bloque-formulario hardware-drawer" id="drawer-nuevo-ingreso">
+      <div class="drawer-header">
+          <h3>📋 Registrar Nuevo Ingreso</h3>
+          <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer-ingreso">✕</button>
+      </div>
+      
+      <!-- Tu formulario conectado a la ruta POST store -->
+      <form action="/guardar" method="POST" class="form-usuarios-input" style="padding: 10px 20px;">
+          <label><strong>Nombre del Cliente:</strong></label>
+          <input type="text" name="nombre" placeholder="Ej: Carlos Pérez" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
+          
+          <label><strong>Teléfono / WhatsApp:</strong></label>
+          <input type="text" name="telefono" placeholder="Ej: 1123456789" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
+          
+          <label><strong>Equipo / Dispositivo:</strong></label>
+          <input type="text" name="equipo" placeholder="Ej: Notebook Asus Core i7" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
+          
+          <label><strong>Detalle de la Falla:</strong></label>
+          <textarea name="falla" placeholder="Ej: No enciende, parpadea luz led blanca" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px; height: 80px; resize: none; font-family:inherit;"></textarea>
+          
+          <label><strong>Estado Inicial:</strong></label>
+          <select name="estado" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #cbd5e0; border-radius:4px; font-size:15px;">
+              <option value="Ingresado">📥 Ingresado</option>
+              <option value="En Reparación">🛠️ En Reparación</option>
+          </select>
+
+          <button type="submit" class="btn-guardar" style="width:100%; padding: 12px; font-size: 15px;">
+              💾 Guardar Ficha e Ingresar
+          </button>
+      </form>
+  </div>
+
 
     <hr class="separador-seccion">
 
@@ -104,21 +129,33 @@
   <!-- CONTROL DE INTERFAZ Y COMPORTAMIENTO SCRIPT -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const btnToggle = document.getElementById('btn-toggle-registro');
-      const formulario = document.getElementById('contenedor-formulario-registro');
+    // Selectores del Drawer de Nuevos Ingresos
+    const btnToggleRegistro = document.getElementById('btn-toggle-registro'); // Tu botón original de registro
+    const drawerIngreso = document.getElementById('drawer-nuevo-ingreso');
+    const overlayIngreso = document.getElementById('drawer-overlay-ingreso');
+    const btnCerrarIngreso = document.getElementById('btn-cerrar-drawer-ingreso');
 
-      btnToggle.addEventListener('click', () => {
-        if (formulario.style.display === 'none' || formulario.style.display === '') {
-          formulario.style.display = 'block';
-          btnToggle.textContent = '❌ Cerrar Formulario';
-          btnToggle.style.backgroundColor = '#dc3545';
-        } else {
-          formulario.style.display = 'none';
-          btnToggle.textContent = '➕ Registrar Nuevo Ingreso';
-          btnToggle.style.backgroundColor = '#007bff';
+    // Función nativa para abrir el panel deslizante
+    const abrirDrawerIngreso = () => {
+        if(drawerIngreso && overlayIngreso) {
+            drawerIngreso.classList.add('open');
+            overlayIngreso.classList.add('open');
         }
-      });
-    });
+    };
+
+    // Función nativa para cerrar el panel deslizante
+    const cerrarDrawerIngreso = () => {
+        if(drawerIngreso && overlayIngreso) {
+            drawerIngreso.classList.remove('open');
+            overlayIngreso.classList.remove('open');
+        }
+    };
+
+    // Escuchadores de clics interactivos
+    if (btnToggleRegistro) btnToggleRegistro.addEventListener('click', abrirDrawerIngreso);
+    if (btnCerrarIngreso) btnCerrarIngreso.addEventListener('click', cerrarDrawerIngreso);
+    if (overlayIngreso) overlayIngreso.addEventListener('click', cerrarDrawerIngreso);
+});
 
     function prepararNuevoTicket(nombre, telefono) {
       const btnToggle = document.getElementById('btn-toggle-registro');
