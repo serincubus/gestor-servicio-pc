@@ -9,25 +9,75 @@
     <h1><%= title %></h1>
 
     <!-- SECCIÓN DE ACCIONES: BOTONES DE CONTROL SUPERIORES -->
-    <div class="acciones-principales">
-        <button id="btn-toggle-registro">
-            ➕ Registrar Nuevo Ingreso
-        </button>
-        
-        <a href="/history" class="btn-navegar-historial">
-            📊 Ver Historial y Reporte de Pagos
-        </a>
+            <!-- CONTAINER CENTRAL DEL DASHBOARD MODERNO -->
+        <div class="dashboard-grid-container">
+            
+            <!-- TARJETA 1: REGISTRAR NUEVO INGRESO (AZUL) -->
+            <!-- Importante: Le asignamos el ID "btn-toggle-registro" para que el script del Drawer se ejecute al hacerle clic -->
+            <div class="card-dashboard card-azul" id="btn-toggle-registro">
+                <div class="card-icon-wrapper">
+                    <span class="card-icon">＋</span>
+                </div>
+                <div class="card-content">
+                    <h3>Registrar Nuevo Ingreso</h3>
+                    <p>Cargar un nuevo equipo o servicio técnico.</p>
+                </div>
+                <div class="card-arrow">〉</div>
+            </div>
 
-         <!-- NUEVO BOTÓN: Acceso al inventario de componentes hardware -->
-       <a href="/hardware" class="btn-navegar-historial" style="background-color: #6b46c1;">
-        💾 Catálogo y Stock de Hardware
-       </a>
-       <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion.rol === 'admin') { %>
-           <a href="/users/management" class="btn-navegar-historial" style="background-color: #3182ce;">👥 Control de Técnicos</a>
-       <% } %>
+            <!-- TARJETA 2: VER HISTORIAL Y REPORTES (VERDE) -->
+            <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion.rol === 'admin') { %>
+                <a href="/history" class="card-dashboard card-verde">
+                    <div class="card-icon-wrapper">
+                        <span class="card-icon">📊</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Ver Historial y Reporte de Pagos</h3>
+                        <p>Consultar ingresos anteriores y pagos realizados.</p>
+                    </div>
+                    <div class="card-arrow">〉</div>
+                </a>
+            <% } else { %>
+                <!-- Versión deshabilitada visualmente si es técnico menor -->
+                <div class="card-dashboard card-deshabilitada">
+                    <div class="card-icon-wrapper">
+                        <span class="card-icon">📊</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Ver Historial y Reporte de Pagos</h3>
+                        <p>Acceso restringido para personal técnico.</p>
+                    </div>
+                </div>
+            <% } %>
 
+            <!-- TARJETA 3: CATÁLOGO Y STOCK (VIOLETA) -->
+            <a href="/hardware" class="card-dashboard card-violeta">
+                <div class="card-icon-wrapper">
+                    <span class="card-icon">💻</span>
+                </div>
+                <div class="card-content">
+                    <h3>Catálogo y Stock de Hardware</h3>
+                    <p>Gestiona tu inventario de productos y repuestos.</p>
+                </div>
+                <div class="card-arrow">〉</div>
+            </a>
 
-    </div>
+            <!-- TARJETA 4: CONTROL DE TÉCNICOS (CELESTE) -->
+            <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion.rol === 'admin') { %>
+                <a href="/users/management" class="card-dashboard card-celeste">
+                    <div class="card-icon-wrapper">
+                        <span class="card-icon">👥</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Control de Técnicos</h3>
+                        <p>Administra técnicos, permisos y asignaciones.</p>
+                    </div>
+                    <div class="card-arrow">〉</div>
+                </a>
+            <% } %>
+
+        </div>
+
 
       <!-- Fondo oscuro semitransparente de respaldo para el Drawer de Ingresos -->
   <div id="drawer-overlay-ingreso" class="drawer-overlay"></div>
