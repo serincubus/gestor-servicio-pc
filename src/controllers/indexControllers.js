@@ -159,7 +159,7 @@ const indexController = {
 
 
 
-    // 7. Muestra la ficha de detalle (Modificado para leer componentes serializados)
+        // 7. Detalle del Cliente (Modificado para inyectar Mano de Obra y Compatibilidades)
     detalle: async (req, res) => {
         try {
             const ticket = await Ticket.findByPk(req.params.id_cliente, { 
@@ -167,7 +167,6 @@ const indexController = {
                 nest: true
             });
             
-            // Requerimos e inicializamos el modelo Hardware apuntando a db.js
             const HardwareModel = require('../database/models/Hardware');
             const db = require('../database/db');
             const Hardware = HardwareModel(db, require('sequelize').DataTypes);
@@ -177,7 +176,6 @@ const indexController = {
                 raw: true
             });
 
-            // Convertimos la cadena de texto JSON almacenada de vuelta en un array de JavaScript
             let componentesGuardados = [];
             try {
                 componentesGuardados = JSON.parse(ticket.componentes_json || '[]');
@@ -186,8 +184,8 @@ const indexController = {
             }
             
             const mapeoClienteCompatibilidad = {
-                id_ticket: ticket.id_ticket, // Clave primaria real del ticket
-                id_cliente: ticket.id_ticket, // Mantiene compatibilidad con tus rutas
+                id_ticket: ticket.id_ticket,
+                id_cliente: ticket.id_ticket,
                 nombre: ticket.cliente.nombre,
                 telefono: ticket.cliente.telefono,
                 equipo: ticket.equipo,
@@ -197,23 +195,23 @@ const indexController = {
                 pago_parcial: ticket.pago_parcial,
                 confirmado: ticket.confirmado,
                 codigo_seguimiento: ticket.codigo_seguimiento,
-                createdAt: ticket.createdAt
+                createdAt: ticket.createdAt,
+                mano_obra: ticket.mano_obra || 0 // ⬅️ Enviamos la mano de obra a la vista
             };
 
             res.render('detalleCliente', { 
                 title: 'Detalle del Ticket', 
                 cliente: mapeoClienteCompatibilidad,
                 listaHardware: repuestosDisponibles,
-                componentesGuardados: componentesGuardados // ⬅️ Enviamos los repuestos fijos a la vista
+                componentesGuardados: componentesGuardados
             });
         } catch (error) {
-            res.send("Error al cargar detalle con persistencia: " + error.message);
+            res.send("Error al cargar detalle: " + error.message);
         }
     },
 
-
-
-   // 8. Actualiza los estados financieros del ticket y guarda los repuestos
+    // 8. Guarda Cambios (Modificado para persistir el valor de la Mano de Obra)
+       // 8. Actualiza los estados financieros del ticket y guarda los repuestos (Saneado contra nulos)
     updateStatus: async (req, res) => {
         try {
             let fechaEgreso = null;
@@ -221,16 +219,30 @@ const indexController = {
                 fechaEgreso = new Date().toISOString().slice(0, 10); 
             }
 
-            // Capturamos el array de componentes oculto enviado por el formulario
+            // Capturamos la lista de componentes serializados
             let listaComponentesInput = req.body.componentes_array_json || '[]';
+
+            // 🛡️ SANEAR ENTRADAS NUMÉRICAS Y REDONDEAR A 2 DECIMALES FIJOS
+// Convertimos a número con parseFloat, si da vacío ponemos 0, y forzamos 2 decimales para evitar centavos fantasma
+const presupuestoFinal = parseFloat(parseFloat(req.body.presupuesto || 0).toFixed(2));
+const manoObraFinal    = parseFloat(parseFloat(req.body.mano_obra || 0).toFixed(2));
+
+// 🔍 CORRECCIÓN CRÍTICA: Limpia el adelanto de cualquier residuo numérico negativo o mal formateado
+let pagoParcialFinal   = parseFloat(parseFloat(req.body.pago_parcial || 0).toFixed(2));
+
+// Seguro de fallos: Si por algún error de cálculo el número da menor a cero, lo clavamos en 0.00
+if (pagoParcialFinal < 0) {
+    pagoParcialFinal = 0.00;
+}
 
             await Ticket.update({
                 estado: req.body.estado,
-                presupuesto: req.body.presupuesto,
-                pago_parcial: req.body.pago_parcial, 
-                confirmado: req.body.confirmado === 'true' || req.body.confirmado === true,
+                presupuesto: presupuestoFinal,
+                pago_parcial: pagoParcialFinal, // ⬅️ Ahora guarda 0.00 en vez de arrojar error de texto vacío
+                confirmado: req.body.checkbox_confirmado === 'true' || req.body.checkbox_confirmado === true || req.body.checkbox_confirmado === 'on', // Sincronizado con el name de tu vista
                 fecha_egreso: fechaEgreso,
-                componentes_json: listaComponentesInput // ⬅️ Guardamos la lista serializada en MySQL
+                componentes_json: listaComponentesInput,
+                mano_obra: manoObraFinal
             }, {
                 where: { id_ticket: req.params.id_cliente } 
             });
@@ -240,6 +252,8 @@ const indexController = {
             res.send("Error al guardar estado y componentes: " + error.message);
         }
     },
+
+
 
     // 5. Historial completo de movimientos de caja
     history: async (req, res) => {

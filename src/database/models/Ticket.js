@@ -30,6 +30,14 @@ const Ticket = db.define('Ticket', {
         type: DataTypes.DECIMAL(10, 2),
         defaultValue: 0.00
     },
+
+    // Añadir esta columna dentro de cols en src/database/models/Ticket.js
+    mano_obra: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0.00
+},
+
     pago_parcial: {
         type: DataTypes.DECIMAL(10, 2),
         defaultValue: 0.00

@@ -15,19 +15,71 @@
         <p class="ficha-campo"><strong>Beneficiario / Cliente:</strong> <%= cliente.nombre %></p>
         <p class="ficha-campo">
             <strong>Teléfono de Contacto:</strong> <%= cliente.telefono ? cliente.telefono : 'No registrado' %>
-            <% if (cliente.telefono) { %>
-                <% 
-                    let telefonoLimpio = cliente.telefono.replace(/[^0-9]/g, '');
-                    if (!telefonoLimpio.startsWith('54')) {
-                        telefonoLimpio = '549' + telefonoLimpio;
-                    }
-                    let mensajeWhatsApp = `Hola ${cliente.nombre}, te avisamos del servicio técnico que tu equipo (${cliente.equipo}) ya ingresó en reparación en nuestro taller. Podés realizar el seguimiento en tiempo real con tu Número de Ticket: ${cliente.codigo_seguimiento} ingresando acá: http://localhost:3000/consulta`;
-                    let mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
-                %>
-                <a href="https://wa.me<%= telefonoLimpio %>?text=<%= mensajeCodificado %>" target="_blank" rel="noopener noreferrer" class="btn-whatsapp" title="Notificar ingreso al cliente por WhatsApp">
-                    💬 Enviar Ticket por WhatsApp
-                </a>
-            <% } %>
+           <!-- CONTENEDOR DE ACCIONES DE NOTIFICACIÓN DIRECTA -->
+<div class="contenedor-notificaciones-whatsapp">
+
+    <!-- 📥 BOTÓN 1: NOTIFICACIÓN DE INGRESO -->
+    <% if (cliente.telefono) { %>
+        <% 
+        let telefonoLimpio = cliente.telefono.replace(/[^0-9]/g, ''); 
+        if (!telefonoLimpio.startsWith('54')) { 
+            telefonoLimpio = '549' + telefonoLimpio; 
+        } 
+        
+        let restanteDeudaIngreso = Number(cliente.presupuesto) - Number(cliente.pago_parcial);
+        
+        let mensajeIngreso = `Hola *${cliente.nombre}*, te avisamos desde el servicio técnico que tu equipo (*${cliente.equipo}*) ya ingresó en nuestro taller.\n\n` +
+                             `📝 *Detalle de Falla:* ${cliente.falla}\n` +
+                             `💰 *Presupuesto Estimado:* $${Number(cliente.presupuesto).toFixed(2)}\n` +
+                             `💳 *Seña Abonada:* $${Number(cliente.pago_parcial).toFixed(2)}\n` +
+                             `💵 *Saldo a Pagar:* $${restanteDeudaIngreso.toFixed(2)}\n\n` +
+                             `🔑 *Número de Ticket:* ${cliente.codigo_seguimiento}\n` +
+                             `🌐 Podés realizar el seguimiento en tiempo real ingresando acá: http://localhost:3000/consulta`; 
+                              
+        let codificadoIngreso = encodeURIComponent(mensajeIngreso); 
+        %> 
+        <a href="https://wa.me/<%= telefonoLimpio %>?text=<%= codificadoIngreso %>" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="btn-whatsapp-taller btn-notificar-ingreso" 
+           title="Notificar ingreso al cliente por WhatsApp"> 
+            💬 Enviar Ticket de Ingreso
+        </a> 
+    <% } %>
+
+    <!-- 🛠️ BOTÓN 2: NOTIFICACIÓN DE EQUIPO LISTO -->
+    <% if (cliente.telefono && cliente.estado === 'Listo') { %>
+        <% 
+        let telefonoLimpioListo = cliente.telefono.replace(/[^0-9]/g, ''); 
+        if (!telefonoLimpioListo.startsWith('54')) { 
+            telefonoLimpioListo = '549' + telefonoLimpioListo; 
+        } 
+        
+        let saldoFinalRetiro = Number(cliente.presupuesto) - Number(cliente.pago_parcial);
+        
+        let mensajeListo = `¡Buenas noticias *${cliente.nombre}*! 👋 Te avisamos desde el taller que el servicio técnico de tu equipo (*${cliente.equipo}*) ha sido *FINALIZADO* con éxito y ya está listo para retirar. 🎉\n\n` +
+                           `🛠️ *Trabajo Realizado:* Reparación y control de calidad finalizado.\n` +
+                           `💰 *Presupuesto Total:* $${Number(cliente.presupuesto).toFixed(2)}\n` +
+                           `💳 *Seña Registrada:* $${Number(cliente.pago_parcial).toFixed(2)}\n` +
+                           `💵 *Total Neto a Abonar en Mostrador:* *$${saldoFinalRetiro.toFixed(2)}*\n\n` +
+                           `📍 *Ubicación del Taller:* Bella Vista, Buenos Aires\n` +
+                           `🗺️ *Cómo llegar:* https://google.com\n\n` +
+                           `Te esperamos de lunes a viernes para la entrega. ¡Muchas gracias por confiar en nuestro servicio!`; 
+                              
+        let codificadoListo = encodeURIComponent(mensajeListo); 
+        %> 
+        <a href="https://wa.me/<%= telefonoLimpioListo %>?text=<%= codificadoListo %>" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="btn-whatsapp-taller btn-notificar-listo" 
+           title="Avisar al cliente que puede retirar el equipo"> 
+            ✅ Notificar Retiro (Equipo Listo)
+        </a> 
+    <% } %>
+
+</div>
+
+
         </p>
 
         <p class="ficha-campo"><strong>Equipo a Reparar:</strong> <%= cliente.equipo %></p>
@@ -45,116 +97,114 @@
             <option value="Listo" <%= cliente.estado == 'Listo' ? 'selected' : '' %>>Listo</option>
         </select>
 
-        <!-- SECCIÓN DE PRESUPUESTO CONTROLADA POR CLASES CSS -->
-        <div id="seccion-presupuesto" class="seccion-presupuesto">
-            <!-- SELECTOR MULTINIVEL DE HARDWARE: CATEGORÍAS PRIMERO -->
-            <div class="componente-hardware-seccion-ux">
-                <label>🛠️ Presupuestar Hardware del Catálogo:</label>
-                <!-- Botón Disparador Principal del Menú -->
-                <button type="button" id="btn-disparador-hardware" class="btn-ux-disparador">
-                    <span id="txt-disparador-actual">🔍 Elegir por Categoría...</span>
-                    <span>▼</span>
-                </button>
+       <!-- SECCIÓN DE PRESUPUESTO CONTROLADA POR CLASES CSS -->
+<div id="seccion-presupuesto" class="seccion-presupuesto">
+    
+    <!-- SELECTOR MULTINIVEL DE HARDWARE: CATEGORÍAS PRIMERO -->
+    <div class="componente-hardware-seccion-ux">
+        <label>🛠️ Presupuestar Hardware del Catálogo:</label>
+        
+        <!-- Botón Disparador Principal del Menú -->
+        <button type="button" id="btn-disparador-hardware" class="btn-ux-disparador">
+            <span id="txt-disparador-actual">🔍 Elegir por Categoría...</span>
+            <span>▼</span>
+        </button>
 
-                <!-- Persiana Desplegable Centralizada -->
-                <div id="dropdown-lista-hardware" class="dropdown-hardware-persiana">
-                    <% if (typeof listaHardware !== 'undefined' && listaHardware.length > 0) { %>
-                        <% 
-                            let gruposHardware = {};
-                            listaHardware.forEach(prod => {
-                                if (!gruposHardware[prod.categoria]) {
-                                    gruposHardware[prod.categoria] = [];
-                                }
-                                gruposHardware[prod.categoria].push(prod);
-                            });
-                        %>
-
-                        <!-- VISTA 1: LISTADO DE CATEGORÍAS (Se ve primero) -->
-                        <div id="panel-categorias-raiz">
-                            <% 
-                                let numCat = 0;
-                                for (let nombreCat in gruposHardware) { 
-                                    numCat++;
-                            %>
-                                <div class="item-categoria-click" onclick="mostrarSubmenuComponentes('panel-cat-<%= numCat %>')">
-                                    <span>📦 <%= nombreCat %></span>
-                                    <span class="badge-conteo-articulos"><%= gruposHardware[nombreCat].length %> artículos ➡️</span>
-                                </div>
-                            <% } %>
+        <!-- Persiana Desplegable Centralizada -->
+        <div id="dropdown-lista-hardware" class="dropdown-hardware-persiana">
+            <% if (typeof listaHardware !== 'undefined' && listaHardware.length > 0) { %>
+                <% 
+                let gruposHardware = {}; 
+                listaHardware.forEach(prod => { 
+                    if (!gruposHardware[prod.categoria]) { 
+                        gruposHardware[prod.categoria] = []; 
+                    } 
+                    gruposHardware[prod.categoria].push(prod); 
+                }); 
+                %>
+                
+                <!-- VISTA 1: LISTADO DE CATEGORÍAS (Se ve primero) -->
+                <div id="panel-categorias-raiz">
+                    <% let numCat = 0; for (let nombreCat in gruposHardware) { numCat++; %>
+                        <div class="item-categoria-click" onclick="mostrarSubmenuComponentes('panel-cat-<%= numCat %>')">
+                            <span>📦 <%= nombreCat %></span>
+                            <span class="badge-conteo-articulos"><%= gruposHardware[nombreCat].length %> artículos ➡️</span>
                         </div>
-
-                        <!-- VISTA 2: SUBMENÚS DE COMPONENTES POR CATEGORÍA -->
-                        <% 
-                            let numPanel = 0;
-                            for (let nombreCat in gruposHardware) { 
-                                numPanel++;
-                        %>
-                            <div id="panel-cat-<%= numPanel %>" class="panel-componentes-oculto">
-                                <!-- Botón superior para volver al menú de categorías -->
-                                <div onclick="regresarAlMenuCategorias()" class="btn-volver-categorias">
-                                    ⬅️ Volver a Categorías
-                                </div>
-                                <% gruposHardware[nombreCat].forEach(prod => { %>
-                                    <div class="fila-componente-disponible">
-                                        <div class="txt-componente-info">
-                                            <strong><%= prod.componente %></strong>
-                                            <small>Disponibles: <%= prod.stock %> un.</small>
-                                        </div>
-                                        <div class="wrapper-precio-carga">
-                                            <span class="txt-precio-venta-hardware">$<%= Number(prod.precio_venta).toFixed(2) %></span>
-                                            <button type="button" 
-                                                    class="btn-cargar-hardware-presupuesto" 
-                                                    data-precio="<%= prod.precio_venta %>"
-                                                    data-nombre="<%= prod.componente %>"
-                                                    style="background-color: #3182ce; color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; white-space: nowrap; border:none; cursor:pointer; font-weight: bold;"
-                                                    onclick="sumarAlPresupuestoDirecto(this)">
-                                                ➕ Cargar
-                                            </button>
-                                        </div>
-                                    </div>
-                                <% }) %>
-                            </div>
-                        <% } %>
-                    <% } else { %>
-                        <div class="txt-catalogo-vacio">No hay repuestos registrados en el catálogo.</div>
                     <% } %>
                 </div>
-            </div>
-<!-- CONTENEDOR DE ITEMS CARGADOS CON INPUT OCULTO SINCRONIZADO -->
-<div id="contenedor-items-cargados">
-    <!-- Las tarjetas se inyectarán de forma dinámica aquí -->
-</div>
-<!-- ➕ NUEVO INPUT OCULTO: Viaja hacia el backend con la estructura de texto serializada -->
-<input type="hidden" name="componentes_array_json" id="input-componentes-json" value="[]">
 
-
-                        <!-- ➕ NUEVA SECCIÓN: LISTA DINÁMICA DE REPUESTOS SELECCIONADOS -->
-            <div id="contenedor-items-cargados" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
-                <!-- Las tarjetas de hardware elegido se inyectarán aquí mediante JavaScript -->
-            </div>
-
-            <!-- Tus casilleros de Presupuesto Total y Adelanto permanecen abajo -->
-           
-            <label><strong>Presupuesto Total ($):</strong></label>
-            <input type="number" name="presupuesto" id="input-presupuesto" value="<%= cliente.presupuesto %>" step="0.01">
-            
-            <label><strong>Pago Parcial / Adelanto ($):</strong></label>
-            <input type="number" name="pago_parcial" value="<%= cliente.pago_parcial %>" step="0.01">
-
-            <!-- CÁLCULO VISUAL DE DEUDA UTILIZANDO CLASES DEL CSS -->
-            <% let pendiente = Number(cliente.presupuesto) - Number(cliente.pago_parcial); %>
-            <div class="estado-cuenta <%= pendiente <= 0 ? 'cuenta-saldada' : 'cuenta-pendiente' %>">
-                <% if (pendiente <= 0) { %>
-                    <span>✅ <strong>¡Equipo totalmente saldado!</strong> No registra deuda.</span>
-                <% } else { %>
-                    <span>⚠️ <strong>Pago Pendiente:</strong> Le resta abonar <strong>$<%= pendiente.toFixed(2) %></strong></span>
+                <!-- VISTA 2: SUBMENÚS DE COMPONENTES POR CATEGORÍA -->
+                <% let numPanel = 0; for (let nombreCat in gruposHardware) { numPanel++; %>
+                    <div id="panel-cat-<%= numPanel %>" class="panel-componentes-oculto">
+                        <!-- Botón superior para volver al menú de categorías -->
+                        <div onclick="regresarAlMenuCategorias()" class="btn-volver-categorias">
+                            ⬅️ Volver a Categorías
+                        </div>
+                        <% gruposHardware[nombreCat].forEach(prod => { %>
+                            <div class="fila-componente-disponible">
+                                <div class="txt-componente-info">
+                                    <strong><%= prod.componente %></strong>
+                                    <small>Disponibles: <%= prod.stock %> un.</small>
+                                </div>
+                                <div class="wrapper-precio-carga">
+                                    <span class="txt-precio-venta-hardware">$<%= Number(prod.precio_venta).toFixed(2) %></span>
+                                    <button type="button" class="btn-cargar-hardware-presupuesto" data-precio="<%= prod.precio_venta %>" data-nombre="<%= prod.componente %>" style="background-color: #3182ce; color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; white-space: nowrap; border:none; cursor:pointer; font-weight: bold;" onclick="sumarAlPresupuestoDirecto(this)">
+                                        ➕ Cargar
+                                    </button>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
                 <% } %>
-            </div>
-            
-            <label class="label-confirmado-checkbox">
-                <input type="checkbox" name="confirmado" value="true" <%= cliente.confirmado ? 'checked' : '' %>> ¿Cliente confirmó el trabajo?
-            </label>
+            <% } else { %>
+                <div class="txt-catalogo-vacio">No hay repuestos registrados en el catálogo.</div>
+            <% } %>
         </div>
+    </div>
+
+    <!-- CONTENEDOR UNIFICADO DE ITEMS CARGADOS CON INPUT OCULTO SINCRONIZADO -->
+    <div id="contenedor-items-cargados" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <!-- Las tarjetas de hardware elegido se inyectarán aquí mediante JavaScript -->
+    </div>
+    
+    <!-- ➕ INPUT OCULTO: Viaja hacia el backend con la estructura de texto serializada -->
+    <input type="hidden" name="componentes_array_json" id="input-componentes-json" value="[]">
+
+    <!-- ➕ NUEVO CASILLERO: Mano de Obra Técnica (Editable de forma plana) -->
+    <label><strong>🛠️ Mano de Obra Taller ($):</strong></label>
+    <input type="number" name="mano_obra" id="input-mano-obra" value="<%= cliente.mano_obra %>" step="0.01" min="0" placeholder="0.00" oninput="recalcularPresupuestoTotal()">
+
+    <!-- Casillero de Presupuesto Total (Protegido con Readonly para evitar saltos manuales) -->
+    <label><strong>Presupuesto Total ($):</strong></label>
+    <input type="number" name="presupuesto" id="input-presupuesto" value="<%= cliente.presupuesto %>" step="0.01" readonly style="background-color: #edf2f7; font-weight: bold; color: #2b6cb0;">
+
+    <!-- Input de Pago Parcial / Adelanto corregido con piso en cero -->
+<label><strong>Pago Parcial / Adelanto ($):</strong></label>
+<input type="number" 
+       name="pago_parcial" 
+       id="input-pago-parcial"
+       value="<%= (Number(cliente.pago_parcial) >= 0) ? Number(cliente.pago_parcial).toFixed(2) : '0.00' %>" 
+       step="0.01" 
+       min="0"
+       placeholder="0.00">
+
+
+    <!-- CÁLCULO VISUAL DE DEUDA UTILIZANDO CLASES DEL CSS -->
+    <% let pendiente = Number(cliente.presupuesto) - Number(cliente.pago_parcial); %>
+    <div class="estado-cuenta <%= pendiente <= 0 ? 'cuenta-saldada' : 'cuenta-pendiente' %>">
+        <% if (pendiente <= 0) { %>
+            <span>✅ <strong>¡Equipo totalmente saldado!</strong> No registra deuda.</span>
+        <% } else { %>
+            <span>⚠️ <strong>Pago Pendiente:</strong> Le resta abonar <strong>$<%= pendiente.toFixed(2) %></strong></span>
+        <% } %>
+    </div>
+
+    <label class="label-confirmado-checkbox">
+        <input type="checkbox" name="checkbox_confirmado" value="true" <%= cliente.confirmado ? 'checked' : '' %>> 
+        ¿Cliente confirmó el trabajo?
+    </label>
+</div>
+
 
                 <!-- CONTENEDOR DE BOTONES DE ACCIÓN CON VISIBILIDAD INTELIGENTE -->
         <div class="botones-container">
@@ -224,22 +274,51 @@
         contenedorItems.appendChild(tarjetaHardware);
     }
 
+    // 🛡️ RECALCULO DE ALTA PRIORIDAD: Determina el valor final combinando la Mano de Obra y el Hardware
+    function recalcularPresupuestoTotal() {
+        const inputPresupuesto = document.getElementById('input-presupuesto');
+        const inputManoObra = document.getElementById('input-mano-obra');
+        
+        if (!inputPresupuesto) return;
+
+        // Capturamos el importe de la mano de obra tipeada en la interfaz
+        const costoManoObra = inputManoObra ? parseFloat(inputManoObra.value) || 0 : 0;
+        
+        // Sumamos iterando de forma segura sobre ambas propiedades posibles del hardware (precio o price)
+        const costoTotalRepuestos = carritoRepuestos.reduce((acumulador, item) => {
+            const valorExtraido = parseFloat(item.precio) || parseFloat(item.price) || 0;
+            return acumulador + valorExtraido;
+        }, 0);
+        
+        // Forzamos la actualización directa sobre el casillero bloqueado de la vista
+        const nuevoTotalGatillado = costoManoObra + costoTotalRepuestos;
+        inputPresupuesto.value = nuevoTotalGatillado.toFixed(2);
+    }
+
     // 5. Al presionar el botón ➕ Cargar del selector
     function sumarAlPresupuestoDirecto(elementoBoton) {
         const inputPresupuesto = document.getElementById('input-presupuesto');
         if (inputPresupuesto && elementoBoton) {
             const precioRepuesto = parseFloat(elementoBoton.getAttribute('data-precio')) || 0;
             const nombreComponente = elementoBoton.getAttribute('data-nombre') || 'Componente de Catálogo';
-            const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
-            
-            inputPresupuesto.value = (presupuestoActual + precioRepuesto).toFixed(2);
             
             const idItemUnico = 'item-hw-' + Date.now() + Math.floor(Math.random() * 100);
-            const nuevoItem = { id: idItemUnico, nombre: nombreComponente, precio: precioRepuesto };
             
+            // Creamos el objeto duplicando las propiedades numéricas para neutralizar inconsistencias de tipeo
+            const nuevoItem = { 
+                id: idItemUnico, 
+                nombre: nombreComponente, 
+                precio: precioRepuesto,
+                price: precioRepuesto 
+            };
+            
+            // Insertamos el repuesto seleccionado en la memoria global del carrito
             carritoRepuestos.push(nuevoItem);
             actualizarInputOculto();
             renderizarTarjetaEnPantalla(idItemUnico, nombreComponente, precioRepuesto);
+            
+            // 🛡️ RECALCULO INTELIGENTE AUTOMATIZADO: Suma repuestos + Mano de Obra de forma nativa
+            recalcularPresupuestoTotal();
             
             Swal.fire({
                 title: '¡Repuesto Añadido!',
@@ -256,19 +335,17 @@
     // 6. Al presionar el botón ❌ Quitar de una tarjeta
     function removerHardwareDelPresupuesto(idTarjeta, precioARestar) {
         const tarjeta = document.getElementById(idTarjeta);
-        const inputPresupuesto = document.getElementById('input-presupuesto');
         
-        if (tarjeta && inputPresupuesto) {
-            const presupuestoActual = parseFloat(inputPresupuesto.value) || 0;
-            let nuevoTotal = presupuestoActual - parseFloat(precioARestar);
-            if (nuevoTotal < 0) nuevoTotal = 0;
-            inputPresupuesto.value = nuevoTotal.toFixed(2);
-            
+        if (tarjeta) {
+            // Filtramos la estructura removiendo el elemento desestimado del array global
             carritoRepuestos = carritoRepuestos.filter(item => item.id !== idTarjeta);
             actualizarInputOculto();
             
             tarjeta.classList.add('fade-out');
             setTimeout(() => { tarjeta.remove(); }, 200);
+
+            // 🛡️ RECALCULO INTELIGENTE AUTOMATIZADO: Computa la deducción de forma nativa e instantánea
+            recalcularPresupuestoTotal();
             
             Swal.fire({
                 title: 'Repuesto Quitado',
@@ -282,7 +359,7 @@
         }
     }
 
-    // ➕ CORRECCIÓN CRÍTICA: AGREGAMOS NUEVAMENTE LA FUNCIÓN DE IMPRESIÓN QUE SE HABÍA PERDIDO
+    // ➕ FUNCIÓN DE IMPRESIÓN REINTEGRADA
     function imprimirRemitoTaller() {
         window.print();
     }
@@ -314,23 +391,26 @@
             carritoRepuestos = <%- JSON.stringify(componentesGuardados) %>;
             actualizarInputOculto();
             carritoRepuestos.forEach(item => {
-                renderizarTarjetaEnPantalla(item.id, item.nombre, item.precio);
+                renderizarTarjetaEnPantalla(item.id, item.nombre || item.componente, item.precio || item.price);
             });
         <% } %>
 
+        // 🛡️ CORRECCIÓN CRÍTICA: Forzamos a JavaScript a calcular el total real apenas abre la pantalla.
+        recalcularPresupuestoTotal();
+
+        // Alerta de cambios guardados exitosos
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('actualizado') === 'true') {
             Swal.fire({
                 title: '¡Cambios Guardados!',
                 text: 'La ficha del cliente se actualizó con éxito.',
                 icon: 'success',
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'Genial'
-            }).then(() => {
-                window.history.replaceState({}, document.title, window.location.pathname);
+                timer: 1500,
+                showConfirmButton: false
             });
         }
     });
 </script>
+
 </body>
 </html>

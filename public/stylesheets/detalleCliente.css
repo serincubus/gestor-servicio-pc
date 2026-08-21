@@ -155,78 +155,58 @@ form label {
     color: #2d3748;
 }
 
-/* Boton whatsapp */
-.btn-whatsapp {
+/* public/stylesheets/detalleCliente.css */
+
+/* Contenedor flexible para los botones de mensajería */
+.contenedor-notificaciones-whatsapp {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+/* Estilo base compartido para los botones de WhatsApp */
+.btn-whatsapp-taller {
+    color: #ffffff !important;
+    padding: 12px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
     display: inline-flex;
     align-items: center;
-    background-color: #25d366; /* Verde oficial WhatsApp */
-    color: #ffffff !important;
-    text-decoration: none;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: bold;
-    border-radius: 4px;
-    margin-left: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.2s, transform 0.1s;
-    vertical-align: middle;
+    gap: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
 }
 
-.btn-whatsapp:hover {
-    background-color: #128c7e; /* Verde oscuro al pasar el cursor */
-    transform: translateY(-1px);
+.btn-whatsapp-taller:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.btn-whatsapp:active {
+.btn-whatsapp-taller:active {
     transform: translateY(0);
 }
 
-/* --- SECTOR MULTINIVEL DE HARDWARE UX --- */
-.componente-hardware-seccion-ux {
-    margin-bottom: 20px;
-    position: relative;
+/* Variación 1: Botón de Ingreso de Equipo (Verde Brillante) */
+.btn-notificar-ingreso {
+    background-color: #25d366;
 }
 
-/* Botón disparador principal */
-.btn-ux-disparador {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f7fafc;
-    border: 1px solid #cbd5e0;
-    color: #4a5568;
-    padding: 10px 15px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-weight: 500;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    transition: background-color 0.15s, border-color 0.15s;
+.btn-notificar-ingreso:hover {
+    background-color: #20ba5a;
 }
 
-.btn-ux-disparador:hover {
-    background-color: #edf2f7;
-    border-color: #a0aec0;
+/* Variación 2: Botón de Retiro Listo (Verde Oscuro Corporativo) */
+.btn-notificar-listo {
+    background-color: #075e54;
 }
 
-/* Persiana desplegable principal */
-.dropdown-hardware-persiana {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: #ffffff;
-    border: 1px solid #cbd5e0;
-    border-radius: 6px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    z-index: 1000;
-    max-height: 320px;
-    overflow-y: auto;
-    margin-top: 5px;
-    padding: 5px 0;
+.btn-notificar-listo:hover {
+    background-color: #054c44;
 }
+
 
 /* Filas del listado de categorías */
 .item-categoria-click {
