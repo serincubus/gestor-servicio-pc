@@ -1,0 +1,24 @@
+    <!-- CABECERA SUPERIOR DE BIENVENIDA AL OPERADOR -->
+<header class="cabecera-bienvenida-taller" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background-color: #ffffff; border-bottom: 1px solid #edf2f7; margin-bottom: 20px;">
+    <div class="bloque-saludo-usuario">
+        <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion) { %>
+            <h2 style="margin: 0; color: #2d3748; font-size: 20px;">
+                👋 ¡Hola, <span style="color: #3182ce; font-weight: bold;"><%= usuarioSesion.username %></span>!
+            </h2>
+            <small style="color: #718096; font-weight: 500;">
+                Rango activo: 
+                <span class="<%= usuarioSesion.rol === 'admin' ? 'badge-rol-admin' : 'badge-rol-tecnico' %>" style="padding: 2px 6px; border-radius: 4px; font-size: 11px;">
+                    <%= usuarioSesion.rol === 'admin' ? '👑 Administrador' : '🛠️ Técnico Operativo' %>
+                </span>
+            </small>
+        <% } else { %>
+            <h2 style="margin: 0; color: #2d3748; font-size: 20px;">👋 Bienvenido al Taller</h2>
+            <small style="color: #e53e3e; font-weight: bold;">⚠️ Sesión remota no identificada</small>
+        <% } %>
+    </div>
+
+    <!-- Botón rápido de cierre de sesión seguro -->
+    <a href="/users/logout" class="btn-cerrar-sesion" style="color: #e53e3e; text-decoration: none; font-weight: bold; font-size: 14px; padding: 8px 12px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#fff5f5'" onmouseout="this.style.backgroundColor='transparent'">
+        🚪 Cerrar Sesión
+    </a>
+</header>

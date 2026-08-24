@@ -4,24 +4,32 @@ const { Cliente, Ticket} = require('../database/models/asociaciones'); // Import
 
 const indexController = {
     // 1. Muestra todos los tickets activos en el taller con los datos de sus dueños
+        // 1. Muestra todos los tickets activos ordenados en la pantalla de inicio
     index: async (req, res) => {
         try {
+            // Buscamos los modelos dinámicos desde la base de datos de Sequelize
+            const db = require('../database/db');
+            const Ticket = db.models.Ticket;
+            const Cliente = db.models.Cliente;
+
             const ticketsTaller = await Ticket.findAll({
-                include: [{ model: Cliente, as: 'cliente' }], // Trae los datos del dueño asociados
-                order: [['id_ticket', 'DESC']], // ⬅️ ORDENA POR ID DE FORMA DESCENDENTE (Último ingresado arriba)  
+                include: [{ model: Cliente, as: 'cliente' }], 
+                order: [['id_ticket', 'DESC']], 
                 raw: true,
-                nest: true // Organiza el objeto para que no se mezclen las columnas
+                nest: true 
             });
             
+            // RENDEREADO CORREGIDO: Enviamos las credenciales del usuario activo al index
             res.render('index', { 
                 title: 'Servicio Técnico PC - Gestión', 
                 lista: ticketsTaller,
-                usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA HACE QUE EL BOTÓN APAREZCA! 
+                usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA CARGA AL USUARIO LOGUEADO!
             });
         } catch (error) {
-            res.send("Error al cargar EJS: " + error.message);
+            res.send("Error al cargar la pantalla de inicio: " + error.message);
         }
     },
+
 
     // 2. Guarda el ticket y asocia inteligentemente al cliente (Nuevo o Existente)
     store: async (req, res) => {
@@ -211,48 +219,117 @@ const indexController = {
     },
 
     // 8. Guarda Cambios (Modificado para persistir el valor de la Mano de Obra)
-       // 8. Actualiza los estados financieros del ticket y guarda los repuestos (Saneado contra nulos)
-    updateStatus: async (req, res) => {
-        try {
-            let fechaEgreso = null;
-            if (req.body.estado === 'Listo') {
-                fechaEgreso = new Date().toISOString().slice(0, 10); 
-            }
+          // 8. Actualiza los estados financieros del ticket, guarda repuestos y descuenta stock automáticamente
+   updateStatus: async (req, res) => {
+    const db = require('../database/db'); // Conexión base de Sequelize
+    const transaction = await db.transaction(); // Iniciamos una transacción segura para evitar datos corruptos
+    
+    try {
+        // 🛠️ SOLUCIÓN DEFINITIVA: Extraemos los modelos directamente desde la conexión activa de db
+        // Esto evita tener que ejecutar los archivos de modelos como funciones o clases manualmente
+        const Ticket = db.models.Ticket;
+        const Hardware = db.models.Hardware;
 
-            // Capturamos la lista de componentes serializados
-            let listaComponentesInput = req.body.componentes_array_json || '[]';
+        // Seguro de fallos secundario por si los nombres de tus alias varían (por ejemplo, en minúsculas)
+        const modeloTicket = Ticket || db.models.ticket || db.models.Usuario; 
+        const modeloHardware = Hardware || db.models.hardware || db.models.Hardware;
 
-            // 🛡️ SANEAR ENTRADAS NUMÉRICAS Y REDONDEAR A 2 DECIMALES FIJOS
-// Convertimos a número con parseFloat, si da vacío ponemos 0, y forzamos 2 decimales para evitar centavos fantasma
-const presupuestoFinal = parseFloat(parseFloat(req.body.presupuesto || 0).toFixed(2));
-const manoObraFinal    = parseFloat(parseFloat(req.body.mano_obra || 0).toFixed(2));
-
-// 🔍 CORRECCIÓN CRÍTICA: Limpia el adelanto de cualquier residuo numérico negativo o mal formateado
-let pagoParcialFinal   = parseFloat(parseFloat(req.body.pago_parcial || 0).toFixed(2));
-
-// Seguro de fallos: Si por algún error de cálculo el número da menor a cero, lo clavamos en 0.00
-if (pagoParcialFinal < 0) {
-    pagoParcialFinal = 0.00;
-}
-
-            await Ticket.update({
-                estado: req.body.estado,
-                presupuesto: presupuestoFinal,
-                pago_parcial: pagoParcialFinal, // ⬅️ Ahora guarda 0.00 en vez de arrojar error de texto vacío
-                confirmado: req.body.checkbox_confirmado === 'true' || req.body.checkbox_confirmado === true || req.body.checkbox_confirmado === 'on', // Sincronizado con el name de tu vista
-                fecha_egreso: fechaEgreso,
-                componentes_json: listaComponentesInput,
-                mano_obra: manoObraFinal
-            }, {
-                where: { id_ticket: req.params.id_cliente } 
-            });
-            
-            res.redirect(`/detalle/${req.params.id_cliente}?actualizado=true`);
-        } catch (error) {
-            res.send("Error al guardar estado y componentes: " + error.message);
+        let fechaEgreso = null;
+        if (req.body.estado === 'Listo') {
+            fechaEgreso = new Date().toISOString().slice(0, 10);
         }
-    },
 
+        // 1. Buscamos el estado previo del ticket para saber qué repuestos ya tenía asignados históricamente
+        const ticketPrevio = await modeloTicket.findByPk(req.params.id_cliente, { transaction });
+        let componentesViejos = [];
+        try {
+            componentesViejos = JSON.parse(ticketPrevio.componentes_json || '[]');
+        } catch (e) {
+            componentesViejos = [];
+        }
+
+        // 2. Capturamos los nuevos componentes enviados por el formulario de la vista
+        let listaComponentesInput = req.body.componentes_array_json || '[]';
+        let componentesNuevos = [];
+        try {
+            componentesNuevos = JSON.parse(listaComponentesInput);
+        } catch (e) {
+            componentesNuevos = [];
+        }
+
+        // 🛡️ SANEAR ENTRADAS NUMÉRICAS
+        const presupuestoFinal = parseFloat(req.body.presupuesto) || 0;
+        const manoObraFinal = parseFloat(req.body.mano_obra) || 0;
+        let pagoParcialFinal = parseFloat(req.body.pago_parcial) || 0;
+        if (pagoParcialFinal < 0) {
+            pagoParcialFinal = 0.00;
+        }
+
+        // 🔍 CONTROL AUTOMÁTICO DE STOCK: Mapeamos variaciones por el Nombre/Componente del artículo
+        const conteoViejos = {};
+        componentesViejos.forEach(item => {
+            const nombre = item.nombre || item.componente;
+            if (nombre) conteoViejos[nombre] = (conteoViejos[nombre] || 0) + 1;
+        });
+
+        const conteoNuevos = {};
+        componentesNuevos.forEach(item => {
+            const nombre = item.nombre || item.componente;
+            if (nombre) conteoNuevos[nombre] = (conteoNuevos[nombre] || 0) + 1;
+        });
+
+        const todosLosItems = new Set([...Object.keys(conteoViejos), ...Object.keys(conteoNuevos)]);
+
+        // Evaluamos artículo por artículo para actualizar Clever Cloud
+        for (let nombreArticulo of todosLosItems) {
+            const cantidadVieja = conteoViejos[nombreArticulo] || 0;
+            const cantidadNueva = conteoNuevos[nombreArticulo] || 0;
+            
+            const diferencia = cantidadNueva - cantidadVieja;
+
+            if (diferencia !== 0) {
+                // Buscamos el repuesto físico en el catálogo de hardware por su nombre
+                const articuloStock = await modeloHardware.findOne({ 
+                    where: { componente: nombreArticulo }, 
+                    transaction 
+                });
+
+                if (articuloStock) {
+                    let nuevoStockCalculado = articuloStock.stock - diferencia;
+                    if (nuevoStockCalculado < 0) nuevoStockCalculado = 0; // Evitamos stock negativo físico
+
+                    await modeloHardware.update(
+                        { stock: nuevoStockCalculado },
+                        { where: { id_hardware: articuloStock.id_hardware }, transaction }
+                    );
+                }
+            }
+        }
+
+        // 3. Si todo el mapeo de stock fue exitoso, guardamos la ficha del cliente
+        await modeloTicket.update({
+            estado: req.body.estado,
+            presupuesto: presupuestoFinal,
+            pago_parcial: pagoParcialFinal,
+            confirmado: req.body.checkbox_confirmado === 'true' || req.body.checkbox_confirmado === true || req.body.checkbox_confirmado === 'on',
+            fecha_egreso: fechaEgreso,
+            componentes_json: listaComponentesInput,
+            mano_obra: manoObraFinal
+        }, { 
+            where: { id_ticket: req.params.id_cliente }, 
+            transaction 
+        });
+
+        // Confirmamos la transacción liberando los candados en MySQL
+        await transaction.commit();
+        res.redirect(`/detalle/${req.params.id_cliente}?actualizado=true`);
+
+    } catch (error) {
+        // Si algo falla en el proceso, deshacemos los cambios para cuidar tu inventario
+        if (transaction) await transaction.rollback();
+        res.send("Error crítico al actualizar el ticket y procesar el stock automático: " + error.message);
+    }
+},
 
 
     // 5. Historial completo de movimientos de caja

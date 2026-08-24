@@ -1,0 +1,64 @@
+/* public/stylesheets/header.css */
+
+/* Cabecera superior contenedora del Dashboard */
+.cabecera-bienvenida-taller {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #edf2f7;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+/* Bloque izquierdo de textos y saludos */
+.bloque-saludo-usuario {
+    text-align: left;
+}
+
+.bloque-saludo-usuario h2 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 20px;
+}
+
+.bloque-saludo-usuario h2 span {
+    color: #3182ce;
+    font-weight: bold;
+}
+
+.bloque-saludo-usuario small {
+    color: #718096;
+    font-weight: 500;
+    display: block;
+    margin-top: 4px;
+}
+
+/* Estados de advertencia por sesión ausente */
+.txt-sesion-alerta {
+    color: #e53e3e !important;
+    font-weight: bold;
+}
+
+/* Botón rápido de cierre de sesión seguro */
+.btn-cerrar-sesion {
+    color: #e53e3e;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-cerrar-sesion:hover {
+    background-color: #fff5f5;
+}
+
+.btn-cerrar-sesion:active {
+    transform: scale(0.98);
+}

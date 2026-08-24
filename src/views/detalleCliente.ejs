@@ -391,7 +391,9 @@
             carritoRepuestos = <%- JSON.stringify(componentesGuardados) %>;
             actualizarInputOculto();
             carritoRepuestos.forEach(item => {
-                renderizarTarjetaEnPantalla(item.id, item.nombre || item.componente, item.precio || item.price);
+                // Forzamos que conserve siempre el campo nombre alineado al catálogo
+                item.nombre = item.nombre || item.componente;
+                renderizarTarjetaEnPantalla(item.id, item.nombre, item.precio || item.price);
             });
         <% } %>
 
