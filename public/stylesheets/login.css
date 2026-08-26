@@ -1,5 +1,44 @@
 /* public/stylesheets/login.css */
 
+/* public/stylesheets/loginBackground.css (o agregalo en tu css actual) */
+
+/* Contenedor del video fijo de fondo completo */
+.video-background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: -1; /* Lo manda al fondo absoluto por detrás del formulario */
+}
+
+.video-background-container video {
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover; /* Asegura que cubra la pantalla sin estirarse */
+}
+
+/* 💡 CAPA DE ENFOQUE: Filtro oscuro/difuminado sobre el video 
+   para que las letras del login sigan siendo perfectamente legibles */
+.video-overlay-filtro {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(45, 55, 72, 0.65); /* Tono azul oscuro/grisáceo translúcido */
+    backdrop-filter: blur(4px); /* Difumina suavemente el movimiento del fondo */
+    z-index: 1;
+}
+
+
 .login-titulo {
     text-align: center; 
     color: #2d3748; 

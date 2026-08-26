@@ -1,6 +1,17 @@
 <%- include('./partials/head.ejs') %>
 <!-- Vinculamos las hojas de estilo externas -->
 <body>
+    <!-- VIDEO BACKGROUND OPERATIVO EN ENTORNO DE LOGIN -->
+<!-- 🖲️ ESTRUCTURA MANDATORIA PARA CHROME CON FILTRO DE AUTOPLAY -->
+<div class="video-background-container">
+    <div class="video-overlay-filtro"></div>
+    <!-- Forzamos muted="true" y loop="true" como propiedades nativas string -->
+    <video autoplay loop muted playsinline muted="true" loop="true" id="video-login-taller">
+        <source src="/videos/fondo-servicio-tecnico.mp4.mp4" type="video/mp4">
+        Tu navegador no soporta videos de fondo.
+    </video>
+</div>
+
   <div class="container-detalle">
     <h1 class="login-titulo"><%= title %></h1>
     
@@ -36,5 +47,29 @@
         </a>
     </div>
   </div>
+  <script>
+    // Seguro de vida para forzar la reproducción automática en navegadores modernos
+    document.addEventListener('DOMContentLoaded', () => {
+        const video = document.getElementById('video-login-taller');
+        if (video) {
+            // Forzamos el silenciado por código por seguridad
+            video.muted = true;
+            
+            // Gatillamos la reproducción nativa capturando promesas rechazadas por Chrome
+            const promesaPlay = video.play();
+            
+            if (promesaPlay !== undefined) {
+                promesaPlay.catch(error => {
+                    console.log("Autoplay retenido por Chrome, reintentando reproducción...", error);
+                    // Si Chrome lo frena, forzamos el arranque al primer movimiento del mouse
+                    document.addEventListener('click', () => {
+                        video.play();
+                    }, { once: true });
+                });
+            }
+        }
+    });
+</script>
+
 </body>
 </html>
