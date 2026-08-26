@@ -63,19 +63,19 @@
                 <div class="card-arrow">〉</div>
             </a>
 
-            <!-- TARJETA 4: CONTROL DE TÉCNICOS (CELESTE) -->
-            <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion.rol === 'admin') { %>
-                <a href="/users/management" class="card-dashboard card-celeste">
-                    <div class="card-icon-wrapper">
-                        <span class="card-icon">👥</span>
-                    </div>
-                    <div class="card-content">
-                        <h3>Control de Técnicos</h3>
-                        <p>Administra técnicos, permisos y asignaciones.</p>
-                    </div>
-                    <div class="card-arrow">〉</div>
-                </a>
-            <% } %>
+            <!-- TARJETA 4: CONTROL DE TÉCNICOS (CELESTE - PROTEGIDA POR ROL) -->
+                <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion && usuarioSesion.rol === 'admin') { %>
+                    <a href="/users/management" class="card-dashboard card-celeste">
+                        <div class="card-icon-wrapper">
+                            <span class="card-icon">👥</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>Control de Técnicos</h3>
+                            <p>Administra técnicos, permisos y asignaciones del personal.</p>
+                        </div>
+                        <div class="card-arrow">〉</div>
+                    </a>
+                <% } %>
 
         </div>
 

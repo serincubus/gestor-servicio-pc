@@ -23,7 +23,8 @@ const userManagementController = {
                 listaUsuarios: tecnicos,
                 busqueda: query,
                 usuarioEditar: null,
-                error: null
+                error: null,
+                usuarioSesion: req.session.usuarioLogueado // ⬅️ Inyectado para control de cabecera modular
             });
         } catch (error) {
             res.send("Error al cargar el catálogo de personal: " + error.message);

@@ -8,8 +8,8 @@ module.exports = (sequelize, dataTypes) => {
         },
         username: {
             type: dataTypes.STRING(50),
-            allowNull: false,
-            unique: true
+            allowNull: false
+           
         },
         password: {
             type: dataTypes.STRING(255), // Aquí guardarás la contraseña (idealmente con bcrypt)

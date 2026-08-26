@@ -9,8 +9,12 @@ const Usuario = UsuarioModel(db, DataTypes);
 const userControllers = {
     // Muestra el formulario de inicio de sesión
     loginVista: (req, res) => {
-        res.render('login', { title: 'Acceso Técnico', error: null });
-    },
+        res.render('login', 
+            { 
+                title: 'Acceso Técnico', 
+                error: null,
+                usuarioSesion: req.session.usuarioLogueado // ⬅️ Inyectado para control de cabecera modular},
+            })},
 
     // Procesa las credenciales buscando DIRECTAMENTE en la base de datos de Clever Cloud
     procesarLogin: async (req, res) => {
