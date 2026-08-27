@@ -395,3 +395,148 @@ a {
     color: #718096; 
     font-style: italic;
 }
+/* ==========================================================================
+   📱 CAPA RESPONSIVA COMPLETA: INTERFAZ DE INICIO (INDEX) MODERNA
+   ========================================================================== */
+
+/* 📑 REGLA 1: ADAPTACIÓN PARA TABLETS (Pantallas menores a 1024px) */
+@media (max-width: 1024px) {
+    body {
+        padding: 15px !important; /* Reducimos el colchón de los bordes */
+    }
+
+    /* El Grid de tarjetas del Dashboard pasa de 4 o 2 columnas fijas a ajustarse al ancho */
+    .dashboard-grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+        gap: 15px !important;
+        margin: 20px 0 !important;
+    }
+
+    .card-dashboard {
+        padding: 20px !important;
+        min-height: 120px !important;
+    }
+
+    .card-icon-wrapper {
+        width: 60px !important;
+        height: 60px !important;
+        margin-right: 15px !important;
+    }
+
+    .card-icon {
+        font-size: 26px !important;
+    }
+
+    .card-content h3 {
+        font-size: 18px !important;
+    }
+}
+
+/* 📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px - Samsung A10) */
+@media (max-width: 768px) {
+    body {
+        padding: 10px !important; /* Aprovechamiento máximo de los bordes del celular */
+    }
+
+    .container {
+        padding: 12px !important; /* La caja contenedora blanca se comprime prolijamente */
+        border-radius: 6px !important;
+    }
+
+    /* 👑 HEADER MODULAR RESPONSIVO: El saludo y el botón de salir se encolumnan verticalmente */
+    .cabecera-bienvenida-taller {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 15px !important;
+        gap: 12px !important;
+    }
+
+    .bloque-acciones-header {
+        width: 100% !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .btn-navegar-historial, .btn-cerrar-sesion {
+        width: 100% !important;
+        justify-content: center !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 📊 DASHBOARD GRID EN UNA SOLA COLUMNA: Las tarjetas de colores se apilan perfectamente */
+    .dashboard-grid-container {
+        grid-template-columns: 1fr !important; /* Una tarjeta debajo de la otra estrictamente */
+        gap: 12px !important;
+    }
+
+    .card-dashboard {
+        padding: 15px !important;
+        min-height: auto !important;
+    }
+
+    .card-arrow {
+        display: none !important; /* Ocultamos la flecha decorativa en celular para ganar espacio de texto */
+    }
+
+    /* 🔍 FORMULARIO DE BUSQUEDA: El casillero y el botón de buscar se apilan en cascada */
+    .form-busqueda {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .input-busqueda {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .btn-buscar, .btn-link-cancelar {
+        width: 100% !important;
+        padding: 12px !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 📥 EL DRAWER LATERAL SE TRANSFORMA EN UN PANEL COMPLETO DESDE ABAJO */
+    .hardware-drawer {
+        width: 100% !important;
+        max-width: 100% !important;
+        right: -100% !important; /* Lo saca por completo hacia la derecha de la pantalla móvil */
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .hardware-drawer.open {
+        transform: translateX(-100%) !important; /* Desliza cubriendo la pantalla del celular de forma nativa */
+    }
+
+    /* 📥 LAS ACCIONES DE CADA CLIENTE (Botones Detalle y Editar): Se acomodan de forma inteligente */
+    .contenedor-acciones-flex {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+
+    .grupo-operaciones-izquierda {
+        width: 100% !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .grupo-seguridad-derecha {
+        width: 100% !important;
+    }
+
+    .btn-ux, .btn-eliminar-flex {
+        width: 100% !important; /* Botones táctiles anchos ideales para pulsar con el pulgar */
+        padding: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    .contenedor-estado {
+        text-align: left !important; /* Alineación alineada al formato vertical */
+        margin-top: 5px !important;
+    }
+}
