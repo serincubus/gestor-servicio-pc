@@ -249,65 +249,116 @@ body {
 }
 
 /* 📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px) */
+/* 📱 REGLA ADAPTATIVA BLINDADA - EXCLUSIVA PARA SAMSUNG A10 Y DISPOSITIVOS MÓVILES */
+/* ==========================================================================
+   📱 CAPA RESPONSIVA COMPLETA: ADAPTACIÓN PARA MÓVILES (SAMSUNG)
+   ========================================================================== */
+
 @media (max-width: 768px) {
-    .wrapper-login-split {
-        flex-direction: column; /* Cambiamos la distribución horizontal a vertical */
-        justify-content: center;
-        align-items: center;
-        padding: 15px; /* Margen de resguardo para que la tarjeta no toque los bordes físicos */
+    /* Reseteamos el padding global del body que viene de style.css */
+    body {
+        padding: 0 !important;
+        background: #1a202c !important; /* Fondo oscuro de respaldo */
     }
 
-    /* Ocultamos por completo el bloque del logo izquierdo para cuidar el espacio del celular */
+    /* Forzamos que el split screen se comporte como una columna vertical plana */
+    .wrapper-login-split {
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 15px !important;
+        height: 100vh !important;
+        width: 100vw !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Ocultamos por completo el bloque del logo izquierdo en celulares */
     .login-branding-izquierdo {
         display: none !important;
     }
 
-    /* El contenedor del panel pasa a ocupar el ancho completo disponible */
+    /* El contenedor del panel derecho se aplana al 100% sin empujar márgenes */
     .login-panel-derecho-drawer {
         width: 100% !important;
-        height: auto !important; /* Deja de ocupar el 100% del alto de la pantalla */
+        max-width: 100% !important;
+        height: auto !important;
         padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
     }
 
-    /* Optimizamos la tarjeta de cristal para pantallas táctiles chichas */
+    /* Tarjeta de Cristal adaptada al ancho del Samsung */
     .card-login-glass {
-        padding: 30px 20px; /* Reducimos el espaciado interno para ganar área de escritura */
-        border-radius: 12px; /* Bordes un poco más sutiles en celulares */
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 30px 20px !important; /* Espaciado interno cómodo */
+        background: rgba(20, 26, 40, 0.85) !important; /* Fondo oscuro traslúcido para legibilidad */
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(10px) !important;
     }
 
     .login-glass-header {
-        margin-bottom: 20px;
-        text-align: center; /* Centramos el encabezado para mejorar la simetría visual */
+        margin-bottom: 20px !important;
+        text-align: center !important;
     }
 
-    .login-glass-header h2 {
-        font-size: 22px;
+    /* Encolumnado estricto del formulario */
+    .form-login-vertical {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
     }
 
-    /* Agrandamos levemente los inputs y el botón para que sea más fácil tocarlos con el dedo */
+    .grupo-input-login {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        margin-bottom: 15px !important;
+        text-align: left !important;
+    }
+
+    .grupo-input-login label {
+        margin-bottom: 6px !important;
+        color: #e2e8f0 !important;
+        font-size: 14px !important;
+    }
+
+    /* Inputs fluidos adaptados a las 412 píxeles de ancho del emulador */
     .grupo-input-login input {
-        padding: 15px;
-        font-size: 16px; /* Evita que iOS / Safari haga zoom automático molesto al enfocar */
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 14px !important;
+        font-size: 16px !important; /* Bloquea el zoom automático de Chrome mobile */
+        box-sizing: border-box !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
     }
 
+    /* Botón de Ingreso adaptado a pantalla táctil */
     .btn-ingresar-taller-moderno {
-        padding: 15px;
-        font-size: 17px;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 14px !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        box-sizing: border-box !important;
+        margin-top: 10px !important;
+        background-color: #3182ce !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
     }
-    
+
     .login-retorno-container-glass {
-        margin-top: 20px;
+        margin-top: 20px !important;
+        text-align: center !important;
+    }
+
+    .login-link-retorno-glass {
+        color: #a0aec0 !important;
+        font-size: 13.5px !important;
     }
 }
-
-/* 📴 REGLA 3: DISPOSITIVOS ULTRA CHICOS O EN MODO HORIZONTAL (Pantallas menores a 400px) */
-@media (max-width: 400px) {
-    .card-login-glass {
-        padding: 20px 15px;
-    }
-    
-    .login-glass-header h2 {
-        font-size: 20px;
-    }
-}
-
