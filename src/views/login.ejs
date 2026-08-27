@@ -1,75 +1,84 @@
 <%- include('./partials/head.ejs') %>
-<!-- Vinculamos las hojas de estilo externas -->
 <body>
-    <!-- VIDEO BACKGROUND OPERATIVO EN ENTORNO DE LOGIN -->
-<!-- 🖲️ ESTRUCTURA MANDATORIA PARA CHROME CON FILTRO DE AUTOPLAY -->
-<div class="video-background-container">
-    <div class="video-overlay-filtro"></div>
-    <!-- Forzamos muted="true" y loop="true" como propiedades nativas string -->
-    <video autoplay loop muted playsinline muted="true" loop="true" id="video-login-taller">
-        <source src="/videos/fondo-servicio-tecnico.mp4.mp4" type="video/mp4">
-        Tu navegador no soporta videos de fondo.
-    </video>
-</div>
 
-  <div class="container-detalle">
-    <h1 class="login-titulo"><%= title %></h1>
-    
-    <!-- CONTENEDOR DE IDENTIFICACIÓN -->
-    <div class="ficha-beneficiario">
-        <h3 class="login-subtitulo">🔑 Panel de Identificación Técnico</h3>
-        
-        <!-- Estructura mandatoria para el login conectado a la base de datos -->
-        <form action="/users/login" method="POST">
-            <!-- CASILLERO DE USUARIO (Debe tener name="username") -->
-            <label for="username">Nombre de Usuario:</label>
-            <input type="text" name="username" id="username" placeholder="Ingresá tu usuario" required>
-
-            <!-- CASILLERO DE CONTRASEÑA (Debe tener name="password") -->
-            <label for="password">Contraseña:</label>
-            <input type="password" name="password" id="password" placeholder="Ingresá tu contraseña" required>
-
-            <button type="submit">Ingresar al Taller</button>
-        </form>
-    </div>
-
-    <!-- CONTROL DE ALERTAS DE ERROR -->
-    <% if (error) { %>
-        <div class="estado-cuenta cuenta-pendiente login-error">
-            ❌ <%= error %>
-        </div>
-    <% } %>
-
-    <!-- ENLACE DE RETORNO PÚBLICO -->
-    <div class="login-retorno-container">
-        <a href="/consulta" class="login-link-retorno">
-            ← Volver a Consulta de Reparaciones (Clientes)
-        </a>
-    </div>
+  <!-- 🎥 VIDEO BACKGROUND OPERATIVO (Mantener en el fondo absoluto) -->
+  <div class="video-background-container">
+      <div class="video-overlay-filtro"></div>
+      <video autoplay loop muted playsinline id="video-login-taller">
+          <source src="/videos/fondo-servicio-tecnico.mp4" type="video/mp4">
+          Tu navegador no soporta videos de fondo.
+      </video>
   </div>
-  <script>
-    // Seguro de vida para forzar la reproducción automática en navegadores modernos
-    document.addEventListener('DOMContentLoaded', () => {
-        const video = document.getElementById('video-login-taller');
-        if (video) {
-            // Forzamos el silenciado por código por seguridad
-            video.muted = true;
-            
-            // Gatillamos la reproducción nativa capturando promesas rechazadas por Chrome
-            const promesaPlay = video.play();
-            
-            if (promesaPlay !== undefined) {
-                promesaPlay.catch(error => {
-                    console.log("Autoplay retenido por Chrome, reintentando reproducción...", error);
-                    // Si Chrome lo frena, forzamos el arranque al primer movimiento del mouse
-                    document.addEventListener('click', () => {
-                        video.play();
-                    }, { once: true });
-                });
-            }
-        }
-    });
-</script>
 
+  <!-- 🌍 CONTENEDOR CENTRAL DE DISTRIBUCIÓN (Separa la pantalla en dos mitades) -->
+  <div class="wrapper-login-split">
+      
+      <!-- LADO IZQUIERDO: Membrete o Logo del Taller (Limpio y elegante) -->
+      <div class="login-branding-izquierdo">
+          <h1 class="branding-titulo">Gestor <span class="txt-resaltado-blue">Service PC</span></h1>
+          <p class="branding-eslogan">Plataforma de Control de Soporte Técnico e Inventario v2.0</p>
+      </div>
+
+      <!-- LADO DERECHO: LA TARJETA DE ACCESO ESTILO GLASSMORPHISM -->
+      <div class="login-panel-derecho-drawer">
+          <div class="card-login-glass">
+              
+              <div class="login-glass-header">
+                  <h2>🔑 Panel de Identificación</h2>
+                  <p>Introduce tus credenciales del taller para ingresar al panel.</p>
+              </div>
+
+              <!-- Formulario con todos los campos estrictamente encolumnados -->
+              <form action="/users/login" method="POST" class="form-login-vertical">
+                  
+                  <div class="grupo-input-login">
+                      <label for="username">Nombre de Usuario:</label>
+                      <input type="text" name="username" id="username" placeholder="Ingresá tu usuario" required autocomplete="off">
+                  </div>
+
+                  <div class="grupo-input-login">
+                      <label for="password">Contraseña de Acceso:</label>
+                      <input type="password" name="password" id="password" placeholder="Ingresá tu contraseña" required>
+                  </div>
+
+                  <!-- CONTROL DE ALERTAS DE ERROR INTEGRADO PROLIJO -->
+                  <% if (error) { %>
+                      <div class="alerta-error-login-glass">
+                          ❌ <%= error %>
+                      </div>
+                  <% } %>
+
+                  <button type="submit" class="btn-ingresar-taller-moderno">
+                      Ingresar al Taller →
+                  </button>
+              </form>
+
+              <!-- Enlace de retorno flotante al pie de la tarjeta -->
+              <div class="login-retorno-container-glass">
+                  <a href="/consulta" class="login-link-retorno-glass">
+                      ← Volver a Consulta de Reparaciones (Clientes)
+                  </a>
+              </div>
+
+          </div>
+      </div>
+
+  </div>
+
+  <!-- Seguro de vida JavaScript para forzar la reproducción en Chrome -->
+  <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const video = document.getElementById('video-login-taller');
+          if (video) {
+              video.muted = true;
+              const promesaPlay = video.play();
+              if (promesaPlay !== undefined) {
+                  promesaPlay.catch(() => {
+                      document.addEventListener('click', () => { video.play(); }, { once: true });
+                  });
+              }
+          }
+      });
+  </script>
 </body>
 </html>
