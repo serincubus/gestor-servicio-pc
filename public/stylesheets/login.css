@@ -228,3 +228,86 @@ body {
 .login-link-retorno-glass:hover {
     color: #3182ce;
 }
+
+/* ==========================================================================
+   📱 CAPA RESPONSIVA COMPLETA: ADAPTACIÓN PARA TABLETS Y SMARTPHONES
+   ========================================================================== */
+
+/* 📑 REGLA 1: AJUSTE PARA TABLETS (Pantallas menores a 1024px) */
+@media (max-width: 1024px) {
+    .login-branding-izquierdo {
+        padding: 0 30px; /* Reducimos los márgenes para que no empuje la tarjeta */
+    }
+    
+    .branding-titulo {
+        font-size: 34px; /* Achicamos un poco el tamaño del logo */
+    }
+
+    .login-panel-derecho-drawer {
+        width: 440px; /* Ajustamos el ancho del panel para que entre prolijo */
+    }
+}
+
+/* 📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px) */
+@media (max-width: 768px) {
+    .wrapper-login-split {
+        flex-direction: column; /* Cambiamos la distribución horizontal a vertical */
+        justify-content: center;
+        align-items: center;
+        padding: 15px; /* Margen de resguardo para que la tarjeta no toque los bordes físicos */
+    }
+
+    /* Ocultamos por completo el bloque del logo izquierdo para cuidar el espacio del celular */
+    .login-branding-izquierdo {
+        display: none !important;
+    }
+
+    /* El contenedor del panel pasa a ocupar el ancho completo disponible */
+    .login-panel-derecho-drawer {
+        width: 100% !important;
+        height: auto !important; /* Deja de ocupar el 100% del alto de la pantalla */
+        padding: 0 !important;
+    }
+
+    /* Optimizamos la tarjeta de cristal para pantallas táctiles chichas */
+    .card-login-glass {
+        padding: 30px 20px; /* Reducimos el espaciado interno para ganar área de escritura */
+        border-radius: 12px; /* Bordes un poco más sutiles en celulares */
+    }
+
+    .login-glass-header {
+        margin-bottom: 20px;
+        text-align: center; /* Centramos el encabezado para mejorar la simetría visual */
+    }
+
+    .login-glass-header h2 {
+        font-size: 22px;
+    }
+
+    /* Agrandamos levemente los inputs y el botón para que sea más fácil tocarlos con el dedo */
+    .grupo-input-login input {
+        padding: 15px;
+        font-size: 16px; /* Evita que iOS / Safari haga zoom automático molesto al enfocar */
+    }
+
+    .btn-ingresar-taller-moderno {
+        padding: 15px;
+        font-size: 17px;
+    }
+    
+    .login-retorno-container-glass {
+        margin-top: 20px;
+    }
+}
+
+/* 📴 REGLA 3: DISPOSITIVOS ULTRA CHICOS O EN MODO HORIZONTAL (Pantallas menores a 400px) */
+@media (max-width: 400px) {
+    .card-login-glass {
+        padding: 20px 15px;
+    }
+    
+    .login-glass-header h2 {
+        font-size: 20px;
+    }
+}
+
