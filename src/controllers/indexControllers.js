@@ -211,7 +211,8 @@ const indexController = {
                 title: 'Detalle del Ticket', 
                 cliente: mapeoClienteCompatibilidad,
                 listaHardware: repuestosDisponibles,
-                componentesGuardados: componentesGuardados
+                componentesGuardados: componentesGuardados,
+                 usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA CARGA AL USUARIO LOGUEADO!
             });
         } catch (error) {
             res.send("Error al cargar detalle: " + error.message);
