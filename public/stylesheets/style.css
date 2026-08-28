@@ -395,17 +395,19 @@ a {
     color: #718096; 
     font-style: italic;
 }
-/* ==========================================================================
-   📱 CAPA RESPONSIVA COMPLETA: INTERFAZ DE INICIO (INDEX) MODERNA
-   ========================================================================== */
 
-/* 📑 REGLA 1: ADAPTACIÓN PARA TABLETS (Pantallas menores a 1024px) */
+/* ==========================================================================
+   📱 CAPA RESPONSIVA CONTROLADA: SECCIÓN INFERIOR DE INDEX.CSS
+   ========================================================================== 
+
+/* 📑 REGLA 1: ADAPTACIÓN EXCLUSIVA PARA TABLETS (Pantallas menores a 1024px) */
+
 @media (max-width: 1024px) {
     body {
-        padding: 15px !important; /* Reducimos el colchón de los bordes */
+        padding: 15px !important;
     }
 
-    /* El Grid de tarjetas del Dashboard pasa de 4 o 2 columnas fijas a ajustarse al ancho */
+    /* Ajustamos el Dashboard para que no se desborde horizontalmente en tablets */
     .dashboard-grid-container {
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
         gap: 15px !important;
@@ -416,59 +418,31 @@ a {
         padding: 20px !important;
         min-height: 120px !important;
     }
-
-    .card-icon-wrapper {
-        width: 60px !important;
-        height: 60px !important;
-        margin-right: 15px !important;
-    }
-
-    .card-icon {
-        font-size: 26px !important;
-    }
-
-    .card-content h3 {
-        font-size: 18px !important;
-    }
 }
 
-/* 📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px - Samsung A10) */
+/* 📱 REGLA 2: AJUSTE CRÍTICO Y AISLADO PARA SMARTPHONES (SAMSUNG A10 / MÓVILES) */
 @media (max-width: 768px) {
+    /* 🛠️ LIBERACIÓN DE FLUJO MÓVIL: Forzamos scroll vertical libre */
     body {
-        padding: 10px !important; /* Aprovechamiento máximo de los bordes del celular */
+        padding: 10px !important;
+        height: auto !important; /* Desbloquea cualquier congelamiento de alto */
+        overflow-y: auto !important; /* Permite deslizar el dedo hacia abajo con normalidad */
     }
 
+    /* El contenedor blanco se adapta al ancho físico del celular sin desbordar */
     .container {
-        padding: 12px !important; /* La caja contenedora blanca se comprime prolijamente */
+        padding: 12px !important;
         border-radius: 6px !important;
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
     }
 
-    /* 👑 HEADER MODULAR RESPONSIVO: El saludo y el botón de salir se encolumnan verticalmente */
-    .cabecera-bienvenida-taller {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        padding: 15px !important;
-        gap: 12px !important;
-    }
-
-    .bloque-acciones-header {
-        width: 100% !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 8px !important;
-    }
-
-    .btn-navegar-historial, .btn-cerrar-sesion {
-        width: 100% !important;
-        justify-content: center !important;
-        text-align: center !important;
-        box-sizing: border-box !important;
-    }
-
-    /* 📊 DASHBOARD GRID EN UNA SOLA COLUMNA: Las tarjetas de colores se apilan perfectamente */
+    /* Las tarjetas de colores del Dashboard se apilan de forma vertical perfecta */
     .dashboard-grid-container {
-        grid-template-columns: 1fr !important; /* Una tarjeta debajo de la otra estrictamente */
+        grid-template-columns: 1fr !important; /* Una debajo de la otra estrictamente */
         gap: 12px !important;
+        margin-bottom: 25px !important;
     }
 
     .card-dashboard {
@@ -477,10 +451,10 @@ a {
     }
 
     .card-arrow {
-        display: none !important; /* Ocultamos la flecha decorativa en celular para ganar espacio de texto */
+        display: none !important; /* Esconde la flecha decorativa para ganar espacio de lectura */
     }
 
-    /* 🔍 FORMULARIO DE BUSQUEDA: El casillero y el botón de buscar se apilan en cascada */
+    /* El formulario de búsqueda pasa a formato vertical */
     .form-busqueda {
         flex-direction: column !important;
         gap: 8px !important;
@@ -499,23 +473,24 @@ a {
         box-sizing: border-box !important;
     }
 
-    /* 📥 EL DRAWER LATERAL SE TRANSFORMA EN UN PANEL COMPLETO DESDE ABAJO */
-    .hardware-drawer {
+    /* 📥 LAS TARJETAS DE LOS EQUIPOS INGRESADOS EN MÓVIL */
+    #lista-reparaciones {
+        display: block !important;
         width: 100% !important;
-        max-width: 100% !important;
-        right: -100% !important; /* Lo saca por completo hacia la derecha de la pantalla móvil */
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
 
-    .hardware-drawer.open {
-        transform: translateX(-100%) !important; /* Desliza cubriendo la pantalla del celular de forma nativa */
+    .reparacion-card {
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+        border-left: 5px solid #3182ce !important; /* Mantiene la estética del taller */
     }
 
-    /* 📥 LAS ACCIONES DE CADA CLIENTE (Botones Detalle y Editar): Se acomodan de forma inteligente */
+    /* Los botones de operaciones (Detalle, Editar, Eliminar) se vuelven bloques táctiles anchos */
     .contenedor-acciones-flex {
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 10px !important;
+        width: 100% !important;
     }
 
     .grupo-operaciones-izquierda {
@@ -527,16 +502,22 @@ a {
 
     .grupo-seguridad-derecha {
         width: 100% !important;
+        margin-top: 5px !important;
     }
 
+    /* Botones ampliados para pulsaciones cómodas con el pulgar */
     .btn-ux, .btn-eliminar-flex {
-        width: 100% !important; /* Botones táctiles anchos ideales para pulsar con el pulgar */
+        width: 100% !important; 
         padding: 12px !important;
         box-sizing: border-box !important;
+        display: inline-flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
 
     .contenedor-estado {
-        text-align: left !important; /* Alineación alineada al formato vertical */
-        margin-top: 5px !important;
+        text-align: left !important;
+        margin-top: 10px !important;
     }
 }
+

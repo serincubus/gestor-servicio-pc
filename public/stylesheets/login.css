@@ -1,232 +1,227 @@
-/* public/stylesheets/loginModern.css - Diseño Glassmorphism Encolumnado a la Derecha */
+/* public/stylesheets/login.css - Diseño Glassmorphism Encolumnado a la Derecha */
 
-body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow: hidden;
+/* 🛡️ ENCAPSULAMIENTO CRÍTICO: Bloquea que las restricciones de alto y scroll alteren el index.ejs */
+.body-login-exclusivo {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    overflow: hidden !important; /* Congela el scroll estrictamente en la pantalla de acceso */
 }
 
 /* 🎥 VIDEO BACKGROUND GENERAL FIJO */
-.video-background-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    z-index: -1;
+.body-login-exclusivo .video-background-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    z-index: -1 !important;
 }
 
-.video-background-container video {
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    object-fit: cover;
+.body-login-exclusivo .video-background-container video {
+    min-width: 100% !important;
+    min-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    object-fit: cover !important;
 }
 
-.video-overlay-filtro {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(26, 32, 44, 0.75), rgba(45, 55, 72, 0.45)); /* Gradiente oscuro */
-    backdrop-filter: blur(5px); /* Difumina de fondo el video de hardware */
-    z-index: 1;
+.body-login-exclusivo .video-overlay-filtro {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(135deg, rgba(26, 32, 44, 0.75), rgba(45, 55, 72, 0.45)) !important;
+    backdrop-filter: blur(5px) !important; /* Difumina de fondo el video de hardware */
+    z-index: 1 !important;
 }
 
 /* 🌍 DISTRIBUCIÓN DE PANTALLA DIVIDIDA (SPLIT SCREEN LAYOUT) */
-.wrapper-login-split {
-    position: relative;
-    z-index: 5;
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-    box-sizing: border-box;
+.body-login-exclusivo .wrapper-login-split {
+    position: relative !important;
+    z-index: 5 !important;
+    display: flex !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    box-sizing: border-box !important;
 }
 
 /* Lado izquierdo: Textos de Branding */
-.login-branding-izquierdo {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 60px;
-    color: #ffffff;
-    text-align: left;
+.body-login-exclusivo .login-branding-izquierdo {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 0 60px !important;
+    color: #ffffff !important;
+    text-align: left !important;
 }
 
-@media (max-width: 900px) {
-    .login-branding-izquierdo {
-        display: none; /* Esconde el branding en celulares para cuidar el espacio */
-    }
+.body-login-exclusivo .branding-titulo {
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    margin: 0 0 10px 0 !important;
+    letter-spacing: -1px !important;
 }
 
-.branding-titulo {
-    font-size: 42px;
-    font-weight: 800;
-    margin: 0 0 10px 0;
-    letter-spacing: -1px;
+.body-login-exclusivo .txt-resaltado-blue {
+    color: #3182ce !important;
 }
 
-.txt-resaltado-blue {
-    color: #3182ce;
-}
-
-.branding-eslogan {
-    font-size: 16px;
-    margin: 0;
-    opacity: 0.8;
+.body-login-exclusivo .branding-eslogan {
+    font-size: 16px !important;
+    margin: 0 !important;
+    opacity: 0.8 !important;
 }
 
 /* Lado derecho: Contenedor del panel lateral */
-.login-panel-derecho-drawer {
-    width: 500px;
-    max-width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 30px;
-    box-sizing: border-box;
+.body-login-exclusivo .login-panel-derecho-drawer {
+    width: 500px !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 30px !important;
+    box-sizing: border-box !important;
 }
 
 /* 🔮 TARJETA DE CRISTAL SEMITRANSPARENTE (GLASSMORPHISM CARD) */
-.card-login-glass {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.08); /* Fondo blanco traslúcido ultra sutil */
-    border: 1px solid rgba(255, 255, 255, 0.15); /* Borde brillante de cristal */
-    border-radius: 16px;
-    padding: 40px 35px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(10px); /* Pone borroso el video justo detrás de la tarjeta */
-    box-sizing: border-box;
-    text-align: left;
+.body-login-exclusivo .card-login-glass {
+    width: 100% !important;
+    background: rgba(255, 255, 255, 0.08) !important; /* Fondo blanco traslúcido ultra sutil */
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Borde brillante de cristal */
+    border-radius: 16px !important;
+    padding: 40px 35px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25) !important;
+    backdrop-filter: blur(10px) !important; /* Pone borroso el video justo detrás de la tarjeta */
+    box-sizing: border-box !important;
+    text-align: left !important;
 }
 
-.login-glass-header {
-    margin-bottom: 30px;
+.body-login-exclusivo .login-glass-header {
+    margin-bottom: 30px !important;
 }
 
-.login-glass-header h2 {
-    margin: 0 0 8px 0;
-    color: #ffffff;
-    font-size: 24px;
-    font-weight: 600;
-    letter-spacing: -0.5px;
+.body-login-exclusivo .login-glass-header h2 {
+    margin: 0 0 8px 0 !important;
+    color: #ffffff !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.5px !important;
 }
 
-.login-glass-header p {
-    margin: 0;
-    color: #cbd5e0;
-    font-size: 14px;
-    line-height: 1.4;
+.body-login-exclusivo .login-glass-header p {
+    margin: 0 !important;
+    color: #cbd5e0 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
 }
 
 /* 📝 FORMULARIO VERTICAL ENCOLUMNADO */
-.form-login-vertical {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+.body-login-exclusivo .form-login-vertical {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
 }
 
-.grupo-input-login {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
+.body-login-exclusivo .grupo-input-login {
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 20px !important;
 }
 
-.grupo-input-login label {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #e2e8f0;
-    margin-bottom: 8px;
+.body-login-exclusivo .grupo-input-login label {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #e2e8f0 !important;
+    margin-bottom: 8px !important;
 }
 
-.grupo-input-login input {
-    width: 100%;
-    padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.1); /* Inputs traslúcidos */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    font-size: 15px;
-    color: #ffffff;
-    box-sizing: border-box;
-    outline: none;
-    transition: all 0.2s ease;
+.body-login-exclusivo .grupo-input-login input {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    background: rgba(255, 255, 255, 0.1) !important; /* Inputs traslúcidos */
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    color: #ffffff !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    transition: all 0.2s ease !important;
 }
 
 /* Cambia de color prolijamente al hacer foco */
-.grupo-input-login input:focus {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #3182ce;
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+.body-login-exclusivo .grupo-input-login input:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: #3182ce !important;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25) !important;
 }
 
 /* Estilo para el placeholder en textos traslúcidos */
-.grupo-input-login input::placeholder {
-    color: #a0aec0;
+.body-login-exclusivo .grupo-input-login input::placeholder {
+    color: #a0aec0 !important;
 }
 
 /* Botón comercial azul expandido */
-.btn-ingresar-taller-moderno {
-    width: 100%;
-    padding: 14px;
-    background-color: #3182ce;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
-    transition: background-color 0.2s, transform 0.1s;
-    margin-top: 10px;
+.body-login-exclusivo .btn-ingresar-taller-moderno {
+    width: 100% !important;
+    padding: 14px !important;
+    background-color: #3182ce !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3) !important;
+    transition: background-color 0.2s, transform 0.1s !important;
+    margin-top: 10px !important;
 }
 
-.btn-ingresar-taller-moderno:hover {
-    background-color: #2b6cb0;
+.body-login-exclusivo .btn-ingresar-taller-moderno:hover {
+    background-color: #2b6cb0 !important;
 }
 
-.btn-ingresar-taller-moderno:active {
-    transform: scale(0.98);
+.body-login-exclusivo .btn-ingresar-taller-moderno:active {
+    transform: scale(0.98) !important;
 }
 
 /* Cartel de error adaptado al estilo cristal */
-.alerta-error-login-glass {
-    background-color: rgba(229, 62, 62, 0.2);
-    border: 1px solid rgba(229, 62, 62, 0.4);
-    color: #fed7d7;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    font-weight: 500;
+.body-login-exclusivo .alerta-error-login-glass {
+    background-color: rgba(229, 62, 62, 0.2) !important;
+    border: 1px solid rgba(229, 62, 62, 0.4) !important;
+    color: #fed7d7 !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    margin-bottom: 20px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
 }
 
 /* Enlace inferior de retorno para clientes */
-.login-retorno-container-glass {
-    margin-top: 25px;
-    text-align: center;
+.body-login-exclusivo .login-retorno-container-glass {
+    margin-top: 25px !important;
+    text-align: center !important;
 }
 
-.login-link-retorno-glass {
-    color: #a0aec0;
-    text-decoration: none;
-    font-size: 13.5px;
-    font-weight: 500;
-    transition: color 0.15s ease;
+.body-login-exclusivo .login-link-retorno-glass {
+    color: #a0aec0 !important;
+    text-decoration: none !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    transition: color 0.15s ease !important;
 }
 
-.login-link-retorno-glass:hover {
-    color: #3182ce;
+.body-login-exclusivo .login-link-retorno-glass:hover {
+    color: #3182ce !important;
 }
 
 /* ==========================================================================
@@ -235,34 +230,23 @@ body {
 
 /* 📑 REGLA 1: AJUSTE PARA TABLETS (Pantallas menores a 1024px) */
 @media (max-width: 1024px) {
-    .login-branding-izquierdo {
-        padding: 0 30px; /* Reducimos los márgenes para que no empuje la tarjeta */
+    .body-login-exclusivo .login-branding-izquierdo {
+        padding: 0 30px !important;
     }
     
-    .branding-titulo {
-        font-size: 34px; /* Achicamos un poco el tamaño del logo */
+    .body-login-exclusivo .branding-titulo {
+        font-size: 34px !important;
     }
 
-    .login-panel-derecho-drawer {
-        width: 440px; /* Ajustamos el ancho del panel para que entre prolijo */
+    .body-login-exclusivo .login-panel-derecho-drawer {
+        width: 440px !important;
     }
 }
 
-/* 📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px) */
-/* 📱 REGLA ADAPTATIVA BLINDADA - EXCLUSIVA PARA SAMSUNG A10 Y DISPOSITIVOS MÓVILES */
-/* ==========================================================================
-   📱 CAPA RESPONSIVA COMPLETA: ADAPTACIÓN PARA MÓVILES (SAMSUNG)
-   ========================================================================== */
-
+/* 📱 REGLA 2: AJUSTE CRÍTICO PARA MÓVILES (SAMSUNG) - AISLADO POR CLASE */
 @media (max-width: 768px) {
-    /* Reseteamos el padding global del body que viene de style.css */
-    body {
-        padding: 0 !important;
-        background: #1a202c !important; /* Fondo oscuro de respaldo */
-    }
-
     /* Forzamos que el split screen se comporte como una columna vertical plana */
-    .wrapper-login-split {
+    .body-login-exclusivo .wrapper-login-split {
         flex-direction: column !important;
         justify-content: center !important;
         align-items: center !important;
@@ -273,12 +257,12 @@ body {
     }
 
     /* Ocultamos por completo el bloque del logo izquierdo en celulares */
-    .login-branding-izquierdo {
+    .body-login-exclusivo .login-branding-izquierdo {
         display: none !important;
     }
 
     /* El contenedor del panel derecho se aplana al 100% sin empujar márgenes */
-    .login-panel-derecho-drawer {
+    .body-login-exclusivo .login-panel-derecho-drawer {
         width: 100% !important;
         max-width: 100% !important;
         height: auto !important;
@@ -288,30 +272,30 @@ body {
     }
 
     /* Tarjeta de Cristal adaptada al ancho del Samsung */
-    .card-login-glass {
+    .body-login-exclusivo .card-login-glass {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        padding: 30px 20px !important; /* Espaciado interno cómodo */
-        background: rgba(20, 26, 40, 0.85) !important; /* Fondo oscuro traslúcido para legibilidad */
+        padding: 30px 20px !important;
+        background: rgba(20, 26, 40, 0.85) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         border-radius: 12px !important;
         backdrop-filter: blur(10px) !important;
     }
 
-    .login-glass-header {
+    .body-login-exclusivo .login-glass-header {
         margin-bottom: 20px !important;
         text-align: center !important;
     }
 
     /* Encolumnado estricto del formulario */
-    .form-login-vertical {
+    .body-login-exclusivo .form-login-vertical {
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
     }
 
-    .grupo-input-login {
+    .body-login-exclusivo .grupo-input-login {
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
@@ -319,46 +303,58 @@ body {
         text-align: left !important;
     }
 
-    .grupo-input-login label {
+    .body-login-exclusivo .grupo-input-login label {
         margin-bottom: 6px !important;
         color: #e2e8f0 !important;
         font-size: 14px !important;
     }
 
-    /* Inputs fluidos adaptados a las 412 píxeles de ancho del emulador */
-    .grupo-input-login input {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 14px !important;
-        font-size: 16px !important; /* Bloquea el zoom automático de Chrome mobile */
-        box-sizing: border-box !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: #ffffff !important;
-        border-radius: 8px !important;
-    }
+    /* Inputs fluidos adaptados a las píxeles del emulador */
+.body-login-exclusivo .grupo-input-login input {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px !important;
+    font-size: 16px !important;
+    box-sizing: border-box !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;border-radius: 8px !important;}
 
-    /* Botón de Ingreso adaptado a pantalla táctil */
-    .btn-ingresar-taller-moderno {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 14px !important;
-        font-size: 16px !important;
-        font-weight: bold !important;
-        box-sizing: border-box !important;
-        margin-top: 10px !important;
-        background-color: #3182ce !important;
-        color: #ffffff !important;
-        border-radius: 8px !important;
-    }
+/* Botón de Ingreso adaptado a pantalla táctil */
+.body-login-exclusivo .btn-ingresar-taller-moderno {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    box-sizing: border-box !important;
+    margin-top: 10px !important;
+    background-color: #3182ce !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+}
 
-    .login-retorno-container-glass {
-        margin-top: 20px !important;
-        text-align: center !important;
-    }
+/* Botón de Ingreso adaptado a pantalla táctil */
+.body-login-exclusivo .btn-ingresar-taller-moderno {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    box-sizing: border-box !important;
+    margin-top: 10px !important;
+    background-color: #3182ce !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+}
 
-    .login-link-retorno-glass {
-        color: #a0aec0 !important;
-        font-size: 13.5px !important;
-    }
+.body-login-exclusivo .login-retorno-container-glass {
+    margin-top: 20px !important;
+    text-align: center !important;
+}
+
+.body-login-exclusivo .login-link-retorno-glass {
+    color: #a0aec0 !important;
+    font-size: 13.5px !important;
+}
 }
