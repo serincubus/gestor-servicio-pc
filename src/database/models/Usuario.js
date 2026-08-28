@@ -9,21 +9,26 @@ module.exports = (sequelize, dataTypes) => {
         username: {
             type: dataTypes.STRING(50),
             allowNull: false
-           
         },
         password: {
-            type: dataTypes.STRING(255), // Aquí guardarás la contraseña (idealmente con bcrypt)
+            type: dataTypes.STRING(255), 
             allowNull: false
         },
         rol: {
             type: dataTypes.ENUM('admin', 'tecnico'),
             allowNull: false,
-            defaultValue: 'tecnico' // Menor jerarquía por defecto
+            defaultValue: 'tecnico' 
+        },
+        // ➕ NUEVA COLUMNA: Almacena el nombre del archivo de imagen del operador
+        foto: {
+            type: dataTypes.STRING(255),
+            allowNull: true,
+            defaultValue: 'default-user.png' // Avatar de respaldo si no sube foto
         }
     };
     const config = {
         tableName: "usuarios",
-        timestamps: true
+        timestamps: true 
     };
 
     const Usuario = sequelize.define(alias, cols, config);
