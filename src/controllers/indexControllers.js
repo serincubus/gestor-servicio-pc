@@ -378,7 +378,8 @@ const indexController = {
             res.render('historial', { 
                 title: 'Historial de Clientes', 
                 lista: listaMapeada,
-                estadisticas: estadisticasMensuales 
+                estadisticas: estadisticasMensuales,
+                usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA CARGA AL USUARIO LOGUEADO!
             });
         } catch (error) {
             res.send("Error en el historial: " + error.message);

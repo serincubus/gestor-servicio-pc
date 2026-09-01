@@ -1,5 +1,4 @@
 <%- include('./partials/head.ejs') %>
-<%- include('./partials/header.ejs') %>
 <link rel='stylesheet' href='/stylesheets/style.css' />
 <link rel='stylesheet' href='/stylesheets/hardware.css' />
 <link rel='stylesheet' href='/stylesheets/usuariosCRUD.css' />
@@ -34,17 +33,27 @@
 
     <div class="contenedor-usuarios-crud">
         
-        <!-- DRAWER LATERAL DERECHO (FORMULARIO) -->
+        <!-- DRAWER LATERAL DERECHO (FORMULARIO CON SOPORTE MULTER) -->
         <div class="bloque-formulario hardware-drawer" id="hardware-drawer">
             <div class="drawer-header">
                 <h3><%= usuarioEditar ? '📝 Modificar Operador' : '➕ Agregar Nuevo Operador' %></h3>
                 <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer">✕</button>
             </div>
             
+            <!-- 🛠️ CORRECCIÓN CRÍTICA: Se inyectó enctype="multipart/form-data" para Multer -->
             <form action="/users/management/<%= usuarioEditar ? 'editar/' + usuarioEditar.id_usuario : 'guardar' %>" 
                   method="POST" 
+                  enctype="multipart/form-data"
                   class="form-usuarios-input">
                 
+                <!-- VISTA PREVIA DEL AVATAR (ESTILO EDITAR) -->
+                <% if (usuarioEditar) { %>
+                    <div class="contenedor-vista-previa-edicion" style="text-align: center; margin-bottom: 15px;">
+                        <span class="txt-foto-actual" style="font-size: 13px; color: #718096; display: block; margin-bottom: 5px;">Foto de Perfil Activa:</span>
+                        <img src="/images/users/<%= usuarioEditar.foto %>" class="img-vista-previa-edicion" style="width: 90px; height: 90px; object-fit: cover; border-radius: 50%; border: 2px solid #cbd5e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    </div>
+                <% } %>
+
                 <label>Nombre de Usuario (Login):</label>
                 <input type="text" name="username" placeholder="Ej: tecnico_sergio" required value="<%= usuarioEditar ? usuarioEditar.username : '' %>">
                 
@@ -57,7 +66,11 @@
                     <option value="admin" <%= usuarioEditar && usuarioEditar.rol === 'admin' ? 'selected' : '' %>>Administrador (Control Total)</option>
                 </select>
 
-                <button type="submit" class="btn-guardar-completo btn-registrar-hardware">
+                <!-- ➕ CASILLERO DE ARCHIVO: Carga del Avatar del Técnico -->
+                <label class="label-subida-imagen" style="margin-top: 10px; display: block; font-weight: bold;">📷 Adjuntar Foto de Perfil:</label>
+                <input type="file" name="foto" accept="image/*" class="input-file-hardware" style="border: none; padding: 5px 0;">
+
+                <button type="submit" class="btn-guardar-completo btn-registrar-hardware" style="margin-top: 15px;">
                     <%= usuarioEditar ? 'Guardar Cambios' : 'Registrar Miembro' %>
                 </button>
                 
@@ -67,33 +80,36 @@
             </form>
         </div>
 
-        <!-- TABLA DE INVENTARIO DE PERSONAL -->
+        <!-- TABLA DE INVENTARIO DE PERSONAL CON COLUMNA DE AVATAR -->
         <div class="bloque-tabla-usuarios">
             <h3>Operadores en el Sistema</h3>
             <table class="tabla-hardware">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th style="width: 70px; text-align: center;">Avatar</th>
                         <th>Nombre de Usuario</th>
                         <th>Contraseña</th>
                         <th>Jerarquía</th>
-                        <th>Acciones</th>
+                        <th style="width: 100px; text-align: center;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if(listaUsuarios.length > 0) { %>
                         <% listaUsuarios.forEach(user => { %>
                             <tr>
-                                <td>#<%= user.id_usuario %></td>
+                                <!-- COLUMNA FOTO: Renderiza la miniatura redonda del técnico -->
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <img src="/images/users/<%= user.foto %>" alt="Avatar" style="width: 45px; height: 44px; object-fit: cover; border-radius: 50%; border: 1px solid #e2e8f0; display: block; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                                </td>
                                 <td><strong><%= user.username %></strong></td>
-                                <td style="font-family: monospace;"><%= user.password %></td>
+                                <td style="font-family: monospace; color: #4a5568;"><%= user.password %></td>
                                 <td>
                                     <span class="<%= user.rol === 'admin' ? 'badge-rol-admin' : 'badge-rol-tecnico' %>">
                                         <%= user.rol === 'admin' ? '👑 Administrador' : '🛠️ Técnico' %>
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="contenedor-acciones-tabla">
+                                    <div class="contenedor-acciones-tabla" style="justify-content: center;">
                                         <a href="/users/management/editar/<%= user.id_usuario %>" class="btn-ux btn-ux-editar btn-accion-tabla">✏️</a>
                                         <button type="button" class="btn-eliminar-flex btn-accion-tabla" onclick="eliminarOperador('<%= user.id_usuario %>')">🗑️</button>
                                         <form id="form-eliminar-user-<%= user.id_usuario %>" action="/users/management/eliminar/<%= user.id_usuario %>" method="POST" style="display:none;"></form>
