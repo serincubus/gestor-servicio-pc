@@ -253,3 +253,200 @@
     color: #718096;
     font-style: italic;
 }
+
+
+/* ==========================================================================
+   📱 CAPA RESPONSIVA COMPLETA: CATÁLOGO DE HARDWARE, STOCK Y REPUESTOS
+   ========================================================================== */
+
+/* 📑 REGLA 1: ADAPTACIÓN PARA TABLETS (Pantallas menores a 1024px) */
+@media (max-width: 1024px) {
+    .contenedor-hardware {
+        flex-direction: column !important; /* Apilamos el formulario Drawer si queda fijo */
+        gap: 20px !important;
+    }
+
+    .bloque-tabla {
+        min-width: 100% !important;
+    }
+
+    /* Permitimos un sutil scroll horizontal en la tabla solo si es estrictamente necesario */
+    .bloque-tabla {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* 📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px - Samsung) */
+@media (max-width: 768px) {
+    .cabecera-hardware {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        text-align: center !important;
+    }
+
+    .cabecera-hardware h1 {
+        font-size: 24px !important;
+        margin-bottom: 5px !important;
+    }
+
+    /* Botones de Cabecera (Registrar hardware / Volver): Bloques anchos táctiles */
+    .cabecera-hardware style, 
+    .cabecera-hardware div {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    .cabecera-hardware .btn-ux {
+        width: 100% !important;
+        padding: 12px !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 🔍 BUSCADOR DE HARDWARE INYECTADO VERTICAL */
+    .form-busqueda {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .input-busqueda {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .btn-buscar, .btn-link-cancelar {
+        width: 100% !important;
+        padding: 12px !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 📥 EL DRAWER DE ALTA DE COMPONENTES SE TRANSFORMA AL ANCHO DEL CELULAR */
+    .hardware-drawer {
+        width: 100% !important;
+        max-width: 100% !important;
+        right: -100% !important; /* Ocultamiento periférico */
+    }
+
+    .hardware-drawer.open {
+        transform: translateX(-100%) !important; /* Desliza cubriendo toda la pantalla */
+    }
+
+    /* 🔒 DESTRUCCIÓN DE TABLA DE HARDWARE: Muta a tarjetas independientes */
+    .tabla-hardware {
+        display: block !important;
+        width: 100% !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    /* Escondemos el thead rígido para cuidar el espacio visual */
+    .tabla-hardware thead {
+        display: none !important;
+    }
+
+    .tabla-hardware tbody {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Cada fila (tr) se convierte en una tarjeta de producto estilo e-commerce */
+    .tabla-hardware tr {
+        display: block !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        border-radius: 12px !important;
+        padding: 15px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04) !important;
+        border: 1px solid #edf2f7 !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+    }
+
+    /* Cada celda (td) pasa a ser un bloque vertical encolumnado */
+    .tabla-hardware td {
+        display: block !important;
+        width: 100% !important;
+        padding: 8px 0 !important;
+        text-align: left !important;
+        border-bottom: 1px dashed #edf2f7 !important;
+        box-sizing: border-box !important;
+        font-size: 14.5px !important;
+    }
+
+    .tabla-hardware td:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* 🖼️ MINIATURA DE LA IMAGEN CENTRAL DEL REPUESTO */
+    .columna-imagen-th, .celda-imagen-td {
+        width: 100% !important;
+        text-align: center !important;
+        padding-bottom: 12px !important;
+    }
+
+    .img-miniatura-tabla {
+        width: 130px !important;
+        height: 130px !important;
+        border-radius: 8px !important;
+        margin: 0 auto !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;
+    }
+
+    /* 🏷️ INYECCIÓN DE TEXTOS GUÍA (TÍTULOS FRONTALES PARA LAS CELDAS) */
+    .tabla-hardware td:not(.celda-imagen-td):not(:last-child)::before {
+        display: block !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #a0aec0 !important;
+        font-weight: bold !important;
+        margin-bottom: 3px !important;
+    }
+
+    /* Selectores posicionales para etiquetar las propiedades del repuesto */
+    /* td:nth-of-type mapea el orden real de tus columnas físicas */
+    .tabla-hardware td:nth-of-type(2)::before { content: "📦 Nombre del Componente:"; }
+    .tabla-hardware td:nth-of-type(3)::before { content: "🏷️ Categoría de Hardware:"; }
+    .tabla-hardware td:nth-of-type(4)::before { content: "💰 Precio de Costo ($):"; }
+    .tabla-hardware td:nth-of-type(5)::before { content: "📈 Precio de Venta Público ($):"; }
+    .tabla-hardware td:nth-of-type(6)::before { content: "📊 Existencias / Stock Físico:"; }
+
+    /* Destacamos el stock de alerta en smartphones */
+    .stock-alerta {
+        display: inline-block !important;
+        margin-top: 2px !important;
+    }
+
+    /* ⚙️ BOTONES DE ACCIÓN (EDITAR Y ELIMINAR) EN FORMATO VERTICAL TÁCTIL */
+    .contenedor-acciones-tabla {
+        display: flex !important;
+        flex-direction: column !important; /* Botones uno arriba del otro */
+        width: 100% !important;
+        gap: 8px !important;
+        margin-top: 10px !important;
+    }
+
+    .contenedor-acciones-tabla .btn-ux,
+    .contenedor-acciones-tabla .btn-eliminar-flex,
+    .contenedor-acciones-tabla .btn-accion-tabla {
+        width: 100% !important;
+        padding: 12px !important; /* Mayor área táctil para el dedo */
+        font-size: 14.5px !important;
+        font-weight: bold !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        height: auto !important;
+        border-radius: 6px !important;
+    }
+}
