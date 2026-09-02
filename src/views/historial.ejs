@@ -8,23 +8,19 @@
     <!-- MÓDULO ESTADÍSTICO MENSUAL CONTROLADO POR CLASES CSS -->
     <div class="contenedor-estadisticas">
         <h2>📊 Resumen de Caja Mensual</h2>
-        
-        <% if (Object.keys(estadisticas).length > 0) { %>
+        <% if (typeof estadisticas !== 'undefined' && Object.keys(estadisticas).length > 0) { %>
             <div class="grilla-meses">
                 <% for (let mes in estadisticas) { %>
                     <div class="tarjeta-mes">
                         <h3><%= mes %></h3>
-                        
                         <div class="fila-monto-total">
                             <span>Monto Mensual:</span>
                             <strong>$<%= estadisticas[mes].montoTotalMensual.toFixed(2) %></strong>
                         </div>
-
                         <div class="fila-estadistica">
                             <span>Total Cobrado:</span>
                             <strong class="txt-cobrado">$<%= estadisticas[mes].cobrado.toFixed(2) %></strong>
                         </div>
-                        
                         <div class="fila-estadistica">
                             <span>Por Recaudar:</span>
                             <strong class="txt-pendiente">$<%= estadisticas[mes].pendiente.toFixed(2) %></strong>
@@ -51,7 +47,7 @@
             </tr>
         </thead>
         <tbody>
-            <% if (lista.length > 0) { %>
+            <% if (typeof lista !== 'undefined' && lista.length > 0) { %>
                 <% lista.forEach(cliente => { %>
                     <tr>
                         <td>
@@ -79,8 +75,8 @@
                                     Saldado ✅
                                 </span>
                             <% } %>
-
-                            <span class="info-confirmacion">
+                            
+                            <span class="info-confirmacion" style="display: block; font-size: 11px; margin-top: 5px;">
                                 <%= cliente.confirmado ? 'Presupuesto Aprobado 👍' : 'Sin Confirmar 👎' %>
                             </span>
                         </td>

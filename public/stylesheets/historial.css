@@ -151,3 +151,156 @@
     font-size: 12px;
     margin-top: 4px;
 }
+
+/* ==========================================================================
+   📱 CAPA RESPONSIVA COMPLETA: PANEL DE HISTORIAL TÉCNICO Y REPORTES DE CAJA
+   ========================================================================== */
+
+/* 📑 REGLA 1: ADAPTACIÓN PARA TABLETS (Pantallas menores a 1024px) */
+@media (max-width: 1024px) {
+    .container-historial {
+        padding: 15px !important;
+    }
+
+    /* La cuadrícula de meses se acomoda automáticamente a dos columnas */
+    .grilla-meses {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 15px !important;
+    }
+
+    /* Permitimos scroll horizontal sutil ÚNICAMENTE en la tabla si desborda en tablets */
+    .container-historial {
+        overflow-x: auto !important;
+    }
+}
+
+/* 📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px - Samsung) */
+@media (max-width: 768px) {
+    .container-historial {
+        padding: 10px !important;
+    }
+
+    .container-historial h1 {
+        font-size: 22px !important;
+        text-align: center !important;
+        margin-bottom: 15px !important;
+    }
+
+    /* Botón Volver: Se expande al 100% como un bloque táctil ancho */
+    .btn-volver-panel {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 12px !important;
+        box-sizing: border-box !important;
+        font-size: 15px !important;
+        margin-bottom: 25px !important;
+    }
+
+    /* 📊 RESUMEN DE CAJA: Tarjetas mensuales en una sola columna vertical */
+    .grilla-meses {
+        grid-template-columns: 1fr !important; /* Una debajo de la otra estrictamente */
+        gap: 12px !important;
+    }
+
+    .tarjeta-mes {
+        padding: 15px !important;
+        border-radius: 8px !important;
+    }
+
+    .tarjeta-mes h3 {
+        font-size: 18px !important;
+        text-align: center !important;
+        border-bottom: 1px solid #edf2f7 !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* 🔒 DESTRUCCIÓN DE TABLA RÍGIDA: Transformamos la grilla en tarjetas de lectura fluidas */
+    .tabla-grafica {
+        display: block !important;
+        width: 100% !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    /* Escondemos el encabezado original de la tabla porque consume espacio visual en celulares */
+    .tabla-grafica predictability,
+    .tabla-grafica thead {
+        display: none !important;
+    }
+
+    .tabla-grafica tbody {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Cada fila (tr) muta y se convierte en una tarjeta independiente emulando el inicio */
+    .tabla-grafica tr {
+        display: block !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+        border-left: 5px solid #4a5568 !important; /* Borde gris corporativo del historial */
+        box-sizing: border-box !important;
+    }
+
+    /* Cada celda (td) se comporta como un bloque de texto encolumnado al 100% */
+    .tabla-grafica td {
+        display: block !important;
+        width: 100% !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        border-bottom: 1px dashed #edf2f7 !important; /* Línea divisoria interna sutil */
+        box-sizing: border-box !important;
+        font-size: 14px !important;
+    }
+
+    /* Quitamos la línea punteada al último dato de la tarjeta */
+    .tabla-grafica td:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* 🏷️ INYECCIÓN DE TEXTOS GUÍA: Le agregamos una etiqueta frontal a las celdas críticas */
+    .td-cliente {
+        font-size: 16px !important;
+        color: #2d3748 !important;
+    }
+
+    .tabla-grafica td::before {
+        display: block !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #a0aec0 !important;
+        font-weight: bold !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* Usamos selectores posicionales para inyectar los títulos perdidos del thead */
+    .tabla-grafica td:nth-of-type(1)::before { content: "📅 Fecha de Ingreso:"; }
+    .tabla-grafica td:nth-of-type(2)::before { content: "👤 Nombre del Cliente:"; }
+    .tabla-grafica td:nth-of-type(3)::before { content: "💻 Equipo / Dispositivo:"; }
+    .tabla-grafica td:nth-of-type(4)::before { content: "🔎 Falla Reportada:"; }
+    .tabla-grafica td:nth-of-type(5)::before { content: "📦 Fecha de Egreso / Entrega:"; }
+    .tabla-grafica td:nth-of-type(6)::before { content: "💵 Estado de Cuentas y Saldos:"; }
+
+    .td-falla {
+        white-space: normal !important; /* Permite que los textos largos de fallas hagan saltos de línea */
+        color: #4a5568 !important;
+    }
+
+    .td-pago {
+        background-color: #f7fafc !important; /* Le damos un fondo destacado a la zona del dinero */
+        padding: 10px !important;
+        border-radius: 6px !important;
+        margin-top: 8px !important;
+    }
+}
+
