@@ -33,12 +33,35 @@ const userManagementController = {
         }
     },
 
-    // Registrar nuevo usuario técnico o administrador en Clever Cloud con foto
+    // Registrar nuevo usuario técnico o administrador en Clever Cloud con foto (Saneado)
     store: async (req, res) => {
         try {
-            const usuarioExistente = await Usuario.findOne({ where: { username: req.body.username.trim() } });
+            // 🛡️ SANEO ANTICAÍDAS: Validamos que los campos existan antes de aplicar .trim()
+            // Si el name del input llega vacío o incorrecto, le asignamos un string vacío para que no rompa Node
+            const usernameInput = req.body.username ? req.body.username.trim() : '';
+            const passwordInput = req.body.password ? req.body.password.trim() : '';
+            const rolInput      = req.body.rol      ? req.body.rol            : 'tecnico';
+
+            // Si los campos obligatorios están completamente vacíos, rechazamos de inmediato
+            if (!usernameInput || !passwordInput) {
+                // Si Multer subió una foto en este intento fallido, la eliminamos para no acumular basura
+                if (req.file) {
+                    const rutaBasura = path.join(__dirname, '../../public/images/users', req.file.filename);
+                    if (fs.existsSync(rutaBasura)) fs.unlinkSync(rutaBasura);
+                }
+                const todos = await Usuario.findAll({ order: [['username', 'ASC']], raw: true });
+                return res.render('usuariosCRUD', {
+                    title: 'Gestión de Personal Técnico',
+                    listaUsuarios: todos,
+                    busqueda: '',
+                    usuarioEditar: null,
+                    error: 'Error: El nombre de usuario y la contraseña son campos obligatorios.'
+                });
+            }
+
+            // Validación de unicidad de nombre de usuario en MySQL de Clever Cloud
+            const usuarioExistente = await Usuario.findOne({ where: { username: usernameInput } });
             if (usuarioExistente) {
-                // Si el usuario existe y Multer subió una foto nueva, la borramos para no dejar basura suelta
                 if (req.file) {
                     const rutaFotoSubida = path.join(__dirname, '../../public/images/users', req.file.filename);
                     if (fs.existsSync(rutaFotoSubida)) fs.unlinkSync(rutaFotoSubida);
@@ -50,22 +73,24 @@ const userManagementController = {
                     listaUsuarios: todos,
                     busqueda: '',
                     usuarioEditar: null,
-                    error: `El nombre de usuario "${req.body.username}" ya se encuentra registrado.`
+                    error: `El nombre de usuario "${usernameInput}" ya se encuentra registrado.`
                 });
             }
 
-            // 📷 CAPTURA DE FOTO CON MULTER: Si subió archivo usa el filename, si no, usa la imagen por defecto
+            // 📷 CAPTURA DE FOTO CON MULTER: Si subió archivo usa el filename, si no, usa la de respaldo
             let nombreImagen = 'default-user.png';
             if (req.file) {
                 nombreImagen = req.file.filename;
             }
 
+            // Guardamos el nuevo operador en la base de datos de producción
             await Usuario.create({
-                username: req.body.username.trim(),
-                password: req.body.password.trim(),
-                rol: req.body.rol,
-                foto: nombreImagen // ⬅️ Guardamos el nombre único en Clever Cloud
+                username: usernameInput,
+                password: passwordInput,
+                rol: rolInput,
+                foto: nombreImagen 
             });
+            
             res.redirect('/users/management');
         } catch (error) {
             res.send("Error crítico al registrar al operador: " + error.message);

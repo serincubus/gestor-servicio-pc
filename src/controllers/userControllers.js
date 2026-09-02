@@ -39,7 +39,8 @@ const userControllers = {
             req.session.usuarioLogueado = {
                 id_usuario: usuarioEncontrado.id_usuario,
                 username: usuarioEncontrado.username,
-                rol: usuarioEncontrado.rol // Captura automáticamente 'admin' o 'tecnico' desde la base de datos
+                rol: usuarioEncontrado.rol, // Captura automáticamente 'admin' o 'tecnico' desde la base de datos
+                foto: usuarioEncontrado.foto || 'default-user.png' 
             };
 
             // Mantiene compatibilidad booleana por si alguna ruta vieja todavía la usa

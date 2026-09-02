@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const path = require('path'); 
 const multer = require('multer'); // ⬅️ ¡ESTA LÍNEA DEBE SER LA NÚMERO 4 SÍ O SÍ!
 
 // routes/users.js
@@ -52,10 +53,10 @@ router.get('/logout', userControllers.logout);
 
 // 🔒 CRUD DE USUARIOS TÉCNICOS (Protegido para Administradores)
 router.get('/management', esStaff, esAdmin, userManagementController.index);
-router.post('/management/guardar', esStaff, esAdmin, userManagementController.store, uploadUserFoto.single('foto'));
+router.post('/management/guardar', esStaff, esAdmin, uploadUserFoto.single('foto'), userManagementController.store);
 router.get('/management/editar/:id', esStaff, esAdmin, userManagementController.edit);
-router.post('/management/editar/:id', esStaff, esAdmin, userManagementController.update, uploadUserFoto.single('foto'));
-router.post('/management/eliminar/:id', esStaff, esAdmin, userManagementController.delete, uploadUserFoto.single('foto'));
+router.post('/management/editar/:id', esStaff, esAdmin, uploadUserFoto.single('foto'), userManagementController.update,);
+router.post('/management/eliminar/:id', esStaff, esAdmin, uploadUserFoto.single('foto'), userManagementController.delete);
 
 
 
