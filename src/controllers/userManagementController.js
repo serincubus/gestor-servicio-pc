@@ -93,36 +93,51 @@ const userManagementController = {
 
      // Procesar y guardar los cambios del personal (Soporta cambios de password opcionales)
     update: async (req, res) => {
-        try {
-            const idUser = parseInt(req.params.id);
-            const usuarioActual = await Usuario.findByPk(idUser);
-            
-            if (!usuarioActual) return res.send("Error: Operador no encontrado.");
-
-            const usernameFinal = req.body.username ? req.body.username.trim() : usuarioActual.username;
-            const passwordInput = req.body.password ? req.body.password.trim() : '';
-            const rolFinal      = req.body.rol      ? req.body.rol            : usuarioActual.rol;
-            let nombreImagen    = req.file          ? req.file.filename       : usuarioActual.foto;
-
-            // 🔐 DETERMINAR CLAVE FINAL:
-            // Si el admin escribió una clave nueva, la encriptamos. Si no, dejamos la contraseña que ya tenía.
-            let passwordFinal = usuarioActual.password;
-            if (passwordInput && passwordInput !== usuarioActual.password) {
-                passwordFinal = await bcrypt.hash(passwordInput, 10);
-            }
-
-            await Usuario.update({
-                username: usernameFinal,
-                password: passwordFinal, // ⬅️ Hash actualizado
-                rol: rolFinal,
-                foto: nombreImagen
-            }, { where: { id_usuario: idUser } });
-            
-            res.redirect('/users/management');
-        } catch (error) {
-            res.send("Error al actualizar: " + error.message);
+    try {
+        const idUser = parseInt(req.params.id);
+        const usuarioActual = await Usuario.findByPk(idUser);
+        
+        if (!usuarioActual) {
+            return res.send("Error: Operador no encontrado.");
         }
-    },
+
+        const usernameFinal = req.body.username ? req.body.username.trim() : usuarioActual.username;
+        const passwordInput = req.body.password ? req.body.password.trim() : '';
+        const rolFinal      = req.body.rol      ? req.body.rol            : usuarioActual.rol;
+        let nombreImagen    = req.file          ? req.file.filename       : usuarioActual.foto;
+
+        // 🔐 DETERMINAR CLAVE FINAL:
+        let passwordFinal = usuarioActual.password;
+
+        if (passwordInput && passwordInput !== '') {
+            // 🛡️ REGLA DE DETECCIÓN INTELIGENTE:
+            // Si lo que viene del formulario NO empieza con el prefijo de Bcrypt ($2b$), 
+            // significa que el admin tipeó texto plano (ej: pedro123) y lo encriptamos obligatoriamente.
+            if (!passwordInput.startsWith('$2b$')) {
+                passwordFinal = await bcrypt.hash(passwordInput, 10);
+                console.log(`🔑 Contraseña de ${usernameFinal} cifrada exitosamente en el guardado.`);
+            } else {
+                // Si empieza con $2b$, es el hash viejo que la vista re-envió al no modificar el campo
+                passwordFinal = usuarioActual.password;
+            }
+        }
+
+        // Impactamos la actualización final limpia en la base de datos de Clever Cloud
+        await Usuario.update({
+            username: usernameFinal,
+            password: passwordFinal, // ⬅️ Hash protegido contra texto plano
+            rol: rolFinal,
+            foto: nombreImagen
+        }, { 
+            where: { id_usuario: idUser } 
+        });
+
+        res.redirect('/users/management');
+    } catch (error) {
+        res.send("Error al actualizar la credencial del operador: " + error.message);
+    }
+},
+
 
     // Dar de baja a un usuario técnico de la base de datos y borrar su foto de perfil
     delete: async (req, res) => {
