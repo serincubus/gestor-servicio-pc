@@ -24,6 +24,6 @@ router.post('/actualizar-estado/:id_cliente', esStaff, indexControllers.updateSt
 /* --- FLUJO FINANCIERO Y CONTROL DE SEGURIDAD EXCLUSIVO (SOLO ADMINISTRADORES) --- */
 // Las acciones críticas de remoción y el historial de cajas quedan estrictamente blindadas bajo el middleware esAdmin
 router.post('/eliminar/:id_cliente', esStaff, esAdmin, indexControllers.delete);
-router.get('/history', esStaff, esAdmin, indexControllers.history);
+/*router.get('/history', esStaff, esAdmin, indexControllers.history);*/
 
 module.exports = router;

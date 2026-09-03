@@ -1,4 +1,5 @@
 // src/controllers/userManagementController.js
+const bcrypt = require('bcrypt');
 const { DataTypes, Op } = require('sequelize');
 const db = require('../database/db'); 
 const path = require('path');
@@ -33,67 +34,42 @@ const userManagementController = {
         }
     },
 
-    // Registrar nuevo usuario técnico o administrador en Clever Cloud con foto (Saneado)
+     // Registrar nuevo usuario técnico o administrador (Versión Encriptada con Bcrypt)
     store: async (req, res) => {
         try {
-            // 🛡️ SANEO ANTICAÍDAS: Validamos que los campos existan antes de aplicar .trim()
-            // Si el name del input llega vacío o incorrecto, le asignamos un string vacío para que no rompa Node
             const usernameInput = req.body.username ? req.body.username.trim() : '';
             const passwordInput = req.body.password ? req.body.password.trim() : '';
             const rolInput      = req.body.rol      ? req.body.rol            : 'tecnico';
 
-            // Si los campos obligatorios están completamente vacíos, rechazamos de inmediato
             if (!usernameInput || !passwordInput) {
-                // Si Multer subió una foto en este intento fallido, la eliminamos para no acumular basura
-                if (req.file) {
-                    const rutaBasura = path.join(__dirname, '../../public/images/users', req.file.filename);
-                    if (fs.existsSync(rutaBasura)) fs.unlinkSync(rutaBasura);
-                }
                 const todos = await Usuario.findAll({ order: [['username', 'ASC']], raw: true });
                 return res.render('usuariosCRUD', {
-                    title: 'Gestión de Personal Técnico',
-                    listaUsuarios: todos,
-                    busqueda: '',
-                    usuarioEditar: null,
-                    error: 'Error: El nombre de usuario y la contraseña son campos obligatorios.'
+                    title: 'Gestión de Personal Técnico', listaUsuarios: todos, busqueda: '', usuarioEditar: null, error: 'Error: Campos obligatorios vacíos.'
                 });
             }
 
-            // Validación de unicidad de nombre de usuario en MySQL de Clever Cloud
             const usuarioExistente = await Usuario.findOne({ where: { username: usernameInput } });
             if (usuarioExistente) {
-                if (req.file) {
-                    const rutaFotoSubida = path.join(__dirname, '../../public/images/users', req.file.filename);
-                    if (fs.existsSync(rutaFotoSubida)) fs.unlinkSync(rutaFotoSubida);
-                }
-
                 const todos = await Usuario.findAll({ order: [['username', 'ASC']], raw: true });
                 return res.render('usuariosCRUD', {
-                    title: 'Gestión de Personal Técnico',
-                    listaUsuarios: todos,
-                    busqueda: '',
-                    usuarioEditar: null,
-                    error: `El nombre de usuario "${usernameInput}" ya se encuentra registrado.`
+                    title: 'Gestión de Personal Técnico', listaUsuarios: todos, busqueda: '', usuarioEditar: null, error: `El usuario "${usernameInput}" ya existe.`
                 });
             }
 
-            // 📷 CAPTURA DE FOTO CON MULTER: Si subió archivo usa el filename, si no, usa la de respaldo
-            let nombreImagen = 'default-user.png';
-            if (req.file) {
-                nombreImagen = req.file.filename;
-            }
+            let nombreImagen = req.file ? req.file.filename : 'default-user.png';
 
-            // Guardamos el nuevo operador en la base de datos de producción
+            // 🔐 ENCRIPTA LA CONTRASEÑA NUEVA EN VIVO
+            const passwordEncriptada = await bcrypt.hash(passwordInput, 10);
+
             await Usuario.create({
                 username: usernameInput,
-                password: passwordInput,
+                password: passwordEncriptada, // ⬅️ Guardamos el hash seguro en Clever Cloud
                 rol: rolInput,
                 foto: nombreImagen 
             });
-            
             res.redirect('/users/management');
         } catch (error) {
-            res.send("Error crítico al registrar al operador: " + error.message);
+            res.send("Error al registrar: " + error.message);
         }
     },
 
@@ -115,51 +91,36 @@ const userManagementController = {
         }
     },
 
-    // Procesar y guardar los cambios del personal (Saneado contra nulos y vacíos)
+     // Procesar y guardar los cambios del personal (Soporta cambios de password opcionales)
     update: async (req, res) => {
         try {
             const idUser = parseInt(req.params.id);
             const usuarioActual = await Usuario.findByPk(idUser);
             
-            if (!usuarioActual) {
-                return res.send("Error: No se encontró el operador en la base de datos de Clever Cloud.");
-            }
+            if (!usuarioActual) return res.send("Error: Operador no encontrado.");
 
-            // 🛡️ SANEO ANTICAÍDAS: Si el campo no llega o viene vacío, mantenemos el valor histórico de la base de datos
-            // Esto evita que el método .trim() intente leer un undefined y rompa el servidor de inmediato
             const usernameFinal = req.body.username ? req.body.username.trim() : usuarioActual.username;
-            const passwordFinal = req.body.password ? req.body.password.trim() : usuarioActual.password;
+            const passwordInput = req.body.password ? req.body.password.trim() : '';
             const rolFinal      = req.body.rol      ? req.body.rol            : usuarioActual.rol;
+            let nombreImagen    = req.file          ? req.file.filename       : usuarioActual.foto;
 
-            // Mantenemos la foto actual de la base de datos por defecto
-            let nombreImagen = usuarioActual.foto;
-
-            // 📷 DETECCION DE CAMBIO DE FOTO CON MULTER
-            if (req.file) {
-                nombreImagen = req.file.filename;
-                
-                // Borramos la foto anterior del disco duro local (si no es la por defecto)
-                if (usuarioActual.foto && usuarioActual.foto !== 'default-user.png') {
-                    const rutaFotoVieja = path.join(__dirname, '../../public/images/users', usuarioActual.foto);
-                    if (fs.existsSync(rutaFotoVieja)) {
-                        fs.unlinkSync(rutaFotoVieja);
-                    }
-                }
+            // 🔐 DETERMINAR CLAVE FINAL:
+            // Si el admin escribió una clave nueva, la encriptamos. Si no, dejamos la contraseña que ya tenía.
+            let passwordFinal = usuarioActual.password;
+            if (passwordInput && passwordInput !== usuarioActual.password) {
+                passwordFinal = await bcrypt.hash(passwordInput, 10);
             }
 
-            // Guardamos los cambios en Clever Cloud utilizando los strings sanitizados
             await Usuario.update({
                 username: usernameFinal,
-                password: passwordFinal,
+                password: passwordFinal, // ⬅️ Hash actualizado
                 rol: rolFinal,
                 foto: nombreImagen
-            }, {
-                where: { id_usuario: idUser }
-            });
+            }, { where: { id_usuario: idUser } });
             
             res.redirect('/users/management');
         } catch (error) {
-            res.send("Error al actualizar la credencial del operador: " + error.message);
+            res.send("Error al actualizar: " + error.message);
         }
     },
 
