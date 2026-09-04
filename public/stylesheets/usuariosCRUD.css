@@ -31,3 +31,62 @@
     border-radius: 4px;
     font-weight: bold;
 }
+
+/* ==========================================================================
+   📱 AISLAMIENTO DE ETIQUETAS MÓVILES EN SCRIPT RESPONSIVO (768px)
+   ========================================================================== */
+/* ==========================================================================
+   📱 CAPA RESPONSIVA BLINDADA: RESET GENERAL Y AISLAMIENTO DE TABLAS
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    /* ----------------------------------------------------------------------
+       📦 A) AISLAMIENTO EXCLUSIVO: CATÁLOGO DE HARDWARE (hardware.ejs)
+       ---------------------------------------------------------------------- */
+    /* Apagamos primero el contenido general para evitar filtraciones */
+    .tabla-hardware td::before {
+        content: "" !important;
+    }
+
+    /* Inyectamos los títulos únicamente si pertenecen físicamente a la tabla de hardware */
+    .tabla-hardware:not(.tabla-usuarios-personal) td:not(.celda-imagen-td):not(:last-child)::before {
+        display: block !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #a0aec0 !important;
+        font-weight: bold !important;
+        margin-bottom: 3px !important;
+    }
+
+    .tabla-hardware:not(.tabla-usuarios-personal) td:nth-of-type(2)::before { content: "📦 Nombre del Componente:" !important; }
+    .tabla-hardware:not(.tabla-usuarios-personal) td:nth-of-type(3)::before { content: "🏷️ Categoría de Hardware:" !important; }
+    .tabla-hardware:not(.tabla-usuarios-personal) td:nth-of-type(4)::before { content: "💰 Precio de Costo ($):" !important; }
+    .tabla-hardware:not(.tabla-usuarios-personal) td:nth-of-type(5)::before { content: "📈 Precio de Venta Público ($):" !important; }
+    .tabla-hardware:not(.tabla-usuarios-personal) td:nth-of-type(6)::before { content: "📊 Existencias / Stock Físico:" !important; }
+
+
+    /* ----------------------------------------------------------------------
+       👥 B) AISLAMIENTO EXCLUSIVO: PERSONAL TÉCNICO (usuariosCRUD.ejs)
+       ---------------------------------------------------------------------- */
+    /* Forzamos el reseteo absoluto de contenido para la tabla de operarios */
+    .tabla-usuarios-personal td::before {
+        content: "" !important; /* ⬅️ BLINDAJE CRÍTICO: Borra cualquier rastro de texto fantasma de hardware */
+    }
+
+    .tabla-usuarios-personal td:not(:first-child):not(:last-child)::before {
+        display: block !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #a0aec0 !important;
+        font-weight: bold !important;
+        margin-bottom: 3px !important;
+    }
+
+    /* Mapeo posicional exacto para las 4 columnas de tu tabla de personal */
+    .tabla-usuarios-personal td:nth-of-type(2)::before { content: "👤 Nombre de Usuario:" !important; }
+    .tabla-usuarios-personal td:nth-of-type(3)::before { content: "🔑 Contraseña de Acceso:" !important; }
+    .tabla-usuarios-personal td:nth-of-type(4)::before { content: "👑 Rango / Jerarquía:" !important; }
+}

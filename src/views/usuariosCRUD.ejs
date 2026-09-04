@@ -83,7 +83,16 @@
         <!-- TABLA DE INVENTARIO DE PERSONAL CON COLUMNA DE AVATAR -->
         <div class="bloque-tabla-usuarios">
             <h3>Operadores en el Sistema</h3>
-            <table class="tabla-hardware">
+            <table <!-- src/views/usuariosCRUD.ejs -->
+
+<!-- 🛠️ CORRECCIÓN: Agregamos la clase .tabla-usuarios-personal para aislar el CSS responsivo -->
+<table class="tabla-hardware tabla-usuarios-personal">
+    <thead>
+        <tr>
+            <th style="width: 70px; text-align: center;">Avatar</th>
+            <th>Nombre de Usuario</th>
+            <!-- ... resto de tus th ... -->
+>
                 <thead>
                     <tr>
                         <th style="width: 70px; text-align: center;">Avatar</th>
