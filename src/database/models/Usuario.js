@@ -24,6 +24,12 @@ module.exports = (sequelize, dataTypes) => {
             type: dataTypes.STRING(255),
             allowNull: true,
             defaultValue: 'default-user.png' // Avatar de respaldo si no sube foto
+        },
+        // ➕ VINCULACIÓN MULTITENANT MANDATORIA:
+        id_comercio: {
+            type: dataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1 // Por defecto mapea al taller inicial semilla
         }
     };
     const config = {
