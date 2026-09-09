@@ -42,18 +42,25 @@ const userControllers = {
             });
 
             if (usuarioEncontrado) {
-                const passwordCorrecta = await bcrypt.compare(password.trim(), usuarioEncontrado.password);
+    const passwordCorrecta = await bcrypt.compare(password.trim(), usuarioEncontrado.password);
 
-                if (passwordCorrecta) {
-                    req.session.usuarioLogueado = {
-                        id_usuario: usuarioEncontrado.id_usuario,
-                        username: usuarioEncontrado.username,
-                        rol: usuarioEncontrado.rol,
-                        foto: usuarioEncontrado.foto || 'default-user.png'
-                    };
-                    req.session.esAdmin = (usuarioEncontrado.rol === 'admin');
-                    return res.redirect('/');
-                }
+    if (passwordCorrecta) {
+        // Guardamos las credenciales completas en la sesión de Express
+        req.session.usuarioLogueado = {
+            id_usuario: usuarioEncontrado.id_usuario,
+            username: usuarioEncontrado.username,
+            rol: usuarioEncontrado.rol, // Puede ser 'superadmin', 'admin' o 'tecnico'
+            foto: usuarioEncontrado.foto || 'default-user.png',
+            id_comercio: usuarioEncontrado.id_comercio // ⬅️ CRÍTICO: Ancla al operador a su taller
+        };
+
+        // Banderas booleanas de jerarquía rápida para las rutas
+        req.session.esSuperAdmin = (usuarioEncontrado.rol === 'superadmin');
+        req.session.esAdmin = (usuarioEncontrado.rol === 'admin' || usuarioEncontrado.rol === 'superadmin');
+
+        return res.redirect('/');
+    }
+}
             }
 
             return res.render('login', {
