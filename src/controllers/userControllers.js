@@ -61,7 +61,7 @@ const userControllers = {
         return res.redirect('/');
     }
 }
-            }
+            
 
             return res.render('login', {
                 title: 'Identificación Técnica Fallida',

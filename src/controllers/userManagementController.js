@@ -11,28 +11,43 @@ const Usuario = UsuarioModel(db, DataTypes);
 
 const userManagementController = {
     // Listar todos los técnicos registrados en el taller
-    index: async (req, res) => {
-        try {
-            const query = req.query.q ? req.query.q.trim() : '';
-            const tecnicos = await Usuario.findAll({
-                where: {
-                    username: { [Op.like]: `%${query}%` }
-                },
-                order: [['rol', 'ASC'], ['username', 'ASC']],
-                raw: true
-            });
+    // Dentro de index en src/controllers/userManagementController.js
+index: async (req, res) => {
+    try {
+        const query = req.query.q ? req.query.q.trim() : '';
+        const operadorLogueado = req.session.usuarioLogueado;
 
-            res.render('usuariosCRUD', {
-                title: 'Gestión de Personal Técnico',
-                listaUsuarios: tecnicos,
-                busqueda: query,
-                usuarioEditar: null,
-                error: null
-            });
-        } catch (error) {
-            res.send("Error al cargar el catálogo de personal: " + error.message);
+        // 🛡️ BARRERA INVISIBLE MULTITENANT:
+        // Inicializamos las condiciones de búsqueda por base de datos
+        let condicionesWhere = {
+            username: { [Op.like]: `%${query}%` }
+        };
+
+        // Si es un Admin común, lo obligamos a listar ÚNICAMENTE el personal de su mismo local
+        // El SuperAdmin salta esta regla y puede auditar a todo el mundo
+        if (operadorLogueado.rol !== 'superadmin') {
+            condicionesWhere.id_comercio = operadorLogueado.id_comercio;
         }
-    },
+
+        const tecnicos = await Usuario.findAll({
+            where: condicionesWhere, // ⬅️ Aplica el filtro perimetral
+            order: [['rol', 'ASC'], ['username', 'ASC']],
+            raw: true
+        });
+
+        res.render('usuariosCRUD', {
+            title: 'Gestión de Personal Técnico',
+            listaUsuarios: tecnicos,
+            busqueda: query,
+            usuarioEditar: null,
+            error: null,
+            usuarioSesion: operadorLogueado // Pasamos la sesión para heredar permisos en la vista
+        });
+    } catch (error) {
+        res.send("Error al cargar el catálogo de personal: " + error.message);
+    }
+},
+
 
      // Registrar nuevo usuario técnico o administrador (Versión Encriptada con Bcrypt)
     store: async (req, res) => {

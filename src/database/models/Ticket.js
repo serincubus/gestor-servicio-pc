@@ -57,7 +57,7 @@ const Ticket = db.define('Ticket', {
     },
     // ➕ VINCULACIÓN MULTITENANT: Enlaza cada orden de reparación a su respectivo taller
         id_comercio: {
-            type: dataTypes.INTEGER,
+            type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1 // Sincroniza todo tu historial actual al comercio semilla n°1
         }
