@@ -54,7 +54,13 @@ const Ticket = db.define('Ticket', {
         type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: '[]' // Por defecto inicia como un array vacío en formato texto
-    }
+    },
+    // ➕ VINCULACIÓN MULTITENANT: Enlaza cada orden de reparación a su respectivo taller
+        id_comercio: {
+            type: dataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1 // Sincroniza todo tu historial actual al comercio semilla n°1
+        }
 
 }, {
     tableName: 'tickets',

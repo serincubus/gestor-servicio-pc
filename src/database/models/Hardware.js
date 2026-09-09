@@ -33,6 +33,12 @@ module.exports = (sequelize, dataTypes) => {
             type: dataTypes.STRING(255),
             allowNull: true,
             defaultValue: 'default-hardware.png' // Imagen comodín por defecto
+        },
+         // ➕ VINCULACIÓN MULTITENANT: Aísla el catálogo de repuestos por negocio
+        id_comercio: {
+            type: dataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 1 // El stock actual se asigna automáticamente al taller principal
         }
     };
     const config = {
