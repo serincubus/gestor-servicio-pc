@@ -1,34 +1,59 @@
 // src/controllers/indexControllers.js
 const { Op } = require('sequelize');
 const { Cliente, Ticket} = require('../database/models/asociaciones'); // Importamos ambos modelos con sus asociaciones
+const db = require('../database/db');
 
 const indexController = {
     // 1. Muestra todos los tickets activos en el taller con los datos de sus dueños
         // 1. Muestra todos los tickets activos ordenados en la pantalla de inicio
-    index: async (req, res) => {
-        try {
-            // Buscamos los modelos dinámicos desde la base de datos de Sequelize
-            const db = require('../database/db');
-            const Ticket = db.models.Ticket;
-            const Cliente = db.models.Cliente;
+    // src/controllers/indexControllers.js - FILTRADO PERIMETRAL ANIDADO CORREGIDO
 
-            const ticketsTaller = await Ticket.findAll({
-                include: [{ model: Cliente, as: 'cliente' }], 
-                order: [['id_ticket', 'DESC']], 
-                raw: true,
-                nest: true 
-            });
-            
-            // RENDEREADO CORREGIDO: Enviamos las credenciales del usuario activo al index
-            res.render('index', { 
-                title: 'Servicio Técnico PC - Gestión', 
-                lista: ticketsTaller,
-                usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA CARGA AL USUARIO LOGUEADO!
-            });
-        } catch (error) {
-            res.send("Error al cargar la pantalla de inicio: " + error.message);
+index: async (req, res) => {
+    try {
+        const operador = req.session.usuarioLogueado;
+        const query = req.query.q ? req.query.q.trim() : '';
+
+        // 1. 🛡️ BARRERA MULTITENANT BASE: Inicializamos las condiciones del Ticket
+        // Obligamos a filtrar por el id_comercio del local si el operador no es el dueño global
+        let condicionesTicket = {};
+        if (operador.rol !== 'superadmin') {
+            condicionesTicket.id_comercio = operador.id_comercio;
         }
-    },
+
+        // 2. 🔍 BUSCADOR RELACIONAL: Configuramos las condiciones de la tabla Clientes
+        let condicionesCliente = {};
+        if (query !== '') {
+            // Si el administrador escribió un texto en el buscador, filtramos en la tabla de clientes
+            condicionesCliente.nombre = { [Op.like]: `%${query}%` };
+        }
+
+        // 3. ESTRUCTURAMOS LA CONSULTA CON JOINS DINÁMICOS
+        const reparacionesFiltradas = await Ticket.findAll({
+            where: condicionesTicket, // Filtro invisible de aislamiento de talleres
+            include: [{
+                model: Cliente,
+                as: 'cliente', // Asegúrate de usar el alias exacto que declaraste en tus asociaciones
+                where: Object.keys(condicionesCliente).length > 0 ? condicionesCliente : null,
+                required: query !== '' // Si busca texto, fuerza el INNER JOIN. Si no, hace un LEFT JOIN común.
+            }],
+            order: [['createdAt', 'DESC']],
+            raw: true,
+            nest: true // Separa prolijamente los objetos anidados para evitar desbordes
+        });
+
+        // 4. RENDERIZACIÓN DE LA SUITE RESPONSIVA
+        res.render('index', {
+            title: 'Panel Operativo del Taller',
+            lista: reparacionesFiltradas,
+            busqueda: query,
+            usuarioSesion: operador
+        });
+
+    } catch (error) {
+        res.send("Error crítico al procesar el listado perimetral de órdenes: " + error.message);
+    }
+},
+
 
 
     // 2. Guarda el ticket y asocia inteligentemente al cliente (Nuevo o Existente)

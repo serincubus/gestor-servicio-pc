@@ -14,6 +14,7 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const hardwareRouter = require('./routes/hardware');
 const historialRouter = require('./routes/historial'); // Importa tu nuevo router de historial
+const saasRouter = require('./routes/saas'); // ➕ IMPORTACIÓN MAESTRA
 
 var app = express();
 
@@ -39,6 +40,7 @@ app.use(session({
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/hardware', hardwareRouter);
+app.use('/saas', saasRouter); // ➕ ACTIVACIÓN DEL PUENTE MAESTRO
 
 // 🛠️ CORRECCIÓN CRÍTICA: Se cambió a '/' para sincronizarse con la declaración interna router.get('/historial')
 app.use('/', historialRouter); 

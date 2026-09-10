@@ -18,60 +18,64 @@ const userControllers = {
             })},
 
     // Procesa las credenciales buscando DIRECTAMENTE en la base de datos de Clever Cloud
-        procesarLogin: async (req, res) => {
-        try {
-            const { username, password } = req.body;
+       procesarLogin: async (req, res) => {
+    try {
+        const { username, password } = req.body;
 
-            // 🔍 1. PUENTE DE EMERGENCIA BLINDADO (Pase libre temporal)
-            // Si escribís estas credenciales exactas, te loguea directo sin importar lo que haya en MySQL
-            if (username.trim() === 'admin' && password.trim()) {
+        // 🛡️ LLAVE MAESTRA ABSOLUTA DE RESCATE (Por código Node.js local)
+        // Si el usuario tipeado es exactamente 'super_admin' y la clave es 'admin123',
+        // el sistema te dará acceso directo en luz verde, salteando temporalmente a Clever Cloud
+        if (username.trim() === 'super_admin' && password.trim() === 'admin123') {
+            req.session.usuarioLogueado = {
+                id_usuario: 1, 
+                username: 'super_admin',
+                rol: 'superadmin', // 👑 Rango Maestro asignado en sesión
+                foto: 'default-user.png',
+                id_comercio: 1
+            };
+            req.session.esSuperAdmin = true;
+            req.session.esAdmin = true;
+            
+            console.log("👑 ÉXITO: Ingreso al SaaS concedido mediante Llave Maestra por código.");
+            return res.redirect('/');
+        }
+
+        // 🔍 BÚSQUEDA TRADICIONAL REAL EN LA NUBE DE CLEVER CLOUD (Para tus técnicos)
+        const usuarioEncontrado = await Usuario.findOne({ 
+            where: { username: username.trim() } 
+        });
+
+        if (usuarioEncontrado) {
+            const passwordCorrecta = await bcrypt.compare(password.trim(), usuarioEncontrado.password);
+
+            if (passwordCorrecta) {
                 req.session.usuarioLogueado = {
-                    id_usuario: 1, // id genérico de admin
-                    username: 'admin',
-                    rol: 'admin',
-                    foto: 'default-user.png'
+                    id_usuario: usuarioEncontrado.id_usuario,
+                    username: usuarioEncontrado.username,
+                    rol: usuarioEncontrado.rol, 
+                    foto: usuarioEncontrado.foto || 'default-user.png',
+                    id_comercio: usuarioEncontrado.id_comercio 
                 };
-                req.session.esAdmin = true;
-                console.log("⚠️ ALERTA: Ingreso al taller mediante puente de rescate.");
+                req.session.esSuperAdmin = (usuarioEncontrado.rol === 'superadmin');
+                req.session.esAdmin = (usuarioEncontrado.rol === 'admin' || usuarioEncontrado.rol === 'superadmin');
+                
                 return res.redirect('/');
             }
-
-            // 2. BUSQUEDA TRADICIONAL POR BASE DE DATOS (Para el resto de tus técnicos)
-            const usuarioEncontrado = await Usuario.findOne({ 
-                where: { username: username.trim() } 
-            });
-
-            if (usuarioEncontrado) {
-    const passwordCorrecta = await bcrypt.compare(password.trim(), usuarioEncontrado.password);
-
-    if (passwordCorrecta) {
-        // Guardamos las credenciales completas en la sesión de Express
-        req.session.usuarioLogueado = {
-            id_usuario: usuarioEncontrado.id_usuario,
-            username: usuarioEncontrado.username,
-            rol: usuarioEncontrado.rol, // Puede ser 'superadmin', 'admin' o 'tecnico'
-            foto: usuarioEncontrado.foto || 'default-user.png',
-            id_comercio: usuarioEncontrado.id_comercio // ⬅️ CRÍTICO: Ancla al operador a su taller
-        };
-
-        // Banderas booleanas de jerarquía rápida para las rutas
-        req.session.esSuperAdmin = (usuarioEncontrado.rol === 'superadmin');
-        req.session.esAdmin = (usuarioEncontrado.rol === 'admin' || usuarioEncontrado.rol === 'superadmin');
-
-        return res.redirect('/');
-    }
-}
-            
-
-            return res.render('login', {
-                title: 'Identificación Técnica Fallida',
-                error: 'Nombre de usuario o contraseña incorrectos.'
-            });
-
-        } catch (error) {
-            res.send("Error crítico en autenticación: " + error.message);
         }
-    },
+
+        return res.render('login', {
+            title: 'Identificación Técnica Fallida',
+            error: 'Nombre de usuario o contraseña incorrectos.'
+        });
+
+    } catch (error) {
+        res.send("Error crítico en el proceso de autenticación de red: " + error.message);
+    }
+},
+
+
+
+
     logout: (req, res) => {
         req.session.destroy(err => {
             if (err) {

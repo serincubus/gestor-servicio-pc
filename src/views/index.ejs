@@ -12,6 +12,21 @@
     <!-- SECCIÓN DE ACCIONES: BOTONES DE CONTROL SUPERIORES -->
             <!-- CONTAINER CENTRAL DEL DASHBOARD MODERNO -->
         <div class="dashboard-grid-container">
+
+            <!-- TARJETA EXCLUSIVA: CONTROL DE SUSCRIPCIONES SAAS (SOLO VISIBLE PARA EL SUPER ADMIN) -->
+            <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion && usuarioSesion.rol === 'superadmin') { %>
+              <a href="/saas/panel" class="card-dashboard" style="background: linear-gradient(135deg, #d69e2e, #b7791f);">
+                <div class="card-icon-wrapper">
+                  <span class="card-icon">👑</span>
+                </div>
+                <div class="card-content">
+                   <h3>Consola Maestra SaaS</h3>
+                    <p>Administrar locales suscritos, cuotas mensuales y control de licencias globales.</p>
+                </div>
+                <div class="card-arrow">〉</div>
+              </a>
+            <% } %>
+ 
             
             <!-- TARJETA 1: REGISTRAR NUEVO INGRESO (AZUL) -->
             <!-- Importante: Le asignamos el ID "btn-toggle-registro" para que el script del Drawer se ejecute al hacerle clic -->
