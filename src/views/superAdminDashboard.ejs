@@ -1,7 +1,7 @@
 <%- include('./partials/head.ejs') %>
 <link rel='stylesheet' href='/stylesheets/style.css' />
 <link rel='stylesheet' href='/stylesheets/hardware.css' />
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://jsdelivr.net"></script>
 
 <body>
   <div id="drawer-overlay" class="drawer-overlay"></div>
@@ -9,88 +9,127 @@
 
   <div class="container" style="margin-top: 20px; height: auto !important; overflow: visible !important;">
     <div class="contenedor-acciones-flex cabecera-hardware">
-        <h1>👑 Panel Maestro Global (SaaS)</h1>
+        <h1>👑 Consola Maestra Global (SaaS)</h1>
         <div style="display: flex; gap: 10px;">
             <button type="button" id="btn-abrir-alta" class="btn-ux btn-ux-nuevo" style="padding: 10px 15px;">
-                ➕ Registrar Nuevo Comercio
+                ➕ Registrar Comercio y Administrador
             </button>
             <a href="/" class="btn-ux btn-ux-editar" style="padding: 10px 15px;">⬅️ Volver al Tablero</a>
         </div>
     </div>
 
-    <!-- Buscador de Comercios -->
-    <form action="/saas/panel" method="GET" class="form-busqueda">
-        <input type="text" name="q" placeholder="🔍 Buscar comercio suscrito por nombre..." class="input-busqueda" value="<%= busqueda %>">
-        <button type="submit" class="btn-buscar">Buscar</button>
-        <a href="/saas/panel" class="btn-link-cancelar">Limpiar</a>
-    </form>
-
-    <div class="contenedor-usuarios-crud" style="margin-top: 20px;">
-        
-        <!-- DRAWER DESLIZANTE DE ALTA DE TALLERES -->
-        <div class="bloque-formulario hardware-drawer" id="hardware-drawer">
-            <div class="drawer-header">
-                <h3>➕ Dar de Alta Nuevo Comercio</h3>
-                <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer">✕</button>
-            </div>
-            
-            <form action="/saas/comercios/guardar" method="POST" class="form-usuarios-input" style="display: flex; flex-direction: column; gap: 12px;">
-                <label>Nombre del Comercio / Taller:</label>
-                <input type="text" name="nombre_taller" placeholder="Ej: FixMobile San Miguel" required>
-                
-                <label>Teléfono de Contacto (Internacional):</label>
-                <input type="text" name="telefono_contacto" placeholder="Ej: 5491100000000" required>
-                
-                <label>Dirección Física del Local:</label>
-                <input type="text" name="direccion_fisica" placeholder="Ej: Av. Mitre 1234">
-                
-                <label>Identificación Legal / CUIT:</label>
-                <input type="text" name="cuit_o_id_legal" placeholder="Ej: 30-12345678-9">
-
-                <button type="submit" class="btn-guardar-completo btn-registrar-hardware" style="margin-top: 15px;">
-                    Crear Base y Activar SaaS →
-                </button>
-            </form>
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="cuenta-pendiente" style="padding: 12px; margin-top: 15px; border-radius: 4px; font-weight: bold; background-color: #fff5f5; color: #c53030; border: 1px solid #fed7d7;">
+            ⚠️ <%= error %>
         </div>
+    <% } %>
 
-        <!-- LISTADO DE CLIENTES SUSCRITOS -->
-        <div class="bloque-tabla-usuarios" style="width: 100%;">
-            <h3>Comercios con Licencia Activa</h3>
+    <!-- SECCIÓN DE DISTRIBUCIÓN EN DOS COLUMNAS -->
+    <div class="dashboard-grid-container" style="grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; margin-top: 25px;">
+        
+        <!-- COLUMNA 1: LISTADO DE COMERCIOS -->
+        <div class="bloque-tabla-usuarios" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <h3 style="margin-bottom: 15px; color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 8px;">🏢 Talleres Suscritos</h3>
             <table class="tabla-hardware">
                 <thead>
                     <tr>
-                        <th style="width: 60px; text-align: center;">ID</th>
+                        <th style="width: 50px; text-align: center;">ID</th>
                         <th>Nombre del Establecimiento</th>
-                        <th>Contacto</th>
                         <th>Dirección</th>
-                        <th style="width: 120px; text-align: center;">Estado SaaS</th>
+                        <th style="width: 100px; text-align: center;">Estado</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if(comercios.length > 0) { %>
                         <% comercios.forEach(comercio => { %>
                             <tr>
-                                <td style="text-align: center; font-family: monospace; font-weight: bold; color: #4a5568;"><%= comercio.id_comercio %></td>
-                                <td><strong><%= comercio.nombre_taller %></strong></td>
-                                <td style="font-size: 13.5px; color: #4a5568;"><%= comercio.telefono_contacto %></td>
-                                <td style="font-size: 13.5px; color: #718096;"><%= comercio.direccion_fisica || 'No declarada' %></td>
+                                <td style="text-align: center; font-family: monospace; font-weight: bold;"><%= comercio.id_comercio %></td>
+                                <td><strong><%= comercio.nombre_taller %></strong><br><small style="color: #718096;"><%= comercio.telefono_contacto %></small></td>
+                                <td style="font-size: 13px; color: #4a5568;"><%= comercio.direccion_fisica || 'No declarada' %></td>
                                 <td style="text-align: center;">
-                                    <span class="<%= comercio.activo ? 'badge-rol-admin' : 'card-deshabilitada' %>" style="padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">
+                                    <span class="<%= comercio.activo ? 'badge-rol-admin' : 'card-deshabilitada' %>" style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
                                         <%= comercio.activo ? '🟢 Activo' : '🔴 Suspendido' %>
                                     </span>
                                 </td>
                             </tr>
                         <% }) %>
                     <% } else { %>
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: #999; padding: 25px;">No se encontraron comercios registrados.</td>
-                        </tr>
+                        <tr><td colspan="4" style="text-align: center; color: #999; padding: 20px;">No hay comercios.</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- COLUMNA 2: CRUD DE ADMINISTRADORES POR COMERCIO -->
+        <div class="bloque-tabla-usuarios" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <h3 style="margin-bottom: 15px; color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 8px;">🔑 Administradores de Locales</h3>
+            <table class="tabla-hardware">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Contraseña</th>
+                        <th>Comercio Asignado</th>
+                        <th style="width: 70px; text-align: center;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(administradores.length > 0) { %>
+                        <% administradores.forEach(adminLocal => { %>
+                            <tr>
+                                <td><strong><%= adminLocal.username %></strong><br><span class="badge-rol-admin" style="font-size: 10px; padding: 2px 4px;">Admin Local</span></td>
+                                <td style="font-family: monospace; font-size: 12px; color: #718096; max-width: 150px; overflow: hidden; text-overflow: ellipsis;"><%= adminLocal.password %></td>
+                                <td>
+                                    <!-- Buscamos el nombre del taller mapeando el ID -->
+                                    <% let taller = comercios.find(c => c.id_comercio === adminLocal.id_comercio); %>
+                                    <span style="font-weight: 600; color: #2b6cb0;"><%= taller ? taller.nombre_taller : 'Desconocido' %></span>
+                                    <br><small style="color: #a0aec0; font-family: monospace;">ID Comercio: <%= adminLocal.id_comercio %></small>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-eliminar-flex" style="padding: 6px 10px;" onclick="eliminarAdmin('<%= adminLocal.id_usuario %>')">🗑️</button>
+                                    <form id="form-eliminar-admin-<%= adminLocal.id_usuario %>" action="/saas/administradores/eliminar/<%= adminLocal.id_usuario %>" method="POST" style="display:none;"></form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr><td colspan="4" style="text-align: center; color: #999; padding: 20px;">No hay administradores de locales creados.</td></tr>
                     <% } %>
                 </tbody>
             </table>
         </div>
 
     </div>
+
+    <!-- DRAWER DESLIZANTE DE ALTA MAESTRA UNIFICADA -->
+    <div class="bloque-formulario hardware-drawer" id="hardware-drawer">
+        <div class="drawer-header">
+            <h3>➕ Registrar Nueva Cuenta SaaS</h3>
+            <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer">✕</button>
+        </div>
+        
+        <form action="/saas/comercios/guardar-completo" method="POST" class="form-usuarios-input" style="display: flex; flex-direction: column; gap: 10px;">
+            <h4 style="color: #2b6cb0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 5px;">1. Datos del Taller</h4>
+            <label>Nombre del Comercio / Taller:</label>
+            <input type="text" name="nombre_taller" placeholder="Ej: FixMobile San Miguel" required>
+            
+            <label>Teléfono de Contacto:</label>
+            <input type="text" name="telefono_contacto" placeholder="Ej: 5491100000000" required>
+            
+            <label>Dirección Física del Local:</label>
+            <input type="text" name="direccion_fisica" placeholder="Ej: Av. Mitre 1234">
+
+            <h4 style="color: #2b6cb0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-top: 15px; margin-bottom: 5px;">2. Credenciales del Administrador</h4>
+            <label>Nombre de Usuario Admin (Login):</label>
+            <input type="text" name="username" placeholder="Ej: admin_sanmiguel" required autocomplete="off">
+            
+            <label>Contraseña de Acceso:</label>
+            <input type="text" name="password" placeholder="Crear contraseña plana" required>
+
+            <button type="submit" class="btn-guardar-completo btn-registrar-hardware" style="margin-top: 20px;">
+                Crear Comercio y Activar Administrador →
+            </button>
+        </form>
+    </div>
+
   </div>
 
   <script>
@@ -104,6 +143,23 @@
       if(btnCerrar) btnCerrar.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('open'); });
       if(overlay) overlay.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('open'); });
     });
+
+    function eliminarAdmin(id) {
+        Swal.fire({
+            title: '¿Revocar acceso al administrador?',
+            text: "Se darán de baja de la nube las credenciales de control de este local.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-eliminar-admin-' + id).submit();
+            }
+        });
+    }
   </script>
 </body>
 </html>
