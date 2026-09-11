@@ -83,17 +83,55 @@ const saasController = {
         }
     },
 
-    // Dar de baja las credenciales de un administrador de local
-    deleteAdmin: async (req, res) => {
+        // 🗑️ BAJA MAESTRA EN CASCADA: Elimina el taller y limpia sus usuarios asociados
+    deleteComercio: async (req, res) => {
         try {
+            const idTaller = parseInt(req.params.id);
+
+            // 🛡️ REGLA DE SEGURIDAD EXCLUSIVA: Prohibido borrar el comercio semilla ID 1 (tu taller base)
+            if (idTaller === 1) {
+                return res.send("Acción denegada: El comercio semilla número 1 es el taller base de la plataforma y no puede ser removido.");
+            }
+
+            // 1. Barremos y eliminamos a todos los usuarios técnicos y administradores de ese taller
             await Usuario.destroy({
-                where: { id_usuario: req.params.id, rol: 'admin' }
+                where: { id_comercio: idTaller }
             });
+
+            // 2. Eliminamos físicamente el local de la tabla comercios de Clever Cloud
+            await Comercio.destroy({
+                where: { id_comercio: idTaller }
+            });
+
             res.redirect('/saas/panel');
         } catch (error) {
-            res.send("Error al remover el acceso del administrador: " + error.message);
+            res.send("Error crítico al procesar la baja del taller y sus operarios: " + error.message);
+        }
+    },
+    // 🔐 REMOVER ADMINISTRADOR DE LOCAL: Quita el acceso de control de un taller
+    deleteAdmin: async (req, res) => {
+        try {
+            const idUsuarioAdmin = parseInt(req.params.id);
+
+            // 🛡️ REGLA DE PROTECCIÓN DE NÚCLEO: Evita que por accidente borres tu propio usuario maestro
+            if (req.session.usuarioLogueado && req.session.usuarioLogueado.id_usuario === idUsuarioAdmin) {
+                return res.send("Acción denegada: No puedes eliminar tu propia cuenta de Super Admin desde este panel.");
+            }
+
+            // Eliminamos la credencial con rango 'admin' de la tabla de usuarios de Clever Cloud
+            await Usuario.destroy({
+                where: { 
+                    id_usuario: idUsuarioAdmin,
+                    rol: 'admin' // Asegura que solo barra administradores comunes de locales
+                }
+            });
+
+            res.redirect('/saas/panel');
+        } catch (error) {
+            res.send("Error crítico al remover el acceso del administrador de local: " + error.message);
         }
     }
+
 };
 
 module.exports = saasController;

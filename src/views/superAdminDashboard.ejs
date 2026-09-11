@@ -30,74 +30,85 @@
         <!-- COLUMNA 1: LISTADO DE COMERCIOS -->
         <div class="bloque-tabla-usuarios" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
             <h3 style="margin-bottom: 15px; color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 8px;">🏢 Talleres Suscritos</h3>
-            <table class="tabla-hardware">
-                <thead>
-                    <tr>
-                        <th style="width: 50px; text-align: center;">ID</th>
-                        <th>Nombre del Establecimiento</th>
-                        <th>Dirección</th>
-                        <th style="width: 100px; text-align: center;">Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if(comercios.length > 0) { %>
-                        <% comercios.forEach(comercio => { %>
-                            <tr>
-                                <td style="text-align: center; font-family: monospace; font-weight: bold;"><%= comercio.id_comercio %></td>
-                                <td><strong><%= comercio.nombre_taller %></strong><br><small style="color: #718096;"><%= comercio.telefono_contacto %></small></td>
-                                <td style="font-size: 13px; color: #4a5568;"><%= comercio.direccion_fisica || 'No declarada' %></td>
-                                <td style="text-align: center;">
-                                    <span class="<%= comercio.activo ? 'badge-rol-admin' : 'card-deshabilitada' %>" style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
-                                        <%= comercio.activo ? '🟢 Activo' : '🔴 Suspendido' %>
-                                    </span>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    <% } else { %>
-                        <tr><td colspan="4" style="text-align: center; color: #999; padding: 20px;">No hay comercios.</td></tr>
-                    <% } %>
-                </tbody>
-            </table>
+            <<table class="tabla-hardware">
+    <thead>
+        <tr>
+            <th style="width: 50px; text-align: center;">ID</th>
+            <th>Nombre del Establecimiento</th>
+            <th>Dirección</th>
+            <th style="width: 80px; text-align: center;">Estado</th>
+            <th style="width: 60px; text-align: center;">Baja</th> <!-- ➕ Nueva columna -->
+        </tr>
+    </thead>
+    <tbody>
+        <% if(comercios.length > 0) { %>
+            <% comercios.forEach(comercio => { %>
+                <tr>
+                    <td style="text-align: center; font-family: monospace; font-weight: bold;"><%= comercio.id_comercio %></td>
+                    <td><strong><%= comercio.nombre_taller %></strong><br><small style="color: #718096;"><%= comercio.telefono_contacto %></small></td>
+                    <td style="font-size: 13px; color: #4a5568;"><%= comercio.direccion_fisica || 'No declarada' %></td>
+                    <td style="text-align: center;">
+                        <span class="<%= comercio.activo ? 'badge-rol-admin' : 'card-deshabilitada' %>" style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                            <%= comercio.activo ? '🟢 Activo' : '🔴 Suspendido' %>
+                        </span>
+                    </td>
+                    <!-- ➕ BOTÓN TÁCTIL DE BORRADO DE COMERCIO -->
+                    <td style="text-align: center; vertical-align: middle;">
+                        <% if (comercio.id_comercio !== 1) { %>
+                            <button type="button" class="btn-eliminar-flex" style="padding: 6px 10px; background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7;" onclick="eliminarComercioCompleto('<%= comercio.id_comercio %>')">🗑️</button>
+                            <form id="form-eliminar-comercio-<%= comercio.id_comercio %>" action="/saas/comercios/eliminar/<%= comercio.id_comercio %>" method="POST" style="display:none;"></form>
+                        <% } else { %>
+                            <small style="color: #a0aec0; font-weight: bold;">Base</small>
+                        <% } %>
+                    </td>
+                </tr>
+            <% }) %>
+        <% } else { %>
+            <tr><td colspan="5" style="text-align: center; color: #999; padding: 25px;">No hay comercios.</td></tr>
+        <% } %>
+    </tbody>
+</table>
         </div>
 
         <!-- COLUMNA 2: CRUD DE ADMINISTRADORES POR COMERCIO -->
         <div class="bloque-tabla-usuarios" style="background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-            <h3 style="margin-bottom: 15px; color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 8px;">🔑 Administradores de Locales</h3>
-            <table class="tabla-hardware">
-                <thead>
+    <h3 style="margin-bottom: 15px; color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 8px;">🔑 Administradores de Locales</h3>
+    <table class="tabla-hardware">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Contraseña</th>
+                <th>Comercio Asignado</th>
+                <th style="width: 70px; text-align: center;">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if(administradores.length > 0) { %>
+                <% administradores.forEach(adminLocal => { %>
                     <tr>
-                        <th>Usuario</th>
-                        <th>Contraseña</th>
-                        <th>Comercio Asignado</th>
-                        <th style="width: 70px; text-align: center;">Acción</th>
+                        <td><strong><%= adminLocal.username %></strong><br><span class="badge-rol-admin" style="font-size: 10px; padding: 2px 4px;">Admin Local</span></td>
+                        <td style="font-family: monospace; font-size: 12px; color: #718096; max-width: 150px; overflow: hidden; text-overflow: ellipsis;"><%= adminLocal.password %></td>
+                        <td>
+                            <% let taller = comercios.find(c => c.id_comercio === adminLocal.id_comercio); %>
+                            <span style="font-weight: 600; color: #2b6cb0;"><%= taller ? taller.nombre_taller : 'Desconocido' %></span>
+                            <br><small style="color: #a0aec0; font-family: monospace;">ID Comercio: <%= adminLocal.id_comercio %></small>
+                        </td>
+                        
+                        <!-- 🛠️ ¡AQUÍ VA COLOCADO EXACTAMENTE EL BLOQUE CORREGIDO! -->
+                        <td style="text-align: center; vertical-align: middle;">
+                            <!-- 🛠️ VERIFICACIÓN: Los administradores usan la función 'eliminarAdmin' -->
+                            <button type="button" class="btn-eliminar-flex" onclick="eliminarAdmin('<%= adminLocal.id_usuario %>')">🗑️</button>
+                            <form id="form-eliminar-admin-<%= adminLocal.id_usuario %>" action="/saas/administradores/eliminar/<%= adminLocal.id_usuario %>" method="POST" style="display:none;"></form>
+                        </td>
+                        
                     </tr>
-                </thead>
-                <tbody>
-                    <% if(administradores.length > 0) { %>
-                        <% administradores.forEach(adminLocal => { %>
-                            <tr>
-                                <td><strong><%= adminLocal.username %></strong><br><span class="badge-rol-admin" style="font-size: 10px; padding: 2px 4px;">Admin Local</span></td>
-                                <td style="font-family: monospace; font-size: 12px; color: #718096; max-width: 150px; overflow: hidden; text-overflow: ellipsis;"><%= adminLocal.password %></td>
-                                <td>
-                                    <!-- Buscamos el nombre del taller mapeando el ID -->
-                                    <% let taller = comercios.find(c => c.id_comercio === adminLocal.id_comercio); %>
-                                    <span style="font-weight: 600; color: #2b6cb0;"><%= taller ? taller.nombre_taller : 'Desconocido' %></span>
-                                    <br><small style="color: #a0aec0; font-family: monospace;">ID Comercio: <%= adminLocal.id_comercio %></small>
-                                </td>
-                                <td style="text-align: center;">
-                                    <button type="button" class="btn-eliminar-flex" style="padding: 6px 10px;" onclick="eliminarAdmin('<%= adminLocal.id_usuario %>')">🗑️</button>
-                                    <form id="form-eliminar-admin-<%= adminLocal.id_usuario %>" action="/saas/administradores/eliminar/<%= adminLocal.id_usuario %>" method="POST" style="display:none;"></form>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    <% } else { %>
-                        <tr><td colspan="4" style="text-align: center; color: #999; padding: 20px;">No hay administradores de locales creados.</td></tr>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
-
-    </div>
+                <% }) %>
+            <% } else { %>
+                <tr><td colspan="4" style="text-align: center; color: #999; padding: 20px;">No hay administradores de locales creados.</td></tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
 
     <!-- DRAWER DESLIZANTE DE ALTA MAESTRA UNIFICADA -->
     <div class="bloque-formulario hardware-drawer" id="hardware-drawer">

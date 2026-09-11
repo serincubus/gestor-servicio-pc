@@ -13,6 +13,7 @@ const esSuperAdminMiddleware = (req, res, next) => {
 // Rutas de la Consola Maestra SaaS activas
 router.get('/panel', esSuperAdminMiddleware, saasController.panel);
 router.post('/comercios/guardar-completo', esSuperAdminMiddleware, saasController.storeCompleto);
+router.post('/comercios/eliminar/:id', esSuperAdminMiddleware, saasController.deleteComercio);
 router.post('/administradores/eliminar/:id', esSuperAdminMiddleware, saasController.deleteAdmin);
 
 module.exports = router;
