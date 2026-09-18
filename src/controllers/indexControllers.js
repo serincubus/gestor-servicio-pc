@@ -2,6 +2,7 @@
 const { Op } = require('sequelize');
 const { Cliente, Ticket} = require('../database/models/asociaciones'); // Importamos ambos modelos con sus asociaciones
 const db = require('../database/db');
+const diccionarioRubros = require('../utils/diccionarioRubros'); // ➕ Importamos el diccionario
 
 const indexController = {
     // 1. Muestra todos los tickets activos en el taller con los datos de sus dueños
@@ -11,6 +12,8 @@ const indexController = {
 index: async (req, res) => {
     try {
         const operador = req.session.usuarioLogueado;
+        const rubroActivo = operador.rubro || 'tecnico_pc';
+        const etiquetas = diccionarioRubros[rubroActivo]; // ⬅️ Obtenemos los títulos dinámicos
         const query = req.query.q ? req.query.q.trim() : '';
 
         // 1. 🛡️ BARRERA MULTITENANT BASE: Inicializamos las condiciones del Ticket
@@ -43,10 +46,11 @@ index: async (req, res) => {
 
         // 4. RENDERIZACIÓN DE LA SUITE RESPONSIVA
         res.render('index', {
-            title: 'Panel Operativo del Taller',
+            title: 'Panel Operativo',
             lista: reparacionesFiltradas,
             busqueda: query,
-            usuarioSesion: operador
+            usuarioSesion: operador,
+            labels: etiquetas // ⬅️ Viaja el diccionario personalizado a la vista
         });
 
     } catch (error) {

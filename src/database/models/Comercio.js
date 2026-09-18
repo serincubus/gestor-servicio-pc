@@ -40,5 +40,14 @@ module.exports = (sequelize, dataTypes) => {
     };
 
     const Comercio = sequelize.define(alias, cols, config);
+
+     Comercio.associate = function(models) {
+        // Un comercio puede tener registrados a muchos técnicos u operarios
+        Comercio.hasMany(models.Usuario, {
+            as: "usuarios",
+            foreignKey: "id_comercio"
+        });
+    };
+    
     return Comercio;
 };

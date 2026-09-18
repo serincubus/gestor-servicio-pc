@@ -1,11 +1,14 @@
 // src/controllers/userControllers.js
-const bcrypt = require('bcrypt'); // ➕ NUEVA IMPORTACIÓN
-const { DataTypes } = require('sequelize');
+// src/controllers/userControllers.js - SANEAMIENTO DE CABECERA MULTITENANT
+const bcrypt = require('bcrypt'); 
+
+// 🛠️ IMPORTACIÓN EXTRACTORA: Traemos la conexión centralizada
 const db = require('../database/db'); 
 
-// Inicializamos el modelo de Usuarios para consultar la base de datos
-const UsuarioModel = require('../database/models/Usuario');
-const Usuario = UsuarioModel(db, DataTypes);
+// 🔗 CORRECCIÓN CRÍTICA: Extraemos los modelos ya asociados desde el mapa exclusivo de db.js
+// Esto evita instanciar modelos duplicados o huérfanos que cuelguen el inicio de sesión
+const { Usuario, Comercio } = db.models;
+
 
 const userControllers = {
     // Muestra el formulario de inicio de sesión
@@ -19,59 +22,60 @@ const userControllers = {
 
     // Procesa las credenciales buscando DIRECTAMENTE en la base de datos de Clever Cloud
        procesarLogin: async (req, res) => {
-    try {
-        const { username, password } = req.body;
+        try {
+            const { username, password } = req.body;
 
-        // 🛡️ LLAVE MAESTRA ABSOLUTA DE RESCATE (Por código Node.js local)
-        // Si el usuario tipeado es exactamente 'super_admin' y la clave es 'admin123',
-        // el sistema te dará acceso directo en luz verde, salteando temporalmente a Clever Cloud
-        if (username.trim() === 'super_admin' && password.trim() === 'admin123') {
-            req.session.usuarioLogueado = {
-                id_usuario: 1, 
-                username: 'super_admin',
-                rol: 'superadmin', // 👑 Rango Maestro asignado en sesión
-                foto: 'default-user.png',
-                id_comercio: 1
-            };
-            req.session.esSuperAdmin = true;
-            req.session.esAdmin = true;
-            
-            console.log("👑 ÉXITO: Ingreso al SaaS concedido mediante Llave Maestra por código.");
-            return res.redirect('/');
-        }
-
-        // 🔍 BÚSQUEDA TRADICIONAL REAL EN LA NUBE DE CLEVER CLOUD (Para tus técnicos)
-        const usuarioEncontrado = await Usuario.findOne({ 
-            where: { username: username.trim() } 
-        });
-
-        if (usuarioEncontrado) {
-            const passwordCorrecta = await bcrypt.compare(password.trim(), usuarioEncontrado.password);
-
-            if (passwordCorrecta) {
+            // 🔍 1. PUENTE DE EMERGENCIA MAESTRO CON SEGURO
+            if (username.trim() === 'super_admin' && password.trim() === 'admin123') {
                 req.session.usuarioLogueado = {
-                    id_usuario: usuarioEncontrado.id_usuario,
-                    username: usuarioEncontrado.username,
-                    rol: usuarioEncontrado.rol, 
-                    foto: usuarioEncontrado.foto || 'default-user.png',
-                    id_comercio: usuarioEncontrado.id_comercio 
+                    id_usuario: 1, username: 'super_admin', rol: 'superadmin', foto: 'default-user.png', id_comercio: 1, rubro: 'tecnico_pc'
                 };
-                req.session.esSuperAdmin = (usuarioEncontrado.rol === 'superadmin');
-                req.session.esAdmin = (usuarioEncontrado.rol === 'admin' || usuarioEncontrado.rol === 'superadmin');
-                
+                req.session.esSuperAdmin = true;
+                req.session.esAdmin = true;
                 return res.redirect('/');
             }
+
+            // 🔍 2. BUSQUEDA RELACIONAL INDEXADA EN CLEVER CLOUD
+            const usuarioEncontrado = await Usuario.findOne({ 
+                where: { username: username.trim() },
+                include: [{ 
+                    model: Comercio, 
+                    as: 'comercio' // El alias declarado en el modelo de Usuario
+                }] 
+            });
+
+            if (usuarioEncontrado) {
+                const passwordCorrecta = await bcrypt.compare(password.trim(), usuarioEncontrado.password);
+
+                if (passwordCorrecta) {
+                    // Si el comercio existe, extrae su rubro; si no, asigna el de PC por defecto
+                    const rubroComercio = usuarioEncontrado.comercio ? usuarioEncontrado.comercio.rubro : 'tecnico_pc';
+
+                    req.session.usuarioLogueado = {
+                        id_usuario: usuarioEncontrado.id_usuario,
+                        username: usuarioEncontrado.username,
+                        rol: usuarioEncontrado.rol,
+                        foto: usuarioEncontrado.foto || 'default-user.png',
+                        id_comercio: usuarioEncontrado.id_comercio,
+                        rubro: rubroComercio // Guardamos la especialidad en la sesión
+                    };
+                    
+                    req.session.esSuperAdmin = (usuarioEncontrado.rol === 'superadmin');
+                    req.session.esAdmin = (usuarioEncontrado.rol === 'admin' || usuarioEncontrado.rol === 'superadmin');
+                    
+                    return res.redirect('/');
+                }
+            }
+
+            return res.render('login', {
+                title: 'Identificación Técnica Fallida',
+                error: 'Nombre de usuario o contraseña incorrectos.'
+            });
+
+        } catch (error) {
+            res.send("Error crítico en el proceso de autenticación de red: " + error.message);
         }
-
-        return res.render('login', {
-            title: 'Identificación Técnica Fallida',
-            error: 'Nombre de usuario o contraseña incorrectos.'
-        });
-
-    } catch (error) {
-        res.send("Error crítico en el proceso de autenticación de red: " + error.message);
-    }
-},
+    },
 
 
 

@@ -38,5 +38,14 @@ module.exports = (sequelize, dataTypes) => {
     };
 
     const Usuario = sequelize.define(alias, cols, config);
+
+    Usuario.associate = function(models) {
+        // Un usuario técnico pertenece estrictamente a un solo comercio / taller
+        Usuario.belongsTo(models.Comercio, {
+            as: "comercio", // ⬅️ Este alias debe coincidir milimétricamente con el include del Login
+            foreignKey: "id_comercio"
+        });
+    };
+
     return Usuario;
 };

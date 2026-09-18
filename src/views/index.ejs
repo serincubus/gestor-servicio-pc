@@ -113,11 +113,11 @@
           <label><strong>Teléfono / WhatsApp:</strong></label>
           <input type="text" name="telefono" placeholder="Ej: 1123456789" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
           
-          <label><strong>Equipo / Dispositivo:</strong></label>
-          <input type="text" name="equipo" placeholder="Ej: Notebook Asus Core i7" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
+          <label><%= labels.labelElemento %>:</label>
+          <input type="text" name="equipo" placeholder="<label><%= labels.labelFalla %>:</label>" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
           
-          <label><strong>Detalle de la Falla:</strong></label>
-          <textarea name="falla" placeholder="Ej: No enciende, parpadea luz led blanca" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px; height: 80px; resize: none; font-family:inherit;"></textarea>
+          <label><%= labels.labelFalla %>:</label>
+          <textarea name="falla" placeholder="<label><%= labels.labelFalla %>:</label>" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px; height: 80px; resize: none; font-family:inherit;"></textarea>
           
           <label><strong>Estado Inicial:</strong></label>
           <select name="estado" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #cbd5e0; border-radius:4px; font-size:15px;">
@@ -142,7 +142,7 @@
     </form>
 
     <!-- LISTADO GENERAL DE TARJETAS DE REPARACIÓN -->
-    <h2>Equipos en el Taller</h2>
+    <h2><%= labels.tituloGrilla %></h2>
     <div id="lista-reparaciones">
       <% if (lista.length > 0) { %>
         <% lista.forEach(cliente => { %>
