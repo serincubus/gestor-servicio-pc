@@ -15,7 +15,7 @@ router.post('/consulta', indexControllers.buscarEstadoCliente);
 // El personal técnico con menor jerarquía tiene permisos de visualización, creación y edición
 router.get('/', esStaff, indexControllers.index);
 router.post('/guardar', esStaff, indexControllers.store);
-router.get('/search', esStaff, indexControllers.search);
+router.get('/', esStaff, indexControllers.search);
 router.get('/detalle/:id_cliente', esStaff, indexControllers.detalle);
 router.get('/editar/:id_cliente', esStaff, indexControllers.edit);
 router.post('/actualizar/:id_cliente', esStaff, indexControllers.update);

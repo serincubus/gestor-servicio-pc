@@ -28,6 +28,12 @@ module.exports = (sequelize, dataTypes) => {
             allowNull: true,
             defaultValue: 'default-logo-taller.png'
         },
+         // ➕ PROPIEDAD DE MERCADO ASOCIADA:
+        rubro: {
+            type: dataTypes.ENUM('tecnico_pc', 'electricista', 'seguridad_monitoreo'),
+            allowNull: false,
+            defaultValue: 'tecnico_pc'
+        },
         activo: {
             type: dataTypes.BOOLEAN,
             allowNull: false,

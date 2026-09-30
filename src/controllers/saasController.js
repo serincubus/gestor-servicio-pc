@@ -62,7 +62,8 @@ const saasController = {
                 nombre_taller: nombre_taller.trim(),
                 telefono_contacto: telefono_contacto.trim(),
                 direccion_fisica: direccion_fisica ? direccion_fisica.trim() : '',
-                activo: true
+                activo: true,
+                rubro: rubro // ⬅️ GRABADO DEL RUBRO SELECCIONADO EN CLEVER CLOUD
             });
 
             // 3. 🔐 Encriptamos la clave tipeada con Bcrypt antes de guardarla
