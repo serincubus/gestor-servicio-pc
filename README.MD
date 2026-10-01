@@ -1,29 +1,30 @@
-# 💻 Gestor de Servicio Técnico de PC
+# 🚀 Sistema SaaS de Gestión para Servicios Técnicos Multi-Rubro
 
-Una aplicación web Fullstack diseñada para la gestión, control y seguimiento de órdenes de servicio en talleres de soporte técnico de computadoras. Permite administrar clientes, equipos ingresados, diagnósticos y estados de reparación de forma centralizada y eficiente.
+Una solución web Fullstack bajo el modelo **SaaS (Software as a Service) Multi-Tenant (Multi-Inquilino)**. La plataforma está diseñada para que cualquier taller o comercio de soporte técnico (informática, mecánica, electrodomésticos, etc.) pueda registrarse, aislar sus datos de forma segura y parametrizar la interfaz dinámicamente según sus necesidades de negocio.
 
-🚀 **Link del proyecto en producción:** [¡Mirá la app en vivo acá!](https://gestor-servicio-pc.onrender.com/users/login)
+🚀 **Link del proyecto en producción:** [¡Mirá el SaaS en vivo acá!](https://gestor-servicio-pc.onrender.com/users/login)
 
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 
-El proyecto fue desarrollado utilizando un stack moderno, escalable y optimizado con Inteligencia Artificial para acelerar el proceso de desarrollo:
+El proyecto implementa una arquitectura moderna, escalable y optimizada con Inteligencia Artificial para acelerar el desarrollo backend y la consistencia de datos:
 
-- **Backend:** Node.js & Express.js (Arquitectura robusta para el manejo de rutas y lógica de negocio).
-- **Frontend:** EJS (Embedded JavaScript templates) para el renderizado dinámico en el servidor y CSS3 personalizado para la interfaz de usuario.
-- **Base de Datos:** MySQL (Diseño relacional gestionado localmente con MySQL Workbench).
-- **Cloud & DevOps:** Despliegue de base de datos en la nube mediante **Clever Cloud** e infraestructura de aplicación en **Render.com** con integración de despliegue continuo (CI/CD).
+- **Backend:** Node.js & Express.js (Arquitectura modular con Middlewares dedicados al aislamiento y seguridad de inquilinatos).
+- **Frontend:** EJS (Embedded JavaScript templates) para el renderizado condicional dinámico en el servidor y CSS3 personalizado para la tematización de la interfaz.
+- **Base de Datos:** MySQL (Diseño relacional multi-tenant gestionado localmente con MySQL Workbench).
+- **Cloud & DevOps:** Persistencia de datos en **Clever Cloud** (MySQL distribuido) e infraestructura cloud en **Render.com** con automatización de Despliegue Continuo (CI/CD).
 - **Control de Versiones:** Git & GitHub.
 
 ---
 
-## 🌟 Características Principales (Features)
+## 🌟 Características Avanzadas (Arquitectura SaaS)
 
-- **Gestión de Órdenes:** Ingreso, actualización y seguimiento del estado de reparación de las PCs (ej: Pendiente, En Diagnóstico, Reparado, Entregado).
-- **Control de Clientes y Equipos:** Registro detallado de los datos de contacto del cliente y especificaciones del equipo (Marca, modelo, componentes, falla reportada).
-- **Arquitectura en la Nube:** Persistencia de datos segura en Clever Cloud, garantizando alta disponibilidad.
-- **Desarrollo Agilizado con IA:** Implementación de mejores prácticas de código, refactorización y optimización de consultas SQL asistido por Inteligencia Artificial.
+- **Arquitectura Multi-Tenant (Shared Schema):** Utiliza una estructura centralizada basada en una entidad principal llamada `Comercio`. Los datos de todos los clientes y órdenes conviven de forma eficiente pero estrictamente aislados mediante identificadores únicos de inquilinato.
+- **Aislamiento de Datos Seguro (Row-Level Isolation):** Implementación de Middlewares en Express que interceptan cada petición HTTP, verifican el estado de la sesión (`req.session`) y restringen las consultas SQL para evitar fugas de información (*Data Leakage*) entre distintos comercios.
+- **Interfaz Paramétrica y Dinámica:** Renderizado condicional mediante plantillas EJS que adaptan las etiquetas, tablas y formularios según el rubro del comercio logueado (ej: campos específicos para informática vs. mecánica automotriz).
+- **Panel de Control Administrativo (Control Panel):** Módulo CRUD independiente para la creación, monitoreo y gestión de nuevos comercios e inquilinos en la plataforma.
+- **Autenticación Robusta:** Registro y login de usuarios administradores por comercio con hashing seguro de contraseñas mediante **Bcrypt**.
 
 ---
 
@@ -43,7 +44,7 @@ Si querés clonar este proyecto y ejecutarlo en tu entorno local, seguí estos p
    ```
 
 3. **Configurá las variables de entorno:**
-   Crea un archivo `.env` en la raíz del proyecto y agrega tus credenciales de MySQL (local o Clever Cloud):
+   Crea un archivo `.env` en la raíz del proyecto para proteger las credenciales críticas de infraestructura:
    ```env
    PORT=3000
    DB_HOST=tu_host_de_mysql
