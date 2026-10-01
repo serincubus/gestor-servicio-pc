@@ -60,10 +60,21 @@ index: async (req, res) => {
 
 
 
-    // 2. Guarda el ticket y asocia inteligentemente al cliente (Nuevo o Existente)
-    store: async (req, res) => {
-        try {
-            // Buscamos si el cliente ya existe por teléfono, si no, lo creamos
+   // 2. Guarda el ticket y asocia inteligentemente al cliente (Nuevo o Existente) - VERSIÓN SAAS MULTITENANT
+store: async (req, res) => {
+    try {
+        const operador = req.session.usuarioLogueado;
+        
+        // Capturamos el id_cliente si viene oculto desde la interfaz de cliente existente
+        const idClienteExistente = req.body.id_cliente ? parseInt(req.body.id_cliente) : null;
+        let idClienteFinal;
+
+        // 🧠 DETECCIÓN DE CLIENTE INTELIGENTE:
+        if (idClienteExistente) {
+            // Si el formulario ya nos dice exactamente qué ID de cliente es, lo usamos directo
+            idClienteFinal = idClienteExistente;
+        } else {
+            // Si no viene ID, usamos findOrCreate buscando por el teléfono sanitizado
             const [clienteEncontrado, creado] = await Cliente.findOrCreate({
                 where: { telefono: req.body.telefono.trim() },
                 defaults: {
@@ -71,23 +82,31 @@ index: async (req, res) => {
                     telefono: req.body.telefono.trim()
                 }
             });
-
-            // Generamos un número de ticket aleatorio único
-            const numeroTicket = 'TICKET-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-
-            // Creamos el ticket apuntando al id_cliente correspondiente
-            await Ticket.create({
-                id_cliente: clienteEncontrado.id_cliente, // Clave foránea
-                codigo_seguimiento: numeroTicket,
-                equipo: req.body.equipo,
-                falla: req.body.falla
-            });
-
-            res.redirect('/'); 
-        } catch (error) {
-            res.send("Error al guardar cliente y ticket: " + error.message);
+            idClienteFinal = clienteEncontrado.id_cliente;
         }
-    },
+
+        // Generamos un número de ticket aleatorio único
+        const numeroTicket = 'TICKET-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        // Creamos el ticket apuntando al id_cliente correspondiente y al taller activo
+        await Ticket.create({
+            id_cliente: idClienteFinal, // Clave foránea relacional perfecta
+            codigo_seguimiento: numeroTicket,
+            equipo: req.body.equipo.trim(),
+            falla: req.body.falla.trim(),
+            estado: 'Ingresado', // Aseguramos estado base uniforme
+            presupuesto: 0.00,
+            pago_parcial: 0.00,
+            // 🔒 ANCLAJE MULTITENANT MANDATORIO:
+            id_comercio: operador.id_comercio 
+        });
+
+        res.redirect('/'); 
+    } catch (error) {
+        res.send("Error crítico al guardar cliente y ticket en el SaaS: " + error.message);
+    }
+},
+
 
     // NUEVO: Lógica de búsqueda en Backend con relaciones
     search: async (req, res) => {

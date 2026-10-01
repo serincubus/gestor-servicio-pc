@@ -3,7 +3,6 @@
 <!-- Vinculamos las hojas de estilos externas -->
 <link rel='stylesheet' href='/stylesheets/style.css' />
 <link rel='stylesheet' href='/stylesheets/formCliente.css' />
-<script src="https://jsdelivr.net"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <body>
   <div class="container">
@@ -100,36 +99,44 @@
 
   <!-- 📑 NUEVO DRAWER INTERACTIVO: FORMULARIO DE NUEVO INGRESO -->
   <div class="bloque-formulario hardware-drawer" id="drawer-nuevo-ingreso">
-      <div class="drawer-header">
-          <h3>📋 Registrar Nuevo Ingreso</h3>
-          <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer-ingreso">✕</button>
-      </div>
-      
-      <!-- Tu formulario conectado a la ruta POST store -->
-      <form action="/guardar" method="POST" class="form-usuarios-input" style="padding: 10px 20px;">
-          <label><strong>Nombre del Cliente:</strong></label>
-          <input type="text" name="nombre" placeholder="Ej: Carlos Pérez" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
-          
-          <label><strong>Teléfono / WhatsApp:</strong></label>
-          <input type="text" name="telefono" placeholder="Ej: 1123456789" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
-          
-          <label><%= labels.labelElemento %>:</label>
-          <input type="text" name="equipo" placeholder="<label><%= labels.labelFalla %>:</label>" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
-          
-          <label><%= labels.labelFalla %>:</label>
-          <textarea name="falla" placeholder="<label><%= labels.labelFalla %>:</label>" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px; height: 80px; resize: none; font-family:inherit;"></textarea>
-          
-          <label><strong>Estado Inicial:</strong></label>
-          <select name="estado" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #cbd5e0; border-radius:4px; font-size:15px;">
-              <option value="Ingresado">📥 Ingresado</option>
-              <option value="En Reparación">🛠️ En Reparación</option>
-          </select>
+    <div class="drawer-header">
+        <h3 id="titulo-drawer-ingreso">📋 Registrar Nuevo Ingreso</h3>
+        <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer-ingreso">✕</button>
+    </div>
+    
+    <!-- ➕ CONTENEDOR ENVOLVENTE CON EL ID QUE BUSCA TU SCRIPT -->
+<div id="contenedor-formulario-registro" style="margin-top: 15px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+    
+    <form action="/guardar" method="POST" class="form-usuarios-input" id="form-registro-principal" style="display: flex !important; flex-direction: column !important; padding: 10px 20px;">
+        
+        <!-- Input oculto para atrapar el ID del cliente del historial -->
+        <input type="hidden" name="id_cliente" id="input-id-cliente-oculto" value="">
 
-          <button type="submit" class="btn-guardar" style="width:100%; padding: 12px; font-size: 15px;">
-              💾 Guardar Ficha e Ingresar
-          </button>
-      </form>
-  </div>
+        <label><strong>Nombre del Cliente:</strong></label>
+        <input type="text" name="nombre" id="input-nombre" placeholder="Ej: Carlos Pérez" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
+        
+        <label><strong>Teléfono / WhatsApp:</strong></label>
+        <input type="text" name="telefono" id="input-telefono" placeholder="Ej: 1123456789" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
+        
+        <label><strong><%= labels.labelElemento %>:</strong></label>
+        <input type="text" name="equipo" id="input-equipo" placeholder="<%= labels.placeholderElemento %>" required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px;">
+        
+        <label><strong><%= labels.labelFalla %>:</strong></label>
+        <textarea name="falla" id="input-falla" placeholder="Describa el problema..." required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px; height: 80px; resize: none; font-family:inherit;"></textarea>
+        
+        <label><strong>Estado Inicial:</strong></label>
+        <select name="estado" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #cbd5e0; border-radius:4px; font-size:15px;">
+            <option value="Ingresado">📥 Ingresado</option>
+            <option value="En Reparación">🛠️ En Reparación</option>
+        </select>
+
+        <button type="submit" class="btn-guardar" style="width:100%; padding: 12px; font-size: 15px;">
+            💾 Guardar Ficha e Ingresar
+        </button>
+    </form>
+</div>
+</div>
+
 
 
     <hr class="separador-seccion">
@@ -143,133 +150,169 @@
 
     <!-- LISTADO GENERAL DE TARJETAS DE REPARACIÓN -->
     <h2><%= labels.tituloGrilla %></h2>
-    <div id="lista-reparaciones">
-      <% if (lista.length > 0) { %>
-        <% lista.forEach(cliente => { %>
-          <div class="reparacion-card">
-            <strong class="txt-cliente"><%= cliente.nombre %></strong> - <span class="txt-equipo"><%= cliente.equipo %></span>
-            <p class="txt-falla">Falla: <%= cliente.falla %></p>
-            
-           <!-- CONTENEDOR CONTROLLER FLEXBOX PRINCIPAL -->
-<div class="contenedor-acciones-flex">
-    
-    <!-- Grupo Izquierdo: Operaciones de Gestión -->
-    <div class="grupo-operaciones-izquierda">
-        <a href="/detalle/<%= cliente.id_cliente %>" class="btn-ux btn-ux-detalle">
-            🔍 Ver Detalle
-        </a>
-        <a href="/editar/<%= cliente.id_cliente %>" class="btn-ux btn-ux-editar">
-            ✏️ Editar
-        </a>
-        <button type="button" class="btn-ux btn-ux-nuevo" onclick="prepararNuevoTicket('<%= cliente.cliente.nombre || cliente.nombre %>', '<%= cliente.cliente.telefono || cliente.telefono %>')">
-            ➕ Nuevo Ticket
-        </button>
-    </div>
+   <div id="lista-reparaciones">
+  <% if (lista && lista.length > 0) { %>
+    <% lista.forEach(ticket => { %> <!-- 🛠️ Cambiamos 'cliente' por 'ticket' para evitar confusiones de variables -->
+      <div class="reparacion-card">
+        <!-- 🧠 Validamos si los datos del cliente vienen sueltos o anidados por el Join relacional -->
+        <% 
+           let idCliente = ticket.id_cliente || (ticket.cliente ? ticket.cliente.id_cliente : '');
+           let nombreCliente = ticket.nombre || (ticket.cliente ? ticket.cliente.nombre : 'Cliente Sin Nombre');
+           let telefonoCliente = ticket.telefono || (ticket.cliente ? ticket.cliente.telefono : '');
+           let idMecanismoEliminar = ticket.id_ticket || ticket.id_usuario || idCliente;
+        %>
 
-    <!-- Grupo Derecho: Seguridad / Eliminación -->
-    <div class="grupo-seguridad-derecha">
-        <button type="button" class="btn-eliminar-flex" onclick="confirmarEliminacion('<%= cliente.id_ticket || cliente.id_cliente %>')">
-            🗑️ Eliminar Ticket
-        </button>
-        <!-- FORMULARIO OCULTO PARA EL POST REAL -->
-        <form id="form-eliminar-<%= cliente.id_ticket || cliente.id_cliente %>" action="/eliminar/<%= cliente.id_ticket || cliente.id_cliente %>" method="POST" style="display: none;"></form>
-    </div>
-    
+        <strong class="txt-cliente"><%= nombreCliente %></strong> - <span class="txt-equipo"><%= ticket.equipo %></span>
+        <p class="txt-falla">Falla: <%= ticket.falla %></p>
+        
+        <!-- CONTENEDOR CONTROLLER FLEXBOX PRINCIPAL -->
+        <div class="contenedor-acciones-flex">
+            
+            <!-- Grupo Izquierdo: Operaciones de Gestión -->
+            <div class="grupo-operaciones-izquierda">
+                <a href="/detalle/<%= idCliente %>" class="btn-ux btn-ux-detalle">
+                    🔍 Ver Detalle
+                </a>
+                <a href="/editar/<%= idCliente %>" class="btn-ux btn-ux-editar">
+                    ✏️ Editar
+                </a>
+                
+                <!-- 🛠️ BOTÓN CORREGIDO: Pasa los datos sanitizados libres de errores 'undefined' -->
+                <button type="button" class="btn-ux btn-ux-nuevo" onclick="prepararNuevoTicket('<%= idCliente %>', '<%= nombreCliente %>', '<%= telefonoCliente %>')">
+                    ➕ Nuevo Ticket
+                </button>
+            </div>
+
+            <!-- Grupo Derecho: Seguridad / Eliminación -->
+            <div class="grupo-seguridad-derecha">
+                <button type="button" class="btn-eliminar-flex" onclick="confirmarEliminacion('<%= idMecanismoEliminar %>')">
+                    🗑️ Eliminar Ticket
+                </button>
+                <!-- FORMULARIO OCULTO PARA EL POST REAL -->
+                <form id="form-eliminar-<%= idMecanismoEliminar %>" action="/eliminar/<%= idMecanismoEliminar %>" method="POST" style="display: none;"></form>
+            </div>
+            
+        </div>
+
+        <div class="contenedor-estado">
+            <small class="badge-estado-inicio">Estado: <%= ticket.estado %></small>
+        </div>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p class="txt-sin-registros">No hay equipos registrados todavía.</p>
+  <% } %>
 </div>
 
 
-            <!-- FORMULARIO OCULTO PARA EL POST REAL -->
-            <form id="form-eliminar-<%= cliente.id_ticket || cliente.id_cliente %>" action="/eliminar/<%= cliente.id_ticket || cliente.id_cliente %>" method="POST" style="display: none;"></form>
-
-            <div class="contenedor-estado">
-                <small class="badge-estado-inicio">Estado: <%= cliente.estado %></small>
-            </div>
-          </div>
-        <% }) %>
-      <% } else { %>
-        <p class="txt-sin-registros">No hay equipos registrados todavía.</p>
-      <% } %>
-    </div>
-  </div>
-
   <!-- CONTROL DE INTERFAZ Y COMPORTAMIENTO SCRIPT -->
-  <script>
+ <script>
+    // ⚙️ MANEJO DE DESPLIEGUE MODULAR (DRAWER LATERAL)
+    function abrirDrawerIngreso() {
+        const drawer = document.getElementById('drawer-nuevo-ingreso');
+        const overlay = document.getElementById('drawer-overlay-ingreso');
+        if (drawer && overlay) {
+            drawer.classList.add('open');
+            overlay.classList.add('open');
+        }
+    }
+
+    function cerrarDrawerIngreso() {
+        const drawer = document.getElementById('drawer-nuevo-ingreso');
+        const overlay = document.getElementById('drawer-overlay-ingreso');
+        const inputIdOculto = document.getElementById('input-id-cliente-oculto');
+        const titulo = document.getElementById('titulo-drawer-ingreso');
+
+        if (drawer && overlay) {
+            drawer.classList.remove('open');
+            overlay.classList.remove('open');
+        }
+
+        // 🛡️ LIMPIEZA DE RESETEO SAAS: Al cerrar, vaciamos el ID oculto y restauramos el título base
+        // para que si después tocan el botón superior, nazca como cliente nuevo desde cero
+        if (inputIdOculto) inputIdOculto.value = '';
+        if (titulo) titulo.innerText = "📋 Registrar Nuevo Ingreso";
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-    // Selectores del Drawer de Nuevos Ingresos
-    const btnToggleRegistro = document.getElementById('btn-toggle-registro'); // Tu botón original de registro
-    const drawerIngreso = document.getElementById('drawer-nuevo-ingreso');
-    const overlayIngreso = document.getElementById('drawer-overlay-ingreso');
-    const btnCerrarIngreso = document.getElementById('btn-cerrar-drawer-ingreso');
+        // Escuchadores del botón general de la barra superior (Para ingresos desde cero)
+        const btnToggleRegistro = document.getElementById('btn-toggle-registro');
+        const btnCerrarIngreso = document.getElementById('btn-cerrar-drawer-ingreso');
+        const overlayIngreso = document.getElementById('drawer-overlay-ingreso');
 
-    // Función nativa para abrir el panel deslizante
-    const abrirDrawerIngreso = () => {
-        if(drawerIngreso && overlayIngreso) {
-            drawerIngreso.classList.add('open');
-            overlayIngreso.classList.add('open');
+        if (btnToggleRegistro) btnToggleRegistro.addEventListener('click', abrirDrawerIngreso);
+        if (btnCerrarIngreso) btnCerrarIngreso.addEventListener('click', cerrarDrawerIngreso);
+        if (overlayIngreso) overlayIngreso.addEventListener('click', cerrarDrawerIngreso);
+    });
+
+    // 🧠 FUNCIÓN DE INYECCIÓN DE PERTENENCIA MULTITENANT (CLIENTES EXISTENTES)
+    function prepararNuevoTicket(id, nombre, telefono) {
+        // 1. Forzamos la apertura física del Drawer lateral deslizante reutilizable
+        abrirDrawerIngreso();
+
+        // 2. Cambiamos el título en vivo para darle una experiencia premium al usuario
+        const titulo = document.getElementById('titulo-drawer-ingreso');
+        if (titulo) {
+            titulo.innerText = "➕ Nuevo Ticket para " + nombre;
         }
-    };
 
-    // Función nativa para cerrar el panel deslizante
-    const cerrarDrawerIngreso = () => {
-        if(drawerIngreso && overlayIngreso) {
-            drawerIngreso.classList.remove('open');
-            overlayIngreso.classList.remove('open');
+        // 3. Seteamos el ID del cliente en el input oculto para evitar duplicaciones en Clever Cloud
+        const inputIdOculto = document.getElementById('input-id-cliente-oculto');
+        if (inputIdOculto) {
+            inputIdOculto.value = id;
         }
-    };
 
-    // Escuchadores de clics interactivos
-    if (btnToggleRegistro) btnToggleRegistro.addEventListener('click', abrirDrawerIngreso);
-    if (btnCerrarIngreso) btnCerrarIngreso.addEventListener('click', cerrarDrawerIngreso);
-    if (overlayIngreso) overlayIngreso.addEventListener('click', cerrarDrawerIngreso);
-});
+        // 4. Autocompletamos de forma automática los campos de contacto del cliente
+        const inputNombre = document.getElementById('input-nombre');
+        const inputTelefono = document.getElementById('input-telefono');
+        const inputEquipo = document.getElementById('input-equipo');
+        const inputFalla = document.getElementById('input-falla');
 
-    function prepararNuevoTicket(nombre, telefono) {
-      const btnToggle = document.getElementById('btn-toggle-registro');
-      const formulario = document.getElementById('contenedor-formulario-registro');
+        if (inputNombre) inputNombre.value = nombre;
+        if (inputTelefono) inputTelefono.value = telefono;
+        
+        // Limpiamos los campos del servicio anterior para que no queden residuos
+        if (inputEquipo) inputEquipo.value = '';
+        if (inputFalla) inputFalla.value = '';
+        
+        // Posicionamos el cursor automáticamente en el casillero del dispositivo
+        if (inputEquipo) inputEquipo.focus();
 
-      if (formulario.style.display === 'none' || formulario.style.display === '') {
-        formulario.style.display = 'block';
-        btnToggle.textContent = '❌ Cerrar Formulario';
-        btnToggle.style.backgroundColor = '#dc3545';
-      }
-
-      document.getElementById('input-nombre').value = nombre;
-      document.getElementById('input-telefono').value = telefono;
-      
-      document.getElementById('input-equipo').value = '';
-      document.getElementById('input-falla').value = '';
-      
-      document.getElementById('input-equipo').focus();
-
-      const formPrincipal = document.getElementById('form-registro-principal');
-      formPrincipal.style.backgroundColor = '#e6fffa';
-      formPrincipal.style.transition = 'background-color 0.4s';
-      setTimeout(() => { formPrincipal.style.backgroundColor = 'transparent'; }, 1200);
+        // 🎨 EFECTO VISUAL: Parpadeo de confirmación en el formulario principal
+        const formPrincipal = document.getElementById('form-registro-principal');
+        if (formPrincipal) {
+            formPrincipal.style.backgroundColor = '#e6fffa';
+            formPrincipal.style.transition = 'background-color 0.4s';
+            setTimeout(() => { 
+                formPrincipal.style.backgroundColor = 'transparent'; 
+            }, 1200);
+        }
     }
 
+    // 🗑️ GESTIÓN DE SEGURIDAD: Confirmación de alertas SweetAlert2
     function confirmarEliminacion(idTicket) {
-      console.log("Intentando eliminar el ticket ID:", idTicket);
+        console.log("Intentando eliminar el ticket ID:", idTicket);
 
-      Swal.fire({
-          title: '¿Estás completamente seguro?',
-          text: "Esta acción borrará el ticket técnico de forma permanente de la base de datos.",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#3085d6',
-          confirmButtonText: 'Sí, borrar ticket',
-          cancelButtonText: 'Cancelar'
-      }).then((result) => {
-          if (result.isConfirmed) {
-              const formulario = document.getElementById('form-eliminar-' + idTicket);
-              if (formulario) {
-                  formulario.submit();
-              } else {
-                  console.error("No se encontró el formulario oculto para el ID:", idTicket);
-              }
-          }
-      });
+        Swal.fire({
+            title: '¿Estás completamente seguro?',
+            text: "Esta acción borrará el ticket técnico de forma permanente de la base de datos.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar ticket',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const formulario = document.getElementById('form-eliminar-' + idTicket);
+                if (formulario) {
+                    formulario.submit();
+                } else {
+                    console.error("No se encontró el formulario oculto para el ID:", idTicket);
+                }
+            }
+        });
     }
-  </script>
+</script>
 </body>
 </html>

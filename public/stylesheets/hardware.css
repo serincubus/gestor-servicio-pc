@@ -40,7 +40,7 @@
 .hardware-drawer {
     position: fixed !important;
     top: 0 !important;
-    right: -450px !important; /* Esconde el panel por fuera del monitor inicialmente */
+    right: -460px !important; /* 🛠️ SANEADO: Esconde el panel de forma segura por fuera del monitor */
     width: 420px !important;
     max-width: 90vw !important;
     height: 100vh !important;
@@ -50,16 +50,16 @@
     display: flex !important;
     flex-direction: column !important;
     box-sizing: border-box !important;
-    overflow-y: auto !important; /* Permite scroll interno si la pantalla es chica o hay muchos campos */
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important; /* Curva de velocidad fluida */
+    overflow-y: auto !important; /* Permite scroll interno si la pantalla es chica */
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important; /* 🛠️ SANEADO: Transición limpia sobre la propiedad right */
     border-radius: 0 !important;
     border: none !important;
     border-left: 1px solid #cbd5e0 !important;
 }
 
-/* Al agregar la clase .open, inyectamos la transformación para deslizar hacia adentro */
+/* 🚀 REGLA DE EMPUJE ACTIVA: Al inyectarse .open, el panel se posiciona en el borde de la pantalla */
 .hardware-drawer.open {
-    transform: translateX(-450px) !important; /* Introduce el panel en la pantalla de forma limpia */
+    right: 0 !important; /* 🛠️ SANEADO: Introduce el bloque de forma fluida y transparente en el monitor */
 }
 
 /* Encabezado interno del Drawer */
@@ -138,6 +138,21 @@
     height: 90px !important;
     resize: none !important;
     font-family: inherit !important;
+}
+
+/* ==========================================================================
+   🔒 FORZAR VISIBILIDAD INTERNA EN PANALES DESLIZANTES SAAS
+   ========================================================================== */
+
+/* Cuando el Drawer de ingresos tiene la clase .open, obligamos a sus hijos directos a mostrarse */
+#drawer-nuevo-ingreso.open .form-usuarios-input {
+    display: flex !important; /* Inyecta la visualización obligatoria en bloque flexible */
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#drawer-nuevo-ingreso.open * {
+    visibility: visible !important; /* Desactiva apagados accidentales heredados */
 }
 
 /* --- TABLA DE INVENTARIO --- */
@@ -277,7 +292,9 @@
     }
 }
 
-/* 📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px - Samsung) */
+/* ==========================================================================
+   📱 REGLA 2: AJUSTE CRÍTICO PARA SMARTPHONES (Pantallas menores a 768px - Samsung)
+   ========================================================================== */
 @media (max-width: 768px) {
     .cabecera-hardware {
         flex-direction: column !important;
@@ -326,15 +343,20 @@
         box-sizing: border-box !important;
     }
 
-    /* 📥 EL DRAWER DE ALTA DE COMPONENTES SE TRANSFORMA AL ANCHO DEL CELULAR */
+    /* 📥 EL DRAWER DE ALTA SE TRANSFORMA DE FORMA ELÁSTICA AL ANCHO DEL CELULAR */
     .hardware-drawer {
         width: 100% !important;
         max-width: 100% !important;
-        right: -100% !important; /* Ocultamiento periférico */
+        right: -100% !important; /* Ocultamiento periférico seguro */
+        /* 🛠️ SANEADO: Asegura que la curva de animación responda al cambio de coordenadas en el eje right */
+        transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important; 
     }
 
+    /* 🚀 EMPUJE MÓVIL EN LUZ VERDE: Forzamos la entrada al borde exacto de la pantalla táctil */
     .hardware-drawer.open {
-        transform: translateX(-100%) !important; /* Desliza cubriendo toda la pantalla */
+        /* 🛠️ CORRECCIÓN CRÍTICA: Cambiamos transform por right para evitar la anulación invisible del panel */
+        right: 0 !important; 
+        transform: none !important;
     }
 
     /* 🔒 DESTRUCCIÓN DE TABLA DE HARDWARE: Muta a tarjetas independientes */
@@ -413,7 +435,6 @@
     }
 
     /* Selectores posicionales para etiquetar las propiedades del repuesto */
-    /* td:nth-of-type mapea el orden real de tus columnas físicas */
     .tabla-hardware td:nth-of-type(2)::before { content: "📦 Nombre del Componente:"; }
     .tabla-hardware td:nth-of-type(3)::before { content: "🏷️ Categoría de Hardware:"; }
     .tabla-hardware td:nth-of-type(4)::before { content: "💰 Precio de Costo ($):"; }
@@ -429,7 +450,7 @@
     /* ⚙️ BOTONES DE ACCIÓN (EDITAR Y ELIMINAR) EN FORMATO VERTICAL TÁCTIL */
     .contenedor-acciones-tabla {
         display: flex !important;
-        flex-direction: column !important; /* Botones uno arriba del otro */
+        flex-direction: column !important;
         width: 100% !important;
         gap: 8px !important;
         margin-top: 10px !important;
@@ -439,7 +460,7 @@
     .contenedor-acciones-tabla .btn-eliminar-flex,
     .contenedor-acciones-tabla .btn-accion-tabla {
         width: 100% !important;
-        padding: 12px !important; /* Mayor área táctil para el dedo */
+        padding: 12px !important;
         font-size: 14.5px !important;
         font-weight: bold !important;
         box-sizing: border-box !important;
