@@ -1,13 +1,10 @@
-// src/controllers/saasController.js
-const { DataTypes, Op } = require('sequelize');
-const db = require('../database/db');
+// src/controllers/saasController.js - VERSIÓN SANEADA MULTITENANT
+const { Op } = require('sequelize');
 const bcrypt = require('bcrypt'); // 🔐 Requerido para encriptar la cuenta del nuevo admin
 
-const ComercioModel = require('../database/models/Comercio');
-const UsuarioModel = require('../database/models/Usuario');
-
-const Comercio = ComercioModel(db, DataTypes);
-const Usuario = UsuarioModel(db, DataTypes);
+// 🛠️ IMPORTACIÓN EXTRACTORA UNIFICADA DESDE EL MAPA CENTRALIZADO DE DB.JS
+const db = require('../database/db');
+const { Comercio, Usuario } = db.models; 
 
 const saasController = {
     // Listar comercios y administradores en la Consola Maestra
@@ -44,7 +41,7 @@ const saasController = {
     // 🚀 ALTA TRANSACCIONAL UNIFICADA: Crea el taller y su respectivo administrador
     storeCompleto: async (req, res) => {
         try {
-            const { nombre_taller, telefono_contacto, direccion_fisica, username, password } = req.body;
+            const { nombre_taller, telefono_contacto, direccion_fisica, username, password, rubro } = req.body;
 
             // 1. Validamos que el nombre de usuario admin no esté duplicado globalmente
             const usuarioExistente = await Usuario.findOne({ where: { username: username.trim() } });
@@ -52,30 +49,34 @@ const saasController = {
                 const listaComercios = await Comercio.findAll({ order: [['id_comercio', 'ASC']], raw: true });
                 const listaAdmins = await Usuario.findAll({ where: { rol: 'admin' }, raw: true });
                 return res.render('superAdminDashboard', {
-                    title: 'Consola Maestra de Suscripciones', comercios: listaComercios, administradores: listaAdmins, busqueda: '', usuarioSesion: req.session.usuarioLogueado,
+                    title: 'Consola Maestra de Suscripciones', 
+                    comercios: listaComercios, 
+                    administradores: listaAdmins, 
+                    busqueda: '', 
+                    usuarioSesion: req.session.usuarioLogueado,
                     error: `El nombre de usuario "${username}" ya se encuentra en uso por otro técnico o administrador.`
                 });
             }
 
-            // 2. Registramos el nuevo comercio en Clever Cloud para generar su id_comercio único
+            // 2. Registramos el nuevo comercio inyectando su especialidad elegida en el selector
             const nuevoComercio = await Comercio.create({
                 nombre_taller: nombre_taller.trim(),
                 telefono_contacto: telefono_contacto.trim(),
                 direccion_fisica: direccion_fisica ? direccion_fisica.trim() : '',
                 activo: true,
-                rubro: rubro // ⬅️ GRABADO DEL RUBRO SELECCIONADO EN CLEVER CLOUD
+                rubro: rubro // 🔒 Inyección perimetral de mercado blindada
             });
 
-            // 3. 🔐 Encriptamos la clave tipeada con Bcrypt antes de guardarla
+            // 3. Encriptamos la clave tipeada con Bcrypt antes de guardarla
             const passwordEncriptada = await bcrypt.hash(password.trim(), 10);
 
             // 4. Registramos al Administrador de ese taller vinculándolo a su id_comercio nativo
             await Usuario.create({
                 username: username.trim(),
                 password: passwordEncriptada,
-                rol: 'admin', // Rango de jerarquía de local
+                rol: 'admin', 
                 foto: 'default-user.png',
-                id_comercio: nuevoComercio.id_comercio // ⬅️ ANCLAJE CORPORATIVO MÓVIL
+                id_comercio: nuevoComercio.id_comercio 
             });
 
             res.redirect('/saas/panel');
@@ -84,7 +85,7 @@ const saasController = {
         }
     },
 
-        // 🗑️ BAJA MAESTRA EN CASCADA: Elimina el taller y limpia sus usuarios asociados
+    // 🗑️ BAJA MAESTRA EN CASCADA: Elimina el taller y limpia sus usuarios asociados
     deleteComercio: async (req, res) => {
         try {
             const idTaller = parseInt(req.params.id);
@@ -109,6 +110,7 @@ const saasController = {
             res.send("Error crítico al procesar la baja del taller y sus operarios: " + error.message);
         }
     },
+
     // 🔐 REMOVER ADMINISTRADOR DE LOCAL: Quita el acceso de control de un taller
     deleteAdmin: async (req, res) => {
         try {
@@ -132,7 +134,6 @@ const saasController = {
             res.send("Error crítico al remover el acceso del administrador de local: " + error.message);
         }
     }
-
 };
 
 module.exports = saasController;

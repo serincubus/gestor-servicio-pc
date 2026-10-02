@@ -1,9 +1,21 @@
 <%- include('./partials/head.ejs') %>
 <%- include('./partials/header.ejs') %>
 <!-- Vinculamos las hojas de estilos externas -->
-<link rel='stylesheet' href='/stylesheets/style.css' />
+<!-- <link rel='stylesheet' href='/stylesheets/style.css' /> -->
 <link rel='stylesheet' href='/stylesheets/formCliente.css' />
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<% 
+  if (typeof labels === 'undefined' || !labels) {
+      labels = {
+          tituloGrilla: "Equipos en el Taller",
+          labelElemento: "Equipo / Dispositivo",
+          placeholderElemento: "Ej: Notebook Asus i7 o Consola PS5",
+          labelFalla: "Falla Reportada o Servicio",
+          cardStockTitulo: "Catálogo de Repuestos", // ➕ Resguardo por defecto
+          cardStockDesc: "Controlar stock físico de hardware, memorias, pantallas, componentes y precios de venta." // ➕ Resguardo por defecto
+      };
+  }
+%>
 <body>
   <div class="container">
     <h1><%= title %></h1>
@@ -66,17 +78,23 @@
             <% } %>
 
             <!-- TARJETA 3: CATÁLOGO Y STOCK (VIOLETA) -->
-            <a href="/hardware" class="card-dashboard card-violeta">
-                <div class="card-icon-wrapper">
-                    <span class="card-icon">💻</span>
-                </div>
-                <div class="card-content">
-                    <h3>Catálogo y Stock de Hardware</h3>
-                    <p>Gestiona tu inventario de productos y repuestos.</p>
-                </div>
-                <div class="card-arrow">〉</div>
-            </a>
-
+                <a href="/hardware" class="card-dashboard card-violeta">
+        <div class="card-icon-wrapper">
+            <span class="card-icon">📦</span> 
+        </div>
+        <div class="card-content">
+            <!-- 🛠️ TÍTULO DINÁMICO CON ESTILOS INYECTADOS -->
+            <h3 style="margin: 0 !important; font-size: 18px !important; font-weight: bold !important; color: #ffffff !important;">
+                <%= labels.cardStockTitulo || 'Catálogo y Stock' %>
+            </h3>
+            
+            <!-- 🛠️ DESCRIPCIÓN DINÁMICA CON ESTILOS INYECTADOS -->
+            <p style="margin: 5px 0 0 0 !important; font-size: 13.5px !important; color: rgba(255, 255, 255, 0.85) !important; line-height: 1.4 !important;">
+                <%= labels.cardStockDesc || 'Gestionar inventario, repuestos y control de stock del negocio.' %>
+            </p>
+        </div>
+        <div class="card-arrow" style="color: #ffffff !important;">〉</div>
+    </a>
             <!-- TARJETA 4: CONTROL DE TÉCNICOS (CELESTE - PROTEGIDA POR ROL) -->
                 <% if (typeof usuarioSesion !== 'undefined' && usuarioSesion && usuarioSesion.rol === 'admin') { %>
                     <a href="/users/management" class="card-dashboard card-celeste">

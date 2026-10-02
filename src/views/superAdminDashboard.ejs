@@ -1,7 +1,7 @@
 <%- include('./partials/head.ejs') %>
 <link rel='stylesheet' href='/stylesheets/style.css' />
 <link rel='stylesheet' href='/stylesheets/hardware.css' />
-<script src="https://jsdelivr.net"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <body>
   <div id="drawer-overlay" class="drawer-overlay"></div>
@@ -40,33 +40,34 @@
             <th style="width: 60px; text-align: center;">Baja</th> <!-- ➕ Nueva columna -->
         </tr>
     </thead>
-    <tbody>
-        <% if(comercios.length > 0) { %>
-            <% comercios.forEach(comercio => { %>
-                <tr>
-                    <td style="text-align: center; font-family: monospace; font-weight: bold;"><%= comercio.id_comercio %></td>
-                    <td><strong><%= comercio.nombre_taller %></strong><br><small style="color: #718096;"><%= comercio.telefono_contacto %></small></td>
-                    <td style="font-size: 13px; color: #4a5568;"><%= comercio.direccion_fisica || 'No declarada' %></td>
-                    <td style="text-align: center;">
-                        <span class="<%= comercio.activo ? 'badge-rol-admin' : 'card-deshabilitada' %>" style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
-                            <%= comercio.activo ? '🟢 Activo' : '🔴 Suspendido' %>
-                        </span>
-                    </td>
-                    <!-- ➕ BOTÓN TÁCTIL DE BORRADO DE COMERCIO -->
-                    <td style="text-align: center; vertical-align: middle;">
-                        <% if (comercio.id_comercio !== 1) { %>
-                            <button type="button" class="btn-eliminar-flex" style="padding: 6px 10px; background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7;" onclick="eliminarComercioCompleto('<%= comercio.id_comercio %>')">🗑️</button>
-                            <form id="form-eliminar-comercio-<%= comercio.id_comercio %>" action="/saas/comercios/eliminar/<%= comercio.id_comercio %>" method="POST" style="display:none;"></form>
-                        <% } else { %>
-                            <small style="color: #a0aec0; font-weight: bold;">Base</small>
-                        <% } %>
-                    </td>
-                </tr>
-            <% }) %>
-        <% } else { %>
-            <tr><td colspan="5" style="text-align: center; color: #999; padding: 25px;">No hay comercios.</td></tr>
-        <% } %>
-    </tbody>
+    <<tbody>
+    <% if(comercios.length > 0) { %>
+        <% comercios.forEach(comercio => { %>
+            <tr>
+                <td style="text-align: center; font-family: monospace; font-weight: bold;"><%= comercio.id_comercio %></td>
+                <td><strong><%= comercio.nombre_taller %></strong><br><small style="color: #718096;"><%= comercio.telefono_contacto %></small></td>
+                <td style="font-size: 13px; color: #4a5568;"><%= comercio.direccion_fisica || 'No declarada' %></td>
+                <td style="text-align: center;">
+                    <span class="<%= comercio.activo ? 'badge-rol-admin' : 'card-deshabilitada' %>" style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                        <%= comercio.activo ? '🟢 Activo' : '🔴 Suspendido' %>
+                    </span>
+                </td>
+                <!-- ➕ BOTÓN TÁCTIL DE BORRADO DE COMERCIO (CON ID BLINDADO ÚNICO) -->
+                <td style="text-align: center; vertical-align: middle;">
+                    <% if (comercio.id_comercio !== 1) { %>
+                        <button type="button" class="btn-eliminar-flex" style="padding: 6px 10px; background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7;" onclick="eliminarComercioCompleto('<%= comercio.id_comercio %>')">🗑️</button>
+                        <!-- 🛠️ CORRECCIÓN: Le añadimos el prefijo exacto '-tabla' para que no duplique IDs con la otra columna -->
+                        <form id="form-eliminar-comercio-tabla-<%= comercio.id_comercio %>" action="/saas/comercios/eliminar/<%= comercio.id_comercio %>" method="POST" style="display:none;"></form>
+                    <% } else { %>
+                        <small style="color: #a0aec0; font-weight: bold;">Base</small>
+                    <% } %>
+                </td>
+            </tr>
+        <% }) %>
+    <% } else { %>
+        <tr><td colspan="5" style="text-align: center; color: #999; padding: 25px;">No hay comercios.</td></tr>
+    <% } %>
+</tbody>
 </table>
         </div>
 
@@ -150,18 +151,43 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const drawer = document.getElementById('hardware-drawer');
-      const overlay = document.getElementById('drawer-overlay');
-      const btnAbrirAlta = document.getElementById('btn-abrir-alta');
-      const btnCerrar = document.getElementById('btn-cerrar-drawer');
+    // 🏢 1. FUNCIÓN DE BORRADO DE TALLERES / COMERCIOS (COLUMNA IZQUIERDA)
+    function eliminarComercioCompleto(id) {
+        if (typeof Swal === 'undefined') {
+            if (confirm("¿Eliminar taller por completo junto con todos sus operarios y órdenes?")) {
+                const form = document.getElementById('form-eliminar-comercio-tabla-' + id);
+                if (form) form.submit();
+            }
+            return;
+        }
 
-      if(btnAbrirAlta) btnAbrirAlta.addEventListener('click', () => { drawer.classList.add('open'); overlay.classList.add('open'); });
-      if(btnCerrar) btnCerrar.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('open'); });
-      if(overlay) overlay.addEventListener('click', () => { drawer.classList.remove('open'); overlay.classList.remove('open'); });
-    });
+        Swal.fire({
+            title: '¿Eliminar taller por completo?',
+            text: "¡Cuidado! Se borrará de Clever Cloud el establecimiento junto con TODOS sus técnicos y órdenes asociadas de forma permanente.",
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, triturar todo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('form-eliminar-comercio-tabla-' + id);
+                if (form) form.submit();
+            }
+        });
+    }
 
+    // 👤 2. FUNCIÓN DE BORRADO DE ADMINISTRADORES DE LOCALES (COLUMNA DERECHA)
     function eliminarAdmin(id) {
+        if (typeof Swal === 'undefined') {
+            if (confirm("¿Revocar el acceso a las credenciales de este administrador?")) {
+                const form = document.getElementById('form-eliminar-admin-' + id);
+                if (form) form.submit();
+            }
+            return;
+        }
+
         Swal.fire({
             title: '¿Revocar acceso al administrador?',
             text: "Se darán de baja de la nube las credenciales de control de este local.",
@@ -173,10 +199,38 @@
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('form-eliminar-admin-' + id).submit();
+                const form = document.getElementById('form-eliminar-admin-' + id);
+                if (form) form.submit();
             }
         });
     }
+
+    // 📥 3. MANEJO INTERACTIVO DEL DRAWER DE ALTAS
+    document.addEventListener('DOMContentLoaded', () => {
+        const drawer = document.getElementById('hardware-drawer');
+        const overlay = document.getElementById('drawer-overlay');
+        const btnAbrirAlta = document.getElementById('btn-abrir-alta');
+        const btnCerrar = document.getElementById('btn-cerrar-drawer');
+
+        if (btnAbrirAlta) {
+            btnAbrirAlta.addEventListener('click', () => {
+                if(drawer) drawer.classList.add('open');
+                if(overlay) overlay.classList.add('open');
+            });
+        }
+        if (btnCerrar) {
+            btnCerrar.addEventListener('click', () => {
+                if(drawer) drawer.classList.remove('open');
+                if(overlay) overlay.classList.remove('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                if(drawer) drawer.classList.remove('open');
+                if(overlay) overlay.classList.remove('open');
+            });
+        }
+    });
   </script>
 </body>
 </html>

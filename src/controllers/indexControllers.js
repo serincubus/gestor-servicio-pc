@@ -12,52 +12,59 @@ const indexController = {
 index: async (req, res) => {
     try {
         const operador = req.session.usuarioLogueado;
-        const rubroActivo = operador.rubro || 'tecnico_pc';
-        const etiquetas = diccionarioRubros[rubroActivo]; // ⬅️ Obtenemos los títulos dinámicos
+        if (!operador) {
+            return res.redirect('/users/login');
+        }
+
         const query = req.query.q ? req.query.q.trim() : '';
 
-        // 1. 🛡️ BARRERA MULTITENANT BASE: Inicializamos las condiciones del Ticket
-        // Obligamos a filtrar por el id_comercio del local si el operador no es el dueño global
+        // 🧠 RECOLECCIÓN DINÁMICA DE RESPALDO:
+        // Buscamos el comercio directo en la nube para asegurar capturar su rubro real en cada F5
+        const { Comercio } = db.models;
+        const miLocal = await Comercio.findByPk(operador.id_comercio, { raw: true });
+        
+        // Si el local tiene rubro lo usa, sino asigna técnico de PC por defecto
+        const rubroActivo = miLocal ? miLocal.rubro : 'tecnico_pc';
+        const etiquetas = diccionarioRubros[rubroActivo];
+
+        // 🛡️ BARRERA MULTITENANT BASE
         let condicionesTicket = {};
         if (operador.rol !== 'superadmin') {
             condicionesTicket.id_comercio = operador.id_comercio;
         }
 
-        // 2. 🔍 BUSCADOR RELACIONAL: Configuramos las condiciones de la tabla Clientes
+        // 🔍 BUSCADOR RELACIONAL
         let condicionesCliente = {};
         if (query !== '') {
-            // Si el administrador escribió un texto en el buscador, filtramos en la tabla de clientes
             condicionesCliente.nombre = { [Op.like]: `%${query}%` };
         }
 
-        // 3. ESTRUCTURAMOS LA CONSULTA CON JOINS DINÁMICOS
         const reparacionesFiltradas = await Ticket.findAll({
-            where: condicionesTicket, // Filtro invisible de aislamiento de talleres
+            where: condicionesTicket,
             include: [{
-                model: Cliente,
-                as: 'cliente', // Asegúrate de usar el alias exacto que declaraste en tus asociaciones
+                model: db.models.Cliente,
+                as: 'cliente',
                 where: Object.keys(condicionesCliente).length > 0 ? condicionesCliente : null,
-                required: query !== '' // Si busca texto, fuerza el INNER JOIN. Si no, hace un LEFT JOIN común.
+                required: query !== ''
             }],
             order: [['createdAt', 'DESC']],
             raw: true,
-            nest: true // Separa prolijamente los objetos anidados para evitar desbordes
+            nest: true
         });
 
-        // 4. RENDERIZACIÓN DE LA SUITE RESPONSIVA
+        // 🚀 RENDERIZACIÓN BLINDADA: Enviamos obligatoriamente las etiquetas leídas en tiempo real
         res.render('index', {
-            title: 'Panel Operativo',
+            title: 'Panel Operativo del Taller',
             lista: reparacionesFiltradas,
             busqueda: query,
             usuarioSesion: operador,
-            labels: etiquetas // ⬅️ Viaja el diccionario personalizado a la vista
+            labels: etiquetas // 🔒 Viaja el objeto limpio con cardStockTitulo y cardStockDesc
         });
 
     } catch (error) {
-        res.send("Error crítico al procesar el listado perimetral de órdenes: " + error.message);
+        res.send("Error crítico al procesar el listado perimetral del buscador: " + error.message);
     }
 },
-
 
 
    // 2. Guarda el ticket y asocia inteligentemente al cliente (Nuevo o Existente) - VERSIÓN SAAS MULTITENANT
