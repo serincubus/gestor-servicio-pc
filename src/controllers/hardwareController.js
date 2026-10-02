@@ -10,44 +10,45 @@ const db = require('../database/db');
 // 2. Inicializamos el modelo Hardware pasándole obligatoriamente la variable "db"
 const HardwareModel = require('../database/models/Hardware');
 const Hardware = HardwareModel(db, DataTypes); 
+const diccionarioRubros = require('../utils/diccionarioRubros'); // ➕ IMPORTACIÓN DEL DICCIONARIO
 
 const hardwareController = { 
     // Listar todos los componentes y permitir búsquedas
     index: async (req, res) => { 
-    try { 
-        const operador = req.session.usuarioLogueado;
-        const query = req.query.q ? req.query.q.trim() : ''; 
+        try { 
+            const operador = req.session.usuarioLogueado;
+            const query = req.query.q ? req.query.q.trim() : ''; 
 
-        // 1. Definimos la condición de búsqueda por texto base (Nombre del repuesto)
-        let condicionesWhere = {
-            componente: { [Op.like]: `%${query}%` }
-        };
+            // Capturamos el rubro activo del usuario o asignamos PC por defecto
+            const rubroActivo = operador.rubro || 'tecnico_pc';
+            const etiquetas = diccionarioRubros[rubroActivo]; // ⬅️ DICCIONARIO CAPTURADO
 
-        // 2. 🛡️ BARRERA INVISIBLE MULTITENANT:
-        // Si no es el dueño global (superadmin), lo obligamos a ver SOLO el stock de su comercio
-        if (operador.rol !== 'superadmin') {
-            condicionesWhere.id_comercio = operador.id_comercio;
-        }
+            let condicionesWhere = {
+                componente: { [Op.like]: `%${query}%` }
+            };
 
-        // 3. Ejecutamos la consulta pasándole de forma directa el objeto de condiciones sanitizado
-        const componentes = await Hardware.findAll({ 
-            where: condicionesWhere, 
-            order: [['categoria', 'ASC'], ['componente', 'ASC']], 
-            raw: true 
-        }); 
-        
-        // 4. Renderizamos la vista de stock enviando las variables de control operativas
-        res.render('hardware', { 
-            title: 'Catálogo de Repuestos y Componentes', 
-            listaHardware: componentes, 
-            busqueda: query, 
-            hardwareEditar: null, // Para manejar alta y edición en la misma vista 
-            usuarioSesion: operador // Inyectado para control de cabecera modular
-        }); 
-    } catch (error) { 
-        res.send("Error al cargar el catálogo de hardware: " + error.message); 
-    } 
-},
+            if (operador.rol !== 'superadmin') {
+                condicionesWhere.id_comercio = operador.id_comercio;
+            }
+
+            const componentes = await Hardware.findAll({ 
+                where: condicionesWhere, 
+                order: [['categoria', 'ASC'], ['componente', 'ASC']], 
+                raw: true 
+            }); 
+            
+            res.render('hardware', { 
+                title: 'Catálogo de Repuestos y Componentes', 
+                listaHardware: componentes, 
+                busqueda: query, 
+                hardwareEditar: null,
+                usuarioSesion: operador,
+                labels: etiquetas // 🔒 INYECCIÓN CRÍTICA PARA EVITAR EL ERROR
+            }); 
+        } catch (error) { 
+            res.send("Hubo un problema al cargar el catálogo de hardware: " + error.message); 
+        } 
+    },
 
 
     // Guardar nuevo componente + multer 

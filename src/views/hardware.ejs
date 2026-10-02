@@ -3,6 +3,15 @@
 <link rel='stylesheet' href='/stylesheets/style.css' />
 <link rel='stylesheet' href='/stylesheets/hardware.css' />
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<% 
+  if (typeof labels === 'undefined' || !labels) {
+      labels = {
+          stockColumnaCategoria: "Categoría de Hardware",
+          stockColumnaComponente: "Nombre del Componente",
+          categoriasStock: ["Almacenamiento", "Memorias RAM", "Placas de Video", "Fuentes", "Repuestos Varios"]
+      };
+  }
+%>
 
 <body>
   <!-- Fondo oscuro de respaldo para el Drawer -->

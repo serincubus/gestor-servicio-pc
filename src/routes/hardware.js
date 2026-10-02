@@ -4,6 +4,8 @@ const path = require('path');
 const multer = require('multer');
 const hardwareController = require('../controllers/hardwareController');
 
+
+
 // --- CONFIGURACIÓN DE ALMACENAMIENTO DE MULTER ---
 const storage = multer.diskStorage({
     // 1. Definimos la carpeta de destino física en el servidor

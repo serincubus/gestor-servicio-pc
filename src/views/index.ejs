@@ -235,59 +235,88 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Escuchadores del botón general de la barra superior (Para ingresos desde cero)
-        const btnToggleRegistro = document.getElementById('btn-toggle-registro');
-        const btnCerrarIngreso = document.getElementById('btn-cerrar-drawer-ingreso');
-        const overlayIngreso = document.getElementById('drawer-overlay-ingreso');
+    // Escuchadores del botón general de la barra superior (Para ingresos desde cero)
+    const btnToggleRegistro = document.getElementById('btn-toggle-registro');
+    const btnCerrarIngreso = document.getElementById('btn-cerrar-drawer-ingreso');
+    const overlayIngreso = document.getElementById('drawer-overlay-ingreso');
 
-        if (btnToggleRegistro) btnToggleRegistro.addEventListener('click', abrirDrawerIngreso);
-        if (btnCerrarIngreso) btnCerrarIngreso.addEventListener('click', cerrarDrawerIngreso);
-        if (overlayIngreso) overlayIngreso.addEventListener('click', cerrarDrawerIngreso);
-    });
+    // 🚀 CONTROL DE APERTURA PARA CLIENTES NUEVOS DESDE CERO
+    if (btnToggleRegistro) {
+        btnToggleRegistro.addEventListener('click', () => {
+            // 🛡️ RESETEO GENERAL DE RESIDUOS MULTITENANT:
+            // Vaciamos el ID oculto para que el backend reconozca que es un cliente NUEVO y no lo duplique
+            const inputIdOculto = document.getElementById('input-id-cliente-oculto');
+            if (inputIdOculto) inputIdOculto.value = '';
 
-    // 🧠 FUNCIÓN DE INYECCIÓN DE PERTENENCIA MULTITENANT (CLIENTES EXISTENTES)
-    function prepararNuevoTicket(id, nombre, telefono) {
-        // 1. Forzamos la apertura física del Drawer lateral deslizante reutilizable
-        abrirDrawerIngreso();
+            // Limpiamos las cajas de texto de contacto
+            const inputNombre = document.getElementById('input-nombre');
+            const inputTelefono = document.getElementById('input-telefono');
+            if (inputNombre) inputNombre.value = '';
+            if (inputTelefono) inputTelefono.value = '';
 
-        // 2. Cambiamos el título en vivo para darle una experiencia premium al usuario
-        const titulo = document.getElementById('titulo-drawer-ingreso');
-        if (titulo) {
-            titulo.innerText = "➕ Nuevo Ticket para " + nombre;
-        }
+            // Limpiamos los casilleros del servicio técnico
+            const inputEquipo = document.getElementById('input-equipo');
+            const inputFalla = document.getElementById('input-falla');
+            if (inputEquipo) inputEquipo.value = '';
+            if (inputFalla) inputFalla.value = '';
 
-        // 3. Seteamos el ID del cliente en el input oculto para evitar duplicaciones en Clever Cloud
-        const inputIdOculto = document.getElementById('input-id-cliente-oculto');
-        if (inputIdOculto) {
-            inputIdOculto.value = id;
-        }
+            // Restauramos el título base del encabezado del Drawer
+            const titulo = document.getElementById('titulo-drawer-ingreso');
+            if (titulo) titulo.innerText = "📋 Registrar Nuevo Ingreso";
 
-        // 4. Autocompletamos de forma automática los campos de contacto del cliente
-        const inputNombre = document.getElementById('input-nombre');
-        const inputTelefono = document.getElementById('input-telefono');
-        const inputEquipo = document.getElementById('input-equipo');
-        const inputFalla = document.getElementById('input-falla');
-
-        if (inputNombre) inputNombre.value = nombre;
-        if (inputTelefono) inputTelefono.value = telefono;
-        
-        // Limpiamos los campos del servicio anterior para que no queden residuos
-        if (inputEquipo) inputEquipo.value = '';
-        if (inputFalla) inputFalla.value = '';
-        
-        // Posicionamos el cursor automáticamente en el casillero del dispositivo
-        if (inputEquipo) inputEquipo.focus();
-
-        // 🎨 EFECTO VISUAL: Parpadeo de confirmación en el formulario principal
-        const formPrincipal = document.getElementById('form-registro-principal');
-        if (formPrincipal) {
-            formPrincipal.style.backgroundColor = '#e6fffa';
-            formPrincipal.style.transition = 'background-color 0.4s';
-            setTimeout(() => { 
-                formPrincipal.style.backgroundColor = 'transparent'; 
-            }, 1200);
-        }
+            // Una vez que el formulario quedó inmaculado, forzamos su despliegue responsivo
+            abrirDrawerIngreso();
+        });
     }
+
+    if (btnCerrarIngreso) btnCerrarIngreso.addEventListener('click', cerrarDrawerIngreso);
+    if (overlayIngreso) overlayIngreso.addEventListener('click', cerrarDrawerIngreso);
+});
+
+// 🧠 FUNCIÓN DE INYECCIÓN DE PERTENENCIA MULTITENANT (CLIENTES EXISTENTES)
+function prepararNuevoTicket(id, nombre, telefono) {
+    // 1. Forzamos la apertura física del Drawer lateral deslizante reutilizable
+    abrirDrawerIngreso();
+
+    // 2. Cambiamos el título en vivo para darle una experiencia premium al usuario
+    const titulo = document.getElementById('titulo-drawer-ingreso');
+    if (titulo) {
+        titulo.innerText = "➕ Nuevo Ticket para " + nombre;
+    }
+
+    // 3. Seteamos el ID del cliente en el input oculto para evitar duplicaciones en Clever Cloud
+    const inputIdOculto = document.getElementById('input-id-cliente-oculto');
+    if (inputIdOculto) {
+        inputIdOculto.value = id;
+    }
+
+    // 4. Autocompletamos de forma automática los campos de contacto del cliente
+    const inputNombre = document.getElementById('input-nombre');
+    const inputTelefono = document.getElementById('input-telefono');
+    const inputEquipo = document.getElementById('input-equipo');
+    const inputFalla = document.getElementById('input-falla');
+
+    if (inputNombre) inputNombre.value = nombre;
+    if (inputTelefono) inputTelefono.value = telefono;
+    
+    // Limpiamos los campos del servicio anterior para que no queden residuos
+    if (inputEquipo) inputEquipo.value = '';
+    if (inputFalla) inputFalla.value = '';
+    
+    // Posicionamos el cursor automáticamente en el casillero del dispositivo
+    if (inputEquipo) inputEquipo.focus();
+
+    // 🎨 EFECTO VISUAL: Parpadeo de confirmación en el formulario principal
+    const formPrincipal = document.getElementById('form-registro-principal');
+    if (formPrincipal) {
+        formPrincipal.style.backgroundColor = '#e6fffa';
+        formPrincipal.style.transition = 'background-color 0.4s';
+        setTimeout(() => { 
+            formPrincipal.style.backgroundColor = 'transparent'; 
+        }, 1200);
+    }
+}
+
 
     // 🗑️ GESTIÓN DE SEGURIDAD: Confirmación de alertas SweetAlert2
     function confirmarEliminacion(idTicket) {
