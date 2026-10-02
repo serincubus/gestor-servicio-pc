@@ -148,31 +148,58 @@ store: async (req, res) => {
 
         // Renderiza el formulario cargando los datos cruzados de ambas tablas
     edit: async (req, res) => {
-        try {
-            // Buscamos el ticket por su ID e incluimos el cliente dueño
-            const ticket = await Ticket.findByPk(req.params.id_cliente, {
+    try {
+        const idParam = req.params.id_cliente;
+        const { Ticket, Cliente } = db.models;
+
+        // Buscamos primero por la PK real (id_ticket)
+        let ticket = await Ticket.findByPk(idParam, {
+            include: [{ model: Cliente, as: 'cliente' }],
+            nest: true
+        });
+
+        // Fallback: por si el link viejo mandó id_cliente
+        if (!ticket) {
+            ticket = await Ticket.findOne({
+                where: { id_cliente: idParam },
                 include: [{ model: Cliente, as: 'cliente' }],
                 nest: true
             });
-
-            if (!ticket) {
-                return res.send("El ticket de reparación no existe.");
-            }
-            
-            // Creamos un objeto plano compatible con tu vista actual edit.ejs
-            const clienteMapeado = {
-                id_cliente: ticket.id_ticket, // Mantiene la referencia para la URL del formulario
-                nombre: ticket.cliente.nombre,
-                telefono: ticket.cliente.telefono,
-                equipo: ticket.equipo,
-                falla: ticket.falla
-            };
-
-            res.render('edit', { title: 'Editar Registro', cliente: clienteMapeado });
-        } catch (error) {
-            res.send("Error al cargar el formulario de edición: " + error.message);
         }
-    },
+
+        // 🛡️ Validación defensiva con log útil
+        if (!ticket) {
+            console.warn(`⚠️ Edit: no se encontró ticket con id=${idParam}`);
+            return res.status(404).send(
+                `El ticket de reparación con id ${idParam} no existe en la base de datos.`
+            );
+        }
+
+        if (!ticket.cliente) {
+            console.warn(`⚠️ Edit: ticket ${ticket.id_ticket} sin cliente asociado`);
+            return res.status(500).send(
+                "El ticket existe pero no tiene cliente asociado (revisá la FK id_cliente)."
+            );
+        }
+
+        const clienteMapeado = {
+            id_cliente: ticket.id_ticket, // referencia para la URL del form
+            nombre: ticket.cliente.nombre,
+            telefono: ticket.cliente.telefono,
+            equipo: ticket.equipo,
+            falla: ticket.falla
+        };
+
+        res.render('edit', {
+            title: 'Editar Registro',
+            cliente: clienteMapeado
+        });
+
+    } catch (error) {
+        console.error('❌ edit:', error);
+        res.send("Error al cargar el formulario de edición: " + error.message);
+    }
+},
 
     // Procesa y guarda los cambios en ambas tablas por separado
     update: async (req, res) => {
@@ -223,56 +250,84 @@ store: async (req, res) => {
 
 
         // 7. Detalle del Cliente (Modificado para inyectar Mano de Obra y Compatibilidades)
-    detalle: async (req, res) => {
-        try {
-            const ticket = await Ticket.findByPk(req.params.id_cliente, { 
+   detalle: async (req, res) => {
+    try {
+        const operador = req.session.usuarioLogueado;
+        if (!operador) return res.redirect('/users/login');
+
+        // 🧠 Modelos ya registrados en db.js — NO re-instanciar
+        const { Ticket, Cliente, Hardware } = db.models;
+
+        const idParam = req.params.id_cliente;
+
+        // Buscamos por id_ticket (PK real) y con fallback por id_cliente
+        let ticket = await Ticket.findByPk(idParam, {
+            include: [{ model: Cliente, as: 'cliente' }],
+            nest: true
+        });
+
+        if (!ticket) {
+            ticket = await Ticket.findOne({
+                where: { id_cliente: idParam },
                 include: [{ model: Cliente, as: 'cliente' }],
                 nest: true
             });
-            
-            const HardwareModel = require('../database/models/Hardware');
-            const db = require('../database/db');
-            const Hardware = HardwareModel(db, require('sequelize').DataTypes);
-            
-            const repuestosDisponibles = await Hardware.findAll({
-                order: [['categoria', 'ASC'], ['componente', 'ASC']],
-                raw: true
-            });
-
-            let componentesGuardados = [];
-            try {
-                componentesGuardados = JSON.parse(ticket.componentes_json || '[]');
-            } catch (e) {
-                componentesGuardados = [];
-            }
-            
-            const mapeoClienteCompatibilidad = {
-                id_ticket: ticket.id_ticket,
-                id_cliente: ticket.id_ticket,
-                nombre: ticket.cliente.nombre,
-                telefono: ticket.cliente.telefono,
-                equipo: ticket.equipo,
-                falla: ticket.falla,
-                estado: ticket.estado,
-                presupuesto: ticket.presupuesto,
-                pago_parcial: ticket.pago_parcial,
-                confirmado: ticket.confirmado,
-                codigo_seguimiento: ticket.codigo_seguimiento,
-                createdAt: ticket.createdAt,
-                mano_obra: ticket.mano_obra || 0 // ⬅️ Enviamos la mano de obra a la vista
-            };
-
-            res.render('detalleCliente', { 
-                title: 'Detalle del Ticket', 
-                cliente: mapeoClienteCompatibilidad,
-                listaHardware: repuestosDisponibles,
-                componentesGuardados: componentesGuardados,
-                 usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA CARGA AL USUARIO LOGUEADO!
-            });
-        } catch (error) {
-            res.send("Error al cargar detalle: " + error.message);
         }
-    },
+
+        // 🛡️ Validación defensiva
+        if (!ticket || !ticket.cliente) {
+            return res.status(404).send("El ticket solicitado no existe o no tiene cliente asociado.");
+        }
+
+        // 🛡️ Filtrado perimetral: solo repuestos del comercio del operador
+        let whereHardware = {};
+        if (operador.rol !== 'superadmin') {
+            whereHardware.id_comercio = operador.id_comercio;
+        }
+
+        const repuestosDisponibles = await Hardware.findAll({
+            where: whereHardware,
+            order: [['categoria', 'ASC'], ['componente', 'ASC']],
+            raw: true
+        });
+
+        // Parseo seguro de componentes
+        let componentesGuardados = [];
+        try {
+            componentesGuardados = JSON.parse(ticket.componentes_json || '[]');
+        } catch (e) {
+            componentesGuardados = [];
+        }
+
+        const mapeoClienteCompatibilidad = {
+            id_ticket: ticket.id_ticket,
+            id_cliente: ticket.id_ticket,
+            nombre: ticket.cliente.nombre,
+            telefono: ticket.cliente.telefono,
+            equipo: ticket.equipo,
+            falla: ticket.falla,
+            estado: ticket.estado,
+            presupuesto: ticket.presupuesto,
+            pago_parcial: ticket.pago_parcial,
+            confirmado: ticket.confirmado,
+            codigo_seguimiento: ticket.codigo_seguimiento,
+            createdAt: ticket.createdAt,
+            mano_obra: ticket.mano_obra || 0
+        };
+
+        res.render('detalleCliente', {
+            title: 'Detalle del Ticket',
+            cliente: mapeoClienteCompatibilidad,
+            listaHardware: repuestosDisponibles,
+            componentesGuardados: componentesGuardados,
+            usuarioSesion: operador
+        });
+
+    } catch (error) {
+        console.error('❌ detalle:', error);
+        res.send("Error al cargar detalle: " + error.message);
+    }
+},
 
     // 8. Guarda Cambios (Modificado para persistir el valor de la Mano de Obra)
           // 8. Actualiza los estados financieros del ticket, guarda repuestos y descuenta stock automáticamente
