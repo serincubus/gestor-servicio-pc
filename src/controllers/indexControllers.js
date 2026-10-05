@@ -105,7 +105,7 @@ store: async (req, res) => {
             presupuesto: 0.00,
             pago_parcial: 0.00,
             // 🔒 ANCLAJE MULTITENANT MANDATORIO:
-            id_comercio: operador.id_comercio 
+            id_comercio: req.session.usuarioLogueado.id_comercio
         });
 
         res.redirect('/'); 

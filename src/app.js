@@ -8,7 +8,6 @@ require('dotenv').config(); // IMPORTANTE: Esto debe ir al principio
 
 // Conexión centralizada e inicialización de modelos lógicos en la nube
 const db = require('./database/db.js');
-const Cliente = require('./database/models/Cliente.js');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');

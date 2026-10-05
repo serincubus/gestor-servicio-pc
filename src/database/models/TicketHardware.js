@@ -24,6 +24,11 @@ module.exports = (sequelize, dataTypes) => {
         timestamps: false
     };
 
+    TicketHardware.associate = function(models) {
+    TicketHardware.belongsTo(models.Ticket, { as: 'ticket', foreignKey: 'id_ticket' });
+    TicketHardware.belongsTo(models.Hardware, { as: 'hardware', foreignKey: 'id_hardware' });
+};
+
     const TicketHardware = sequelize.define(alias, cols, config);
     return TicketHardware;
 };

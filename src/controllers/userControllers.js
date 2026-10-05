@@ -26,14 +26,19 @@ const userControllers = {
             const { username, password } = req.body;
 
             // 🔍 1. PUENTE DE EMERGENCIA MAESTRO CON SEGURO
-            if (username.trim() === 'super_admin' && password.trim() === 'admin123') {
-                req.session.usuarioLogueado = {
-                    id_usuario: 1, username: 'super_admin', rol: 'superadmin', foto: 'default-user.png', id_comercio: 1, rubro: 'tecnico_pc'
-                };
-                req.session.esSuperAdmin = true;
-                req.session.esAdmin = true;
-                return res.redirect('/');
-            }
+           if (username.trim() === 'super_admin' && password.trim() === 'admin123') {
+                    req.session.usuarioLogueado = {
+                        id_usuario: 1,
+                        username: 'super_admin',
+                        rol: 'superadmin',
+                        foto: 'default-user.png',
+                        id_comercio: null,   // ⬅️ no pertenece a ningún comercio
+                        rubro: null          // ⬅️ no tiene rubro de negocio
+                    };
+    req.session.esSuperAdmin = true;
+    req.session.esAdmin = true;
+    return res.redirect('/superadmin');   // ⬅️ panel de plataforma, no el dashboard operativo
+}
 
             // 🔍 2. BUSQUEDA RELACIONAL INDEXADA EN CLEVER CLOUD
             const usuarioEncontrado = await Usuario.findOne({ 

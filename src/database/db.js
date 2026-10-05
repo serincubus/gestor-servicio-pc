@@ -1,12 +1,11 @@
-// src/database/db.js - CONFIGURACIÓN MULTITENANT CON RELACIONES ACTIVAS
+// src/database/db.js
 const { Sequelize, DataTypes } = require('sequelize');
 require('dotenv').config();
 
-// 1. Inicializamos la conexión nativa con Clever Cloud
 const sequelize = new Sequelize(
-    process.env.DB_NAME, 
-    process.env.DB_USER, 
-    process.env.DB_PASSWORD, 
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
     {
         host: process.env.DB_HOST,
         dialect: 'mysql',
@@ -16,22 +15,26 @@ const sequelize = new Sequelize(
     }
 );
 
-// 2. Contenedor exclusivo para los Modelos Físicos
+// 📦 MAPA ÚNICO DE MODELOS
 const modelos = {};
 
-// Sincronizamos los modelos pasándole la carpeta relativa exacta
 modelos.Comercio = require('./models/Comercio')(sequelize, DataTypes);
 modelos.Usuario  = require('./models/Usuario')(sequelize, DataTypes);
+modelos.Cliente  = require('./models/Cliente')(sequelize, DataTypes);   // ➕
+modelos.Ticket   = require('./models/Ticket')(sequelize, DataTypes);    // ➕
+modelos.TicketHardware = require('./models/TicketHardware')(sequelize, DataTypes);
+modelos.Hardware= require('./models/Hardware')(sequelize, DataTypes);
+modelos.asociaciones=require('./models/asociaciones')(modelos); // 🔗 Activación de asociaciones
 
-// 🛠️ MAPEADOR RELACIONAL: Recorre el objeto limpio y activa los métodos ".associate"
+// 🔗 ACTIVACIÓN DE ASOCIACIONES
 Object.keys(modelos).forEach(modelName => {
     if (modelos[modelName].associate) {
-        modelos[modelName].associate(modelos); // ⬅️ Pasa el mapa de modelos vinculados
-        console.log(`🔗 Asociación activada exitosamente para el modelo: ${modelName}`);
+        modelos[modelName].associate(modelos);
+        console.log(`🔗 Asociación activada para: ${modelName}`);
     }
 });
 
-// Adjuntamos el mapa de modelos limpios a la instancia para la consulta de controladores
-sequelize.models = modelos; 
+// Exponer el mapa para los controladores
+sequelize.models = modelos;
 
 module.exports = sequelize;
