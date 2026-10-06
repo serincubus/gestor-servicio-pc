@@ -195,10 +195,11 @@ DEBUG claves de estados: <%= labels?.estados ? Object.keys(labels.estados).join(
       <div class="reparacion-card">
         <!-- 🧠 Validamos si los datos del cliente vienen sueltos o anidados por el Join relacional -->
         <% 
-           let idCliente = ticket.id_cliente || (ticket.cliente ? ticket.cliente.id_cliente : '');
-           let nombreCliente = ticket.nombre || (ticket.cliente ? ticket.cliente.nombre : 'Cliente Sin Nombre');
-           let telefonoCliente = ticket.telefono || (ticket.cliente ? ticket.cliente.telefono : '');
-           let idMecanismoEliminar = ticket.id_ticket || ticket.id_usuario || idCliente;
+            let idTicket = ticket.id_ticket;
+            let idCliente = ticket.id_cliente || (ticket.cliente ? ticket.cliente.id_cliente : '');
+            let nombreCliente = ticket.nombre || (ticket.cliente ? ticket.cliente.nombre : 'Cliente Sin Nombre');
+            let telefonoCliente = ticket.telefono || (ticket.cliente ? ticket.cliente.telefono : '');
+            let idMecanismoEliminar = ticket.id_ticket;
         %>
 
         <strong class="txt-cliente"><%= nombreCliente %></strong> - <span class="txt-equipo"><%= ticket.equipo %></span>
@@ -209,12 +210,8 @@ DEBUG claves de estados: <%= labels?.estados ? Object.keys(labels.estados).join(
             
             <!-- Grupo Izquierdo: Operaciones de Gestión -->
             <div class="grupo-operaciones-izquierda">
-                <a href="/detalle/<%= idCliente %>" class="btn-ux btn-ux-detalle">
-                    🔍 Ver Detalle
-                </a>
-                <a href="/editar/<%= idCliente %>" class="btn-ux btn-ux-editar">
-                    ✏️ Editar
-                </a>
+                <a href="/detalle/<%= idTicket %>" class="btn-ux btn-ux-detalle">🔍 Ver Detalle</a>
+                <a href="/editar/<%= idTicket %>" class="btn-ux btn-ux-editar">✏️ Editar</a>
                 
                 <!-- 🛠️ BOTÓN CORREGIDO: Pasa los datos sanitizados libres de errores 'undefined' -->
                 <button type="button" class="btn-ux btn-ux-nuevo" onclick="prepararNuevoTicket('<%= idCliente %>', '<%= nombreCliente %>', '<%= telefonoCliente %>')">
@@ -315,6 +312,29 @@ DEBUG claves de estados: <%= labels?.estados ? Object.keys(labels.estados).join(
 
     if (btnCerrarIngreso) btnCerrarIngreso.addEventListener('click', cerrarDrawerIngreso);
     if (overlayIngreso) overlayIngreso.addEventListener('click', cerrarDrawerIngreso);
+
+     // 🛡️ GUARD ANTI-DOBLE-SUBMIT: evita que el form se envíe dos veces
+    const formRegistro = document.getElementById('form-registro-principal');
+    if (formRegistro) {
+        let enviando = false;
+        formRegistro.addEventListener('submit', (e) => {
+            if (enviando) {
+                e.preventDefault();
+                return;
+            }
+            if (!formRegistro.checkValidity()) {
+                return;
+            }
+            enviando = true;
+            const btn = formRegistro.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = '⏳ Guardando...';
+                btn.style.opacity = '0.7';
+                btn.style.cursor = 'wait';
+            }
+        });
+    }
 });
 
 // 🧠 FUNCIÓN DE INYECCIÓN DE PERTENENCIA MULTITENANT (CLIENTES EXISTENTES)

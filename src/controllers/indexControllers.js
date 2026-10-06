@@ -49,6 +49,12 @@ const indexController = {
                 nest: true
             });
 
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+console.log('🔍 Tickets traídos:', reparacionesFiltradas.length);
+console.log('🔍 IDs:', reparacionesFiltradas.map(t => t.id_ticket));
+console.log('🔍 Códigos:', reparacionesFiltradas.map(t => t.codigo_seguimiento));
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
             res.render('index', {
                 title: 'Panel Operativo',
                 lista: reparacionesFiltradas,
