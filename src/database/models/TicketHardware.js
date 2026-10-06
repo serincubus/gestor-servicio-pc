@@ -1,3 +1,4 @@
+// src/database/models/TicketHardware.js
 module.exports = (sequelize, dataTypes) => {
     const alias = "TicketHardware";
     const cols = {
@@ -24,11 +25,18 @@ module.exports = (sequelize, dataTypes) => {
         timestamps: false
     };
 
-    TicketHardware.associate = function(models) {
-    TicketHardware.belongsTo(models.Ticket, { as: 'ticket', foreignKey: 'id_ticket' });
-    TicketHardware.belongsTo(models.Hardware, { as: 'hardware', foreignKey: 'id_hardware' });
-};
+    const TicketHardware = sequelize.define(alias, cols, config);   // 1️⃣ declaración
 
-    const TicketHardware = sequelize.define(alias, cols, config);
-    return TicketHardware;
+    TicketHardware.associate = function(models) {                    // 2️⃣ asociaciones
+        TicketHardware.belongsTo(models.Ticket, {
+            as: "ticket",
+            foreignKey: "id_ticket"
+        });
+        TicketHardware.belongsTo(models.Hardware, {
+            as: "hardware",
+            foreignKey: "id_hardware"
+        });
+    };
+
+    return TicketHardware;                                           // 3️⃣ return
 };

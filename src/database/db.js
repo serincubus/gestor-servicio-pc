@@ -24,7 +24,7 @@ modelos.Cliente  = require('./models/Cliente')(sequelize, DataTypes);   // ➕
 modelos.Ticket   = require('./models/Ticket')(sequelize, DataTypes);    // ➕
 modelos.TicketHardware = require('./models/TicketHardware')(sequelize, DataTypes);
 modelos.Hardware= require('./models/Hardware')(sequelize, DataTypes);
-modelos.asociaciones=require('./models/asociaciones')(modelos); // 🔗 Activación de asociaciones
+
 
 // 🔗 ACTIVACIÓN DE ASOCIACIONES
 Object.keys(modelos).forEach(modelName => {

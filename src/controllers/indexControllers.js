@@ -1,539 +1,583 @@
 // src/controllers/indexControllers.js
 const { Op } = require('sequelize');
-const { Cliente, Ticket} = require('../database/models/asociaciones'); // Importamos ambos modelos con sus asociaciones
 const db = require('../database/db');
-const diccionarioRubros = require('../utils/diccionarioRubros'); // ➕ Importamos el diccionario
+const { Cliente, Ticket, Comercio, Hardware } = db.models;
+const diccionarioRubros = require('../utils/diccionarioRubros');
+
+// 🧠 Helper: obtiene las etiquetas del rubro activo del operador
+function getLabels(req) {
+    const rubro = req.session?.usuarioLogueado?.rubro || 'tecnico_pc';
+    return diccionarioRubros[rubro] || diccionarioRubros.tecnico_pc;
+}
+
+// 🛡️ Helper: arma el where de comercio según el rol
+function filtroComercio(operador, campo = 'id_comercio') {
+    if (!operador || operador.rol === 'superadmin') return {};
+    return { [campo]: operador.id_comercio };
+}
 
 const indexController = {
-    // 1. Muestra todos los tickets activos en el taller con los datos de sus dueños
-        // 1. Muestra todos los tickets activos ordenados en la pantalla de inicio
-    // src/controllers/indexControllers.js - FILTRADO PERIMETRAL ANIDADO CORREGIDO
 
-index: async (req, res) => {
-    try {
-        const operador = req.session.usuarioLogueado;
-        if (!operador) {
-            return res.redirect('/users/login');
-        }
-
-        const query = req.query.q ? req.query.q.trim() : '';
-
-        // 🧠 RECOLECCIÓN DINÁMICA DE RESPALDO:
-        // Buscamos el comercio directo en la nube para asegurar capturar su rubro real en cada F5
-        const { Comercio } = db.models;
-        const miLocal = await Comercio.findByPk(operador.id_comercio, { raw: true });
-        
-        // Si el local tiene rubro lo usa, sino asigna técnico de PC por defecto
-        const rubroActivo = miLocal ? miLocal.rubro : 'tecnico_pc';
-        const etiquetas = diccionarioRubros[rubroActivo];
-
-        // 🛡️ BARRERA MULTITENANT BASE
-        let condicionesTicket = {};
-        if (operador.rol !== 'superadmin') {
-            condicionesTicket.id_comercio = operador.id_comercio;
-        }
-
-        // 🔍 BUSCADOR RELACIONAL
-        let condicionesCliente = {};
-        if (query !== '') {
-            condicionesCliente.nombre = { [Op.like]: `%${query}%` };
-        }
-
-        const reparacionesFiltradas = await Ticket.findAll({
-            where: condicionesTicket,
-            include: [{
-                model: db.models.Cliente,
-                as: 'cliente',
-                where: Object.keys(condicionesCliente).length > 0 ? condicionesCliente : null,
-                required: query !== ''
-            }],
-            order: [['createdAt', 'DESC']],
-            raw: true,
-            nest: true
-        });
-
-        // 🚀 RENDERIZACIÓN BLINDADA: Enviamos obligatoriamente las etiquetas leídas en tiempo real
-        res.render('index', {
-            title: 'Panel Operativo del Taller',
-            lista: reparacionesFiltradas,
-            busqueda: query,
-            usuarioSesion: operador,
-            labels: etiquetas // 🔒 Viaja el objeto limpio con cardStockTitulo y cardStockDesc
-        });
-
-    } catch (error) {
-        res.send("Error crítico al procesar el listado perimetral del buscador: " + error.message);
-    }
-},
-
-
-   // 2. Guarda el ticket y asocia inteligentemente al cliente (Nuevo o Existente) - VERSIÓN SAAS MULTITENANT
-store: async (req, res) => {
-    try {
-        const operador = req.session.usuarioLogueado;
-        
-        // Capturamos el id_cliente si viene oculto desde la interfaz de cliente existente
-        const idClienteExistente = req.body.id_cliente ? parseInt(req.body.id_cliente) : null;
-        let idClienteFinal;
-
-        // 🧠 DETECCIÓN DE CLIENTE INTELIGENTE:
-        if (idClienteExistente) {
-            // Si el formulario ya nos dice exactamente qué ID de cliente es, lo usamos directo
-            idClienteFinal = idClienteExistente;
-        } else {
-            // Si no viene ID, usamos findOrCreate buscando por el teléfono sanitizado
-            const [clienteEncontrado, creado] = await Cliente.findOrCreate({
-                where: { telefono: req.body.telefono.trim() },
-                defaults: {
-                    nombre: req.body.nombre.trim(),
-                    telefono: req.body.telefono.trim()
-                }
-            });
-            idClienteFinal = clienteEncontrado.id_cliente;
-        }
-
-        // Generamos un número de ticket aleatorio único
-        const numeroTicket = 'TICKET-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-
-        // Creamos el ticket apuntando al id_cliente correspondiente y al taller activo
-        await Ticket.create({
-            id_cliente: idClienteFinal, // Clave foránea relacional perfecta
-            codigo_seguimiento: numeroTicket,
-            equipo: req.body.equipo.trim(),
-            falla: req.body.falla.trim(),
-            estado: 'Ingresado', // Aseguramos estado base uniforme
-            presupuesto: 0.00,
-            pago_parcial: 0.00,
-            // 🔒 ANCLAJE MULTITENANT MANDATORIO:
-            id_comercio: req.session.usuarioLogueado.id_comercio
-        });
-
-        res.redirect('/'); 
-    } catch (error) {
-        res.send("Error crítico al guardar cliente y ticket en el SaaS: " + error.message);
-    }
-},
-
-
-    // NUEVO: Lógica de búsqueda en Backend con relaciones
-    search: async (req, res) => {
+    // 1. Panel principal con la lista de tickets
+    index: async (req, res) => {
         try {
-            const query = req.query.q ? req.query.q.trim() : '';  
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
 
-            // Buscamos en la tabla de Tickets pero filtrando por el nombre del Cliente asociado
-            const ticketsFiltrados = await Ticket.findAll({
+            const labels = getLabels(req);
+            const query = req.query.q ? req.query.q.trim() : '';
+
+            // 🛡️ Filtro multi-tenant base
+            const condicionesTicket = { ...filtroComercio(operador) };
+
+            // 🔍 Búsqueda por nombre de cliente
+            const condicionesCliente = {};
+            if (query !== '') {
+                condicionesCliente.nombre = { [Op.like]: `%${query}%` };
+            }
+
+            const reparacionesFiltradas = await Ticket.findAll({
+                where: condicionesTicket,
                 include: [{
                     model: Cliente,
                     as: 'cliente',
+                    where: Object.keys(condicionesCliente).length > 0 ? condicionesCliente : undefined,
+                    required: query !== ''
+                }],
+                order: [['createdAt', 'DESC']],
+                raw: true,
+                nest: true
+            });
+
+            res.render('index', {
+                title: 'Panel Operativo',
+                lista: reparacionesFiltradas,
+                busqueda: query,
+                usuarioSesion: operador,
+                labels
+            });
+
+        } catch (error) {
+            res.send("Error crítico al procesar el listado: " + error.message);
+        }
+    },
+
+    // 2. Alta de ticket + cliente (con findOrCreate aislado por comercio)
+    store: async (req, res) => {
+        try {
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
+
+            const idComercio = operador.id_comercio;
+            const idClienteExistente = req.body.id_cliente ? parseInt(req.body.id_cliente) : null;
+            let idClienteFinal;
+
+            if (idClienteExistente) {
+                // Validamos que el cliente pertenezca al comercio del operador
+                const clienteExistente = await Cliente.findOne({
+                    where: { id_cliente: idClienteExistente, id_comercio: idComercio }
+                });
+                if (!clienteExistente) {
+                    return res.status(403).send("El cliente no pertenece a tu comercio.");
+                }
+                idClienteFinal = clienteExistente.id_cliente;
+            } else {
+                // 🔒 findOrCreate aislado por comercio
+                const [clienteEncontrado] = await Cliente.findOrCreate({
                     where: {
-                        nombre: {
-                            [Op.like]: `%${query}%` // SQL: WHERE nombre LIKE '%query%'
-                        }
+                        telefono: req.body.telefono.trim(),
+                        id_comercio: idComercio          // ⬅️ clave
+                    },
+                    defaults: {
+                        nombre: req.body.nombre.trim(),
+                        telefono: req.body.telefono.trim(),
+                        id_comercio: idComercio          // ⬅️ clave
                     }
+                });
+                idClienteFinal = clienteEncontrado.id_cliente;
+            }
+
+            const numeroTicket = 'TICKET-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            await Ticket.create({
+                id_cliente: idClienteFinal,
+                codigo_seguimiento: numeroTicket,
+                equipo: req.body.equipo.trim(),
+                falla: req.body.falla.trim(),
+                estado: 'Ingresado',
+                presupuesto: 0.00,
+                pago_parcial: 0.00,
+                id_comercio: idComercio
+            });
+
+            res.redirect('/');
+        } catch (error) {
+            res.send("Error crítico al guardar ticket: " + error.message);
+        }
+    },
+
+    // 3. Búsqueda por nombre de cliente
+    search: async (req, res) => {
+        try {
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
+
+            const labels = getLabels(req);
+            const query = req.query.q ? req.query.q.trim() : '';
+
+            const condicionesTicket = { ...filtroComercio(operador) };
+            const condicionesCliente = {
+                nombre: { [Op.like]: `%${query}%` }
+            };
+
+            const ticketsFiltrados = await Ticket.findAll({
+                where: condicionesTicket,
+                include: [{
+                    model: Cliente,
+                    as: 'cliente',
+                    where: condicionesCliente,
+                    required: true
                 }],
                 raw: true,
                 nest: true
             });
 
-            // Renderizamos la misma vista 'index' pero pasándole solo los resultados encontrados
-            res.render('index', { 
-                title: `Resultados de búsqueda: "${query}"`, 
+            res.render('index', {
+                title: `Resultados: "${query}"`,
                 lista: ticketsFiltrados,
-                usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA HACE QUE EL BOTÓN APAREZCA! 
+                busqueda: query,
+                usuarioSesion: operador,
+                labels
             });
         } catch (error) {
-            res.send("Error en la búsqueda del servidor: " + error.message);
+            res.send("Error en la búsqueda: " + error.message);
         }
     },
 
-        // Renderiza el formulario cargando los datos cruzados de ambas tablas
+    // 4. Formulario de edición
     edit: async (req, res) => {
-    try {
-        const idParam = req.params.id_cliente;
-        const { Ticket, Cliente } = db.models;
+        try {
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
 
-        // Buscamos primero por la PK real (id_ticket)
-        let ticket = await Ticket.findByPk(idParam, {
-            include: [{ model: Cliente, as: 'cliente' }],
-            nest: true
-        });
+            const labels = getLabels(req);
+            const idParam = req.params.id_cliente;
 
-        // Fallback: por si el link viejo mandó id_cliente
-        if (!ticket) {
-            ticket = await Ticket.findOne({
-                where: { id_cliente: idParam },
+            let ticket = await Ticket.findOne({
+                where: {
+                    id_ticket: idParam,
+                    ...filtroComercio(operador)
+                },
                 include: [{ model: Cliente, as: 'cliente' }],
                 nest: true
             });
-        }
-
-        // 🛡️ Validación defensiva con log útil
-        if (!ticket) {
-            console.warn(`⚠️ Edit: no se encontró ticket con id=${idParam}`);
-            return res.status(404).send(
-                `El ticket de reparación con id ${idParam} no existe en la base de datos.`
-            );
-        }
-
-        if (!ticket.cliente) {
-            console.warn(`⚠️ Edit: ticket ${ticket.id_ticket} sin cliente asociado`);
-            return res.status(500).send(
-                "El ticket existe pero no tiene cliente asociado (revisá la FK id_cliente)."
-            );
-        }
-
-        const clienteMapeado = {
-            id_cliente: ticket.id_ticket, // referencia para la URL del form
-            nombre: ticket.cliente.nombre,
-            telefono: ticket.cliente.telefono,
-            equipo: ticket.equipo,
-            falla: ticket.falla
-        };
-
-        res.render('edit', {
-            title: 'Editar Registro',
-            cliente: clienteMapeado
-        });
-
-    } catch (error) {
-        console.error('❌ edit:', error);
-        res.send("Error al cargar el formulario de edición: " + error.message);
-    }
-},
-
-    // Procesa y guarda los cambios en ambas tablas por separado
-    update: async (req, res) => {
-        try {
-            // 1. Buscamos el ticket para conocer el id_cliente original en MySQL
-            const ticket = await Ticket.findByPk(req.params.id_cliente);
 
             if (!ticket) {
-                return res.send("No se encontró el registro para actualizar.");
+                ticket = await Ticket.findOne({
+                    where: {
+                        id_cliente: idParam,
+                        ...filtroComercio(operador)
+                    },
+                    include: [{ model: Cliente, as: 'cliente' }],
+                    nest: true
+                });
             }
 
-            // 2. Actualizamos la tabla de CLIENTES (Nombre y Teléfono)
+            if (!ticket || !ticket.cliente) {
+                return res.status(404).send(`El ticket con id ${idParam} no existe o no pertenece a tu comercio.`);
+            }
+
+            const clienteMapeado = {
+                id_ticket: ticket.id_ticket,
+                id_cliente: ticket.cliente.id_cliente,
+                nombre: ticket.cliente.nombre,
+                telefono: ticket.cliente.telefono,
+                equipo: ticket.equipo,
+                falla: ticket.falla
+            };
+
+            res.render('edit', {
+                title: 'Editar Registro',
+                cliente: clienteMapeado,
+                usuarioSesion: operador,
+                labels
+            });
+        } catch (error) {
+            res.send("Error al cargar formulario de edición: " + error.message);
+        }
+    },
+
+    // 5. Guardar cambios del formulario de edición
+    update: async (req, res) => {
+        try {
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
+
+            const ticket = await Ticket.findOne({
+                where: {
+                    id_ticket: req.params.id_cliente,
+                    ...filtroComercio(operador)
+                }
+            });
+
+            if (!ticket) {
+                return res.status(404).send("Ticket no encontrado o no pertenece a tu comercio.");
+            }
+
+            // Actualizamos cliente (solo si pertenece al comercio)
             await Cliente.update({
                 nombre: req.body.nombre.trim(),
                 telefono: req.body.telefono.trim()
             }, {
-                where: { id_cliente: ticket.id_cliente }
+                where: {
+                    id_cliente: ticket.id_cliente,
+                    ...filtroComercio(operador)
+                }
             });
 
-            // 3. Actualizamos la tabla de TICKETS (Equipo y Falla)
+            // Actualizamos ticket
             await Ticket.update({
                 equipo: req.body.equipo.trim(),
                 falla: req.body.falla
             }, {
-                where: { id_ticket: req.params.id_cliente } // Se mapea contra la ID del ticket
+                where: {
+                    id_ticket: req.params.id_cliente,
+                    ...filtroComercio(operador)
+                }
             });
 
             res.redirect('/');
         } catch (error) {
-            res.send("Error al guardar los datos relacionales: " + error.message);
+            res.send("Error al guardar cambios: " + error.message);
         }
     },
 
-        // Elimina una orden/ticket específico sin borrar al cliente de la base de datos
+    // 6. Eliminar ticket
     delete: async (req, res) => {
         try {
-            // Eliminamos directamente de la tabla TICKETS usando el ID que viene por parámetro
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
+
             await Ticket.destroy({
-                where: { id_ticket: req.params.id_cliente } // req.params.id_cliente mapea al ID del ticket
+                where: {
+                    id_ticket: req.params.id_cliente,
+                    ...filtroComercio(operador)
+                }
             });
-            
-            res.redirect('/'); // Volvemos a la lista principal con los cambios aplicados
+
+            res.redirect('/');
         } catch (error) {
-            res.send("Error al eliminar el ticket de reparación: " + error.message);
+            res.send("Error al eliminar el ticket: " + error.message);
         }
     },
 
+    // 7. Detalle del ticket (con hardware del comercio)
+    detalle: async (req, res) => {
+        try {
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
 
+            const labels = getLabels(req);
+            const idParam = req.params.id_cliente;
 
-        // 7. Detalle del Cliente (Modificado para inyectar Mano de Obra y Compatibilidades)
-   detalle: async (req, res) => {
-    try {
-        const operador = req.session.usuarioLogueado;
-        if (!operador) return res.redirect('/users/login');
-
-        // 🧠 Modelos ya registrados en db.js — NO re-instanciar
-        const { Ticket, Cliente, Hardware } = db.models;
-
-        const idParam = req.params.id_cliente;
-
-        // Buscamos por id_ticket (PK real) y con fallback por id_cliente
-        let ticket = await Ticket.findByPk(idParam, {
-            include: [{ model: Cliente, as: 'cliente' }],
-            nest: true
-        });
-
-        if (!ticket) {
-            ticket = await Ticket.findOne({
-                where: { id_cliente: idParam },
+            let ticket = await Ticket.findOne({
+                where: {
+                    id_ticket: idParam,
+                    ...filtroComercio(operador)
+                },
                 include: [{ model: Cliente, as: 'cliente' }],
                 nest: true
             });
-        }
 
-        // 🛡️ Validación defensiva
-        if (!ticket || !ticket.cliente) {
-            return res.status(404).send("El ticket solicitado no existe o no tiene cliente asociado.");
-        }
-
-        // 🛡️ Filtrado perimetral: solo repuestos del comercio del operador
-        let whereHardware = {};
-        if (operador.rol !== 'superadmin') {
-            whereHardware.id_comercio = operador.id_comercio;
-        }
-
-        const repuestosDisponibles = await Hardware.findAll({
-            where: whereHardware,
-            order: [['categoria', 'ASC'], ['componente', 'ASC']],
-            raw: true
-        });
-
-        // Parseo seguro de componentes
-        let componentesGuardados = [];
-        try {
-            componentesGuardados = JSON.parse(ticket.componentes_json || '[]');
-        } catch (e) {
-            componentesGuardados = [];
-        }
-
-        const mapeoClienteCompatibilidad = {
-            id_ticket: ticket.id_ticket,
-            id_cliente: ticket.id_ticket,
-            nombre: ticket.cliente.nombre,
-            telefono: ticket.cliente.telefono,
-            equipo: ticket.equipo,
-            falla: ticket.falla,
-            estado: ticket.estado,
-            presupuesto: ticket.presupuesto,
-            pago_parcial: ticket.pago_parcial,
-            confirmado: ticket.confirmado,
-            codigo_seguimiento: ticket.codigo_seguimiento,
-            createdAt: ticket.createdAt,
-            mano_obra: ticket.mano_obra || 0
-        };
-
-        res.render('detalleCliente', {
-            title: 'Detalle del Ticket',
-            cliente: mapeoClienteCompatibilidad,
-            listaHardware: repuestosDisponibles,
-            componentesGuardados: componentesGuardados,
-            usuarioSesion: operador
-        });
-
-    } catch (error) {
-        console.error('❌ detalle:', error);
-        res.send("Error al cargar detalle: " + error.message);
-    }
-},
-
-    // 8. Guarda Cambios (Modificado para persistir el valor de la Mano de Obra)
-          // 8. Actualiza los estados financieros del ticket, guarda repuestos y descuenta stock automáticamente
-   updateStatus: async (req, res) => {
-    const db = require('../database/db'); // Conexión base de Sequelize
-    const transaction = await db.transaction(); // Iniciamos una transacción segura para evitar datos corruptos
-    
-    try {
-        // 🛠️ SOLUCIÓN DEFINITIVA: Extraemos los modelos directamente desde la conexión activa de db
-        // Esto evita tener que ejecutar los archivos de modelos como funciones o clases manualmente
-        const Ticket = db.models.Ticket;
-        const Hardware = db.models.Hardware;
-
-        // Seguro de fallos secundario por si los nombres de tus alias varían (por ejemplo, en minúsculas)
-        const modeloTicket = Ticket || db.models.ticket || db.models.Usuario; 
-        const modeloHardware = Hardware || db.models.hardware || db.models.Hardware;
-
-        let fechaEgreso = null;
-        if (req.body.estado === 'Listo') {
-            fechaEgreso = new Date().toISOString().slice(0, 10);
-        }
-
-        // 1. Buscamos el estado previo del ticket para saber qué repuestos ya tenía asignados históricamente
-        const ticketPrevio = await modeloTicket.findByPk(req.params.id_cliente, { transaction });
-        let componentesViejos = [];
-        try {
-            componentesViejos = JSON.parse(ticketPrevio.componentes_json || '[]');
-        } catch (e) {
-            componentesViejos = [];
-        }
-
-        // 2. Capturamos los nuevos componentes enviados por el formulario de la vista
-        let listaComponentesInput = req.body.componentes_array_json || '[]';
-        let componentesNuevos = [];
-        try {
-            componentesNuevos = JSON.parse(listaComponentesInput);
-        } catch (e) {
-            componentesNuevos = [];
-        }
-
-        // 🛡️ SANEAR ENTRADAS NUMÉRICAS
-        const presupuestoFinal = parseFloat(req.body.presupuesto) || 0;
-        const manoObraFinal = parseFloat(req.body.mano_obra) || 0;
-        let pagoParcialFinal = parseFloat(req.body.pago_parcial) || 0;
-        if (pagoParcialFinal < 0) {
-            pagoParcialFinal = 0.00;
-        }
-
-        // 🔍 CONTROL AUTOMÁTICO DE STOCK: Mapeamos variaciones por el Nombre/Componente del artículo
-        const conteoViejos = {};
-        componentesViejos.forEach(item => {
-            const nombre = item.nombre || item.componente;
-            if (nombre) conteoViejos[nombre] = (conteoViejos[nombre] || 0) + 1;
-        });
-
-        const conteoNuevos = {};
-        componentesNuevos.forEach(item => {
-            const nombre = item.nombre || item.componente;
-            if (nombre) conteoNuevos[nombre] = (conteoNuevos[nombre] || 0) + 1;
-        });
-
-        const todosLosItems = new Set([...Object.keys(conteoViejos), ...Object.keys(conteoNuevos)]);
-
-        // Evaluamos artículo por artículo para actualizar Clever Cloud
-        for (let nombreArticulo of todosLosItems) {
-            const cantidadVieja = conteoViejos[nombreArticulo] || 0;
-            const cantidadNueva = conteoNuevos[nombreArticulo] || 0;
-            
-            const diferencia = cantidadNueva - cantidadVieja;
-
-            if (diferencia !== 0) {
-                // Buscamos el repuesto físico en el catálogo de hardware por su nombre
-                const articuloStock = await modeloHardware.findOne({ 
-                    where: { componente: nombreArticulo }, 
-                    transaction 
+            if (!ticket) {
+                ticket = await Ticket.findOne({
+                    where: {
+                        id_cliente: idParam,
+                        ...filtroComercio(operador)
+                    },
+                    include: [{ model: Cliente, as: 'cliente' }],
+                    nest: true
                 });
+            }
 
-                if (articuloStock) {
-                    let nuevoStockCalculado = articuloStock.stock - diferencia;
-                    if (nuevoStockCalculado < 0) nuevoStockCalculado = 0; // Evitamos stock negativo físico
+            if (!ticket || !ticket.cliente) {
+                return res.status(404).send("El ticket no existe o no pertenece a tu comercio.");
+            }
 
-                    await modeloHardware.update(
-                        { stock: nuevoStockCalculado },
-                        { where: { id_hardware: articuloStock.id_hardware }, transaction }
-                    );
+            const repuestosDisponibles = await Hardware.findAll({
+                where: filtroComercio(operador),
+                order: [['categoria', 'ASC'], ['componente', 'ASC']],
+                raw: true
+            });
+
+            let componentesGuardados = [];
+            try {
+                componentesGuardados = JSON.parse(ticket.componentes_json || '[]');
+            } catch (e) {
+                componentesGuardados = [];
+            }
+
+            const mapeoClienteCompatibilidad = {
+                id_ticket: ticket.id_ticket,
+                id_cliente: ticket.cliente.id_cliente,   // ⬅️ fix: era ticket.id_ticket
+                nombre: ticket.cliente.nombre,
+                telefono: ticket.cliente.telefono,
+                equipo: ticket.equipo,
+                falla: ticket.falla,
+                estado: ticket.estado,
+                presupuesto: ticket.presupuesto,
+                pago_parcial: ticket.pago_parcial,
+                confirmado: ticket.confirmado,
+                codigo_seguimiento: ticket.codigo_seguimiento,
+                createdAt: ticket.createdAt,
+                mano_obra: ticket.mano_obra || 0
+            };
+
+            res.render('detalleCliente', {
+                title: 'Detalle del Ticket',
+                cliente: mapeoClienteCompatibilidad,
+                listaHardware: repuestosDisponibles,
+                componentesGuardados,
+                usuarioSesion: operador,
+                labels
+            });
+        } catch (error) {
+            res.send("Error al cargar detalle: " + error.message);
+        }
+    },
+
+    // 8. Actualizar estado + stock (con validación de rubro y reversión por cierre alternativo)
+    updateStatus: async (req, res) => {
+        const transaction = await db.transaction();
+        try {
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
+
+            const labels = getLabels(req);
+            const estadoNuevo = req.body.estado;
+
+            // 🛡️ Validación: el estado debe existir en el diccionario del rubro
+            const cfgEstado = labels.estados?.[estadoNuevo];
+            if (!cfgEstado) {
+                await transaction.rollback();
+                return res.status(400).send(`Estado inválido "${estadoNuevo}" para el rubro ${operador.rubro}.`);
+            }
+
+            // 🛡️ Buscamos el ticket aplicando filtro de comercio
+            const ticketPrevio = await Ticket.findOne({
+                where: {
+                    id_ticket: req.params.id_cliente,
+                    ...filtroComercio(operador)
+                },
+                transaction
+            });
+
+            if (!ticketPrevio) {
+                await transaction.rollback();
+                return res.status(404).send("Ticket no encontrado o no pertenece a tu comercio.");
+            }
+
+            // Parseamos componentes previos y nuevos
+            let componentesViejos = [];
+            try { componentesViejos = JSON.parse(ticketPrevio.componentes_json || '[]'); } catch (e) {}
+
+            let listaComponentesInput = req.body.componentes_array_json || '[]';
+            let componentesNuevos = [];
+            try { componentesNuevos = JSON.parse(listaComponentesInput); } catch (e) {}
+
+            // Si es un cierre alternativo, limpiamos componentes y revertimos stock
+            const esCierreAlternativo = cfgEstado.tipo === 'cierre';
+            if (esCierreAlternativo) {
+                listaComponentesInput = '[]';
+                componentesNuevos = [];
+            }
+
+            // Sanitización de importes
+            const presupuestoFinal = parseFloat(req.body.presupuesto) || 0;
+            const manoObraFinal = parseFloat(req.body.mano_obra) || 0;
+            let pagoParcialFinal = parseFloat(req.body.pago_parcial) || 0;
+            if (pagoParcialFinal < 0) pagoParcialFinal = 0;
+
+            // Fecha de egreso: al cerrar (éxito o cierre alternativo)
+            const fechaEgreso = (cfgEstado.tipo === 'exito' || cfgEstado.tipo === 'cierre')
+                ? new Date().toISOString().slice(0, 10)
+                : null;
+
+            // 🔍 Mapeo de variaciones de stock por nombre de componente
+            const conteoViejos = {};
+            componentesViejos.forEach(item => {
+                const nombre = item.nombre || item.componente;
+                if (nombre) conteoViejos[nombre] = (conteoViejos[nombre] || 0) + 1;
+            });
+
+            const conteoNuevos = {};
+            componentesNuevos.forEach(item => {
+                const nombre = item.nombre || item.componente;
+                if (nombre) conteoNuevos[nombre] = (conteoNuevos[nombre] || 0) + 1;
+            });
+
+            const todosLosItems = new Set([...Object.keys(conteoViejos), ...Object.keys(conteoNuevos)]);
+
+            for (let nombreArticulo of todosLosItems) {
+                const cantidadVieja = conteoViejos[nombreArticulo] || 0;
+                const cantidadNueva = conteoNuevos[nombreArticulo] || 0;
+                const diferencia = cantidadNueva - cantidadVieja;
+
+                if (diferencia !== 0) {
+                    const articuloStock = await Hardware.findOne({
+                        where: {
+                            componente: nombreArticulo,
+                            ...filtroComercio(operador)      // ⬅️ nunca tocar stock ajeno
+                        },
+                        transaction
+                    });
+
+                    if (articuloStock) {
+                        let nuevoStock = articuloStock.stock - diferencia;
+                        if (nuevoStock < 0) nuevoStock = 0;
+
+                        await Hardware.update(
+                            { stock: nuevoStock },
+                            { where: { id_hardware: articuloStock.id_hardware }, transaction }
+                        );
+                    }
                 }
             }
+
+            await Ticket.update({
+                estado: estadoNuevo,
+                presupuesto: presupuestoFinal,
+                pago_parcial: pagoParcialFinal,
+                confirmado: req.body.checkbox_confirmado === 'true' || req.body.checkbox_confirmado === 'on',
+                fecha_egreso: fechaEgreso,
+                componentes_json: listaComponentesInput,
+                mano_obra: manoObraFinal
+            }, {
+                where: {
+                    id_ticket: req.params.id_cliente,
+                    ...filtroComercio(operador)
+                },
+                transaction
+            });
+
+            await transaction.commit();
+            res.redirect(`/detalle/${req.params.id_cliente}?actualizado=true`);
+
+        } catch (error) {
+            if (transaction) await transaction.rollback();
+            res.send("Error crítico al actualizar el ticket: " + error.message);
         }
+    },
 
-        // 3. Si todo el mapeo de stock fue exitoso, guardamos la ficha del cliente
-        await modeloTicket.update({
-            estado: req.body.estado,
-            presupuesto: presupuestoFinal,
-            pago_parcial: pagoParcialFinal,
-            confirmado: req.body.checkbox_confirmado === 'true' || req.body.checkbox_confirmado === true || req.body.checkbox_confirmado === 'on',
-            fecha_egreso: fechaEgreso,
-            componentes_json: listaComponentesInput,
-            mano_obra: manoObraFinal
-        }, { 
-            where: { id_ticket: req.params.id_cliente }, 
-            transaction 
-        });
-
-        // Confirmamos la transacción liberando los candados en MySQL
-        await transaction.commit();
-        res.redirect(`/detalle/${req.params.id_cliente}?actualizado=true`);
-
-    } catch (error) {
-        // Si algo falla en el proceso, deshacemos los cambios para cuidar tu inventario
-        if (transaction) await transaction.rollback();
-        res.send("Error crítico al actualizar el ticket y procesar el stock automático: " + error.message);
-    }
-},
-
-
-    // 5. Historial completo de movimientos de caja
+    // 9. Historial de caja mensual
     history: async (req, res) => {
         try {
+            const operador = req.session.usuarioLogueado;
+            if (!operador) return res.redirect('/users/login');
+
+            const labels = getLabels(req);
+
             const todosLosTickets = await Ticket.findAll({
+                where: filtroComercio(operador),           // ⬅️ filtro clave
                 include: [{ model: Cliente, as: 'cliente' }],
                 raw: true,
                 nest: true
             });
 
-            // Re-mapeamos la lista para compatibilidad inmediata con tu vista history.ejs actual
-            const listaMapeada = todosLosTickets.map(t => ({
-                createdAt: t.createdAt,
-                nombre: t.cliente.nombre,
-                equipo: t.equipo,
-                falla: t.falla,
-                fecha_egreso: t.fecha_egreso,
-                presupuesto: t.presupuesto,
-                pago_parcial: t.pago_parcial,
-                confirmado: t.confirmado
-            }));
-            
-            let estadisticasMensuales = {};
+            // Clasificamos por tipo de estado para separar facturables de cierres alternativos
+            let totalPerdido = 0;
+
+            const listaMapeada = todosLosTickets.map(t => {
+                const cfg = labels.estados?.[t.estado] || { tipo: 'proceso', label: t.estado };
+                return {
+                    createdAt: t.createdAt,
+                    nombre: t.cliente?.nombre || '—',
+                    equipo: t.equipo,
+                    falla: t.falla,
+                    fecha_egreso: t.fecha_egreso,
+                    presupuesto: t.presupuesto,
+                    pago_parcial: t.pago_parcial,
+                    confirmado: t.confirmado,
+                    estado: t.estado,
+                    estadoLabel: cfg.label,
+                    tipo: cfg.tipo
+                };
+            });
+
+            const estadisticasMensuales = {};
             listaMapeada.forEach(item => {
-                let fecha = new Date(item.createdAt);
+                const fecha = new Date(item.createdAt);
                 let mesAnio = fecha.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
                 mesAnio = mesAnio.charAt(0).toUpperCase() + mesAnio.slice(1);
 
-                let totalPresupuesto = Number(item.presupuesto || 0);
-                let totalCobrado = Number(item.pago_parcial || 0);
-                let totalPendiente = totalPresupuesto - totalCobrado;
-
                 if (!estadisticasMensuales[mesAnio]) {
-                    estadisticasMensuales[mesAnio] = { cobrado: 0, pendiente: 0, montoTotalMensual: 0 };
+                    estadisticasMensuales[mesAnio] = { cobrado: 0, pendiente: 0, montoTotalMensual: 0, perdido: 0 };
                 }
 
-                estadisticasMensuales[mesAnio].cobrado += totalCobrado;
-                estadisticasMensuales[mesAnio].montoTotalMensual += totalPresupuesto;
-                if (totalPendiente > 0) {
-                    estadisticasMensuales[mesAnio].pendiente += totalPendiente;
+                const presupuesto = Number(item.presupuesto || 0);
+                const cobrado = Number(item.pago_parcial || 0);
+                const pendiente = presupuesto - cobrado;
+
+                if (item.tipo === 'cierre') {
+                    // Los cierres alternativos no se facturan: sumamos a "perdido"
+                    estadisticasMensuales[mesAnio].perdido += presupuesto;
+                } else {
+                    estadisticasMensuales[mesAnio].cobrado += cobrado;
+                    estadisticasMensuales[mesAnio].montoTotalMensual += presupuesto;
+                    if (pendiente > 0) {
+                        estadisticasMensuales[mesAnio].pendiente += pendiente;
+                    }
                 }
             });
 
-            res.render('historial', { 
-                title: 'Historial de Clientes', 
+            res.render('historial', {
+                title: 'Historial de Clientes',
                 lista: listaMapeada,
                 estadisticas: estadisticasMensuales,
-                usuarioSesion: req.session.usuarioLogueado // ⬅️ ¡ESTA LÍNEA CARGA AL USUARIO LOGUEADO!
+                usuarioSesion: operador,
+                labels
             });
         } catch (error) {
             res.send("Error en el historial: " + error.message);
         }
     },
 
-        // Muestra la vista del formulario de consulta pública para el cliente
+    // 10. Vista pública de consulta (sin login)
     consultaReparacion: (req, res) => {
-        try {
-            // Buscamos el archivo views/consultaPublica.ejs
-            res.render('consultaPublica', { 
-                title: 'Consulta de Reparación', 
-                cliente: null, 
-                error: null 
-            });
-        } catch (error) {
-            res.send("Error al cargar la vista de consulta: " + error.message);
-        }
+        res.render('consultaPublica', {
+            title: 'Consulta de Reparación',
+            cliente: null,
+            error: null
+        });
     },
-        buscarEstadoCliente: async (req, res) => {
+
+    // 11. Búsqueda pública por código de seguimiento (sin login)
+    buscarEstadoCliente: async (req, res) => {
         try {
-            // Captura el ticket enviado por el formulario (Ej: TICKET-A4F8)
             const ticketIngresado = req.body.codigo.toUpperCase().trim();
-            
-            // Buscamos el ticket e incluimos los datos fijos de su dueño (Cliente)
+
             const ticket = await Ticket.findOne({
                 where: { codigo_seguimiento: ticketIngresado },
                 include: [{ model: Cliente, as: 'cliente' }],
                 nest: true
             });
 
-            // Si el ticket no existe en Clever Cloud, recargamos con el mensaje de error
             if (!ticket) {
-                return res.render('consultaPublica', { 
-                    title: 'Consulta de Reparación', 
-                    cliente: null, 
-                    error: 'El número de ticket ingresado no existe. Por favor, verifíquelo.' 
+                return res.render('consultaPublica', {
+                    title: 'Consulta de Reparación',
+                    cliente: null,
+                    error: 'El número de ticket ingresado no existe.'
                 });
             }
 
-            // Si existe, armamos el objeto limpio y seguro (solo lectura) para el cliente
+            // Necesitamos el diccionario del comercio del ticket
+            const comercio = await Comercio.findByPk(ticket.id_comercio, { raw: true });
+            const labels = diccionarioRubros[comercio?.rubro] || diccionarioRubros.tecnico_pc;
+
             const mapeoPublico = {
                 codigo_seguimiento: ticket.codigo_seguimiento,
                 estado: ticket.estado,
+                estadoLabel: labels.estados?.[ticket.estado]?.label || ticket.estado,
                 nombre: ticket.cliente.nombre,
                 equipo: ticket.equipo,
                 falla: ticket.falla,
@@ -542,18 +586,15 @@ store: async (req, res) => {
                 confirmado: ticket.confirmado
             };
 
-            // Renderizamos la plantilla con los datos del equipo encontrados
-            res.render('consultaPublica', { 
-                title: 'Consulta de Reparación', 
-                cliente: mapeoPublico, 
-                error: null 
+            res.render('consultaPublica', {
+                title: 'Consulta de Reparación',
+                cliente: mapeoPublico,
+                error: null
             });
         } catch (error) {
             res.send("Error al consultar ticket público: " + error.message);
         }
     }
-
-
 };
 
-module.exports = indexController
+module.exports = indexController;

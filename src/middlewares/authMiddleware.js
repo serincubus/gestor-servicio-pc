@@ -1,28 +1,37 @@
 // src/middlewares/authMiddleware.js
 const authMiddleware = {
-    // 🛡️ Permite pasar a cualquier usuario logueado (Admin o Técnico)
+
+    // 🛡️ Cualquier usuario logueado (admin, técnico o superadmin)
     esStaff: (req, res, next) => {
-        // Verifica si existe la sesión en cualquiera de tus formatos guardados
-        if (req.session && (req.session.usuarioLogueado || req.session.esAdmin || req.session.usuario)) {
-            return next();
+        const usuario = req.session?.usuarioLogueado;
+        if (!usuario) {
+            return res.redirect('/users/login');
         }
-        return res.redirect('/users/login');
+        return next();
     },
 
-    // 🛡️ Restringe el acceso EXCLUSIVAMENTE a Administradores (Soporta ambos formatos)
+    // 🛡️ Solo admin del comercio o superadmin
     esAdmin: (req, res, next) => {
-        if (req.session) {
-            // Caso A: Formato estandarizado por Rol
-            if (req.session.usuarioLogueado && req.session.usuarioLogueado.rol === 'admin') {
-                return next();
-            }
-            // Caso B: Formato viejo por booleano esAdmin directo
-            if (req.session.esAdmin === true || req.session.esAdmin === 'true') {
-                return next();
-            }
+        const usuario = req.session?.usuarioLogueado;
+        if (!usuario) {
+            return res.redirect('/users/login');
         }
-        // Si no es Admin, lo expulsa a la pantalla principal con alerta de permisos
-        return res.redirect('/?errorPermiso=true');
+        if (!['admin', 'superadmin'].includes(usuario.rol)) {
+            return res.status(403).send("Acceso denegado: se requiere rango de administrador.");
+        }
+        return next();
+    },
+
+    // 🛡️ Solo superadmin (para el panel de plataforma)
+    esSuperAdmin: (req, res, next) => {
+        const usuario = req.session?.usuarioLogueado;
+        if (!usuario) {
+            return res.redirect('/users/login');
+        }
+        if (usuario.rol !== 'superadmin') {
+            return res.status(403).send("Acceso denegado: solo super administradores.");
+        }
+        return next();
     }
 };
 
