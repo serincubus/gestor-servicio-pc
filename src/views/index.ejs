@@ -11,12 +11,23 @@
           labelElemento: "Equipo / Dispositivo",
           placeholderElemento: "Ej: Notebook Asus i7 o Consola PS5",
           labelFalla: "Falla Reportada o Servicio",
-          cardStockTitulo: "Catálogo de Repuestos", // ➕ Resguardo por defecto
-          cardStockDesc: "Controlar stock físico de hardware, memorias, pantallas, componentes y precios de venta." // ➕ Resguardo por defecto
+          cardStockTitulo: "Catálogo de Repuestos",
+          cardStockDesc: "Controlar stock físico de hardware, memorias, pantallas, componentes y precios de venta.",
+          estados: {
+              Ingresado:  { label: "Ingresado",      color: "gris",    tipo: "inicial" },
+              Reparacion: { label: "En reparación",  color: "naranja", tipo: "proceso" }
+          }
       };
   }
 %>
 <body>
+<pre style="background:#f0f0f0; padding:10px; font-size:11px;">
+DEBUG rubro: <%= usuarioSesion?.rubro %>
+DEBUG labels tiene estados: <%= labels?.estados ? 'SÍ' : 'NO' %>
+DEBUG claves de estados: <%= labels?.estados ? Object.keys(labels.estados).join(', ') : 'ninguna' %>
+</pre>
+
+
   <div class="container">
     <h1><%= title %></h1>
 
@@ -143,10 +154,20 @@
         <textarea name="falla" id="input-falla" placeholder="Describa el problema..." required style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #cbd5e0; border-radius:4px; height: 80px; resize: none; font-family:inherit;"></textarea>
         
         <label><strong>Estado Inicial:</strong></label>
-        <select name="estado" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #cbd5e0; border-radius:4px; font-size:15px;">
-            <option value="Ingresado">📥 Ingresado</option>
-            <option value="En Reparación">🛠️ En Reparación</option>
-        </select>
+<select name="estado" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #cbd5e0; border-radius:4px; font-size:15px;">
+    <% 
+      // Solo mostramos los estados de tipo inicial y proceso (los que tienen sentido al registrar)
+      const estadosRegistro = Object.entries(labels.estados || {})
+          .filter(([_, cfg]) => ['inicial', 'proceso'].includes(cfg.tipo));
+    %>
+    <% if (estadosRegistro.length === 0) { %>
+        <option value="Ingresado">📥 Ingresado</option>
+    <% } else { %>
+        <% estadosRegistro.forEach(([valor, cfg]) => { %>
+            <option value="<%= valor %>">📥 <%= cfg.label %></option>
+        <% }) %>
+    <% } %>
+</select>
 
         <button type="submit" class="btn-guardar" style="width:100%; padding: 12px; font-size: 15px;">
             💾 Guardar Ficha e Ingresar
@@ -213,7 +234,12 @@
         </div>
 
         <div class="contenedor-estado">
-            <small class="badge-estado-inicio">Estado: <%= ticket.estado %></small>
+            <% 
+  const cfgEstado = labels.estados?.[ticket.estado] || { label: ticket.estado, color: 'gris' };
+%>
+<small class="badge-estado-inicio badge--<%= cfgEstado.color %>">
+    Estado: <%= cfgEstado.label %>
+</small>
         </div>
       </div>
     <% }) %>
