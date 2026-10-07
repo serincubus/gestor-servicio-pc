@@ -10,7 +10,7 @@
     <div class="edit-box">
       <h3>Modificar datos de: <%= cliente.nombre %></h3>
       
-      <form action="/actualizar/<%= cliente.id_cliente %>" method="POST" class="form-edit">
+      <form action="/actualizar/<%= cliente.id_ticket %>" method="POST" class="form-edit">
         
         <label>Nombre del Cliente:</label>
         <input type="text" name="nombre" value="<%= cliente.nombre %>" required>

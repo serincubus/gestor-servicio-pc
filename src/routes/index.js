@@ -18,8 +18,8 @@ router.post('/guardar', esStaff, indexControllers.store);
 router.get('/', esStaff, indexControllers.search);
 router.get('/detalle/:id_cliente', esStaff, indexControllers.detalle);
 router.get('/editar/:id_cliente', esStaff, indexControllers.edit);
-router.post('/actualizar/:id_cliente', esStaff, indexControllers.update);
-router.post('/actualizar-estado/:id_cliente', esStaff, indexControllers.updateStatus);
+router.post('/actualizar/:id_ticket', esStaff, indexControllers.update);
+router.post('/actualizar-estado/:id_ticket', esStaff, indexControllers.updateStatus);
 
 /* --- FLUJO FINANCIERO Y CONTROL DE SEGURIDAD EXCLUSIVO (SOLO ADMINISTRADORES) --- */
 // Las acciones críticas de remoción y el historial de cajas quedan estrictamente blindadas bajo el middleware esAdmin

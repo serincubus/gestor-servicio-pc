@@ -214,50 +214,53 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
     },
 
     // 5. Guardar cambios del formulario de edición
-    update: async (req, res) => {
-        try {
-            const operador = req.session.usuarioLogueado;
-            if (!operador) return res.redirect('/users/login');
+   
+update: async (req, res) => {
+    const operador = req.session.usuarioLogueado;
+    if (!operador) return res.redirect('/users/login');
 
-            const ticket = await Ticket.findOne({
-                where: {
-                    id_ticket: req.params.id_cliente,
-                    ...filtroComercio(operador)
-                }
-            });
-
-            if (!ticket) {
-                return res.status(404).send("Ticket no encontrado o no pertenece a tu comercio.");
-            }
-
-            // Actualizamos cliente (solo si pertenece al comercio)
-            await Cliente.update({
-                nombre: req.body.nombre.trim(),
-                telefono: req.body.telefono.trim()
-            }, {
-                where: {
-                    id_cliente: ticket.id_cliente,
-                    ...filtroComercio(operador)
-                }
-            });
-
-            // Actualizamos ticket
-            await Ticket.update({
-                equipo: req.body.equipo.trim(),
-                falla: req.body.falla
-            }, {
-                where: {
-                    id_ticket: req.params.id_cliente,
-                    ...filtroComercio(operador)
-                }
-            });
-
-            res.redirect('/');
-        } catch (error) {
-            res.send("Error al guardar cambios: " + error.message);
+    let ticket = await Ticket.findOne({
+        where: {
+            id_ticket: req.params.id_ticket,        // ⬅️ renombrado
+            ...filtroComercio(operador)
         }
-    },
+    });
 
+    if (!ticket) {
+        ticket = await Ticket.findOne({
+            where: {
+                id_cliente: req.params.id_ticket,   // ⬅️ fallback
+                ...filtroComercio(operador)
+            }
+        });
+    }
+
+    if (!ticket) {
+        return res.status(404).send("Ticket no encontrado o no pertenece a tu comercio.");
+    }
+
+    await Cliente.update({
+        nombre: req.body.nombre.trim(),
+        telefono: req.body.telefono.trim()
+    }, {
+        where: {
+            id_cliente: ticket.id_cliente,
+            ...filtroComercio(operador)
+        }
+    });
+
+    await Ticket.update({
+        equipo: req.body.equipo.trim(),
+        falla: req.body.falla
+    }, {
+        where: {
+            id_ticket: ticket.id_ticket,            // ⬅️ usar el id real
+            ...filtroComercio(operador)
+        }
+    });
+
+    res.redirect('/');
+},
     // 6. Eliminar ticket
     delete: async (req, res) => {
         try {
@@ -354,126 +357,140 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 
     // 8. Actualizar estado + stock (con validación de rubro y reversión por cierre alternativo)
     updateStatus: async (req, res) => {
-        const transaction = await db.transaction();
-        try {
-            const operador = req.session.usuarioLogueado;
-            if (!operador) return res.redirect('/users/login');
+    const transaction = await db.transaction();
+    try {
+        const operador = req.session.usuarioLogueado;
+        if (!operador) {
+            await transaction.rollback();
+            return res.redirect('/users/login');
+        }
 
-            const labels = getLabels(req);
-            const estadoNuevo = req.body.estado;
+        const labels = getLabels(req);
+        const estadoNuevo = req.body.estado;
 
-            // 🛡️ Validación: el estado debe existir en el diccionario del rubro
-            const cfgEstado = labels.estados?.[estadoNuevo];
-            if (!cfgEstado) {
-                await transaction.rollback();
-                return res.status(400).send(`Estado inválido "${estadoNuevo}" para el rubro ${operador.rubro}.`);
-            }
+        // 🛡️ Validación: el estado debe existir en el diccionario del rubro
+        const cfgEstado = labels.estados?.[estadoNuevo];
+        if (!cfgEstado) {
+            await transaction.rollback();
+            return res.status(400).send(`Estado inválido "${estadoNuevo}" para el rubro ${operador.rubro}.`);
+        }
 
-            // 🛡️ Buscamos el ticket aplicando filtro de comercio
-            const ticketPrevio = await Ticket.findOne({
+        // 🛡️ Buscamos el ticket aplicando filtro de comercio (con fallback por id_cliente)
+        let ticketPrevio = await Ticket.findOne({
+            where: {
+                id_ticket: req.params.id_ticket,
+                ...filtroComercio(operador)
+            },
+            transaction
+        });
+
+        if (!ticketPrevio) {
+            ticketPrevio = await Ticket.findOne({
                 where: {
-                    id_ticket: req.params.id_cliente,
+                    id_cliente: req.params.id_ticket,
                     ...filtroComercio(operador)
                 },
                 transaction
             });
+        }
 
-            if (!ticketPrevio) {
-                await transaction.rollback();
-                return res.status(404).send("Ticket no encontrado o no pertenece a tu comercio.");
-            }
+        if (!ticketPrevio) {
+            await transaction.rollback();
+            return res.status(404).send("Ticket no encontrado o no pertenece a tu comercio.");
+        }
 
-            // Parseamos componentes previos y nuevos
-            let componentesViejos = [];
-            try { componentesViejos = JSON.parse(ticketPrevio.componentes_json || '[]'); } catch (e) {}
+        // Parseamos componentes previos y nuevos
+        let componentesViejos = [];
+        try { componentesViejos = JSON.parse(ticketPrevio.componentes_json || '[]'); } catch (e) {}
 
-            let listaComponentesInput = req.body.componentes_array_json || '[]';
-            let componentesNuevos = [];
-            try { componentesNuevos = JSON.parse(listaComponentesInput); } catch (e) {}
+        let listaComponentesInput = req.body.componentes_array_json || '[]';
+        let componentesNuevos = [];
+        try { componentesNuevos = JSON.parse(listaComponentesInput); } catch (e) {}
 
-            // Si es un cierre alternativo, limpiamos componentes y revertimos stock
-            const esCierreAlternativo = cfgEstado.tipo === 'cierre';
-            if (esCierreAlternativo) {
-                listaComponentesInput = '[]';
-                componentesNuevos = [];
-            }
+        // Si es un cierre alternativo, limpiamos componentes y revertimos stock
+        const esCierreAlternativo = cfgEstado.tipo === 'cierre';
+        if (esCierreAlternativo) {
+            listaComponentesInput = '[]';
+            componentesNuevos = [];
+        }
 
-            // Sanitización de importes
-            const presupuestoFinal = parseFloat(req.body.presupuesto) || 0;
-            const manoObraFinal = parseFloat(req.body.mano_obra) || 0;
-            let pagoParcialFinal = parseFloat(req.body.pago_parcial) || 0;
-            if (pagoParcialFinal < 0) pagoParcialFinal = 0;
+        // Sanitización de importes
+        const presupuestoFinal = parseFloat(req.body.presupuesto) || 0;
+        const manoObraFinal = parseFloat(req.body.mano_obra) || 0;
+        let pagoParcialFinal = parseFloat(req.body.pago_parcial) || 0;
+        if (pagoParcialFinal < 0) pagoParcialFinal = 0;
 
-            // Fecha de egreso: al cerrar (éxito o cierre alternativo)
-            const fechaEgreso = (cfgEstado.tipo === 'exito' || cfgEstado.tipo === 'cierre')
-                ? new Date().toISOString().slice(0, 10)
-                : null;
+        // Fecha de egreso: al cerrar (éxito o cierre alternativo)
+        const fechaEgreso = (cfgEstado.tipo === 'exito' || cfgEstado.tipo === 'cierre')
+            ? new Date().toISOString().slice(0, 10)
+            : null;
 
-            // 🔍 Mapeo de variaciones de stock por nombre de componente
-            const conteoViejos = {};
-            componentesViejos.forEach(item => {
-                const nombre = item.nombre || item.componente;
-                if (nombre) conteoViejos[nombre] = (conteoViejos[nombre] || 0) + 1;
-            });
+        // 🔍 Mapeo de variaciones de stock por nombre de componente
+        const conteoViejos = {};
+        componentesViejos.forEach(item => {
+            const nombre = item.nombre || item.componente;
+            if (nombre) conteoViejos[nombre] = (conteoViejos[nombre] || 0) + 1;
+        });
 
-            const conteoNuevos = {};
-            componentesNuevos.forEach(item => {
-                const nombre = item.nombre || item.componente;
-                if (nombre) conteoNuevos[nombre] = (conteoNuevos[nombre] || 0) + 1;
-            });
+        const conteoNuevos = {};
+        componentesNuevos.forEach(item => {
+            const nombre = item.nombre || item.componente;
+            if (nombre) conteoNuevos[nombre] = (conteoNuevos[nombre] || 0) + 1;
+        });
 
-            const todosLosItems = new Set([...Object.keys(conteoViejos), ...Object.keys(conteoNuevos)]);
+        const todosLosItems = new Set([...Object.keys(conteoViejos), ...Object.keys(conteoNuevos)]);
 
-            for (let nombreArticulo of todosLosItems) {
-                const cantidadVieja = conteoViejos[nombreArticulo] || 0;
-                const cantidadNueva = conteoNuevos[nombreArticulo] || 0;
-                const diferencia = cantidadNueva - cantidadVieja;
+        for (let nombreArticulo of todosLosItems) {
+            const cantidadVieja = conteoViejos[nombreArticulo] || 0;
+            const cantidadNueva = conteoNuevos[nombreArticulo] || 0;
+            const diferencia = cantidadNueva - cantidadVieja;
 
-                if (diferencia !== 0) {
-                    const articuloStock = await Hardware.findOne({
-                        where: {
-                            componente: nombreArticulo,
-                            ...filtroComercio(operador)      // ⬅️ nunca tocar stock ajeno
-                        },
-                        transaction
-                    });
+            if (diferencia !== 0) {
+                const articuloStock = await Hardware.findOne({
+                    where: {
+                        componente: nombreArticulo,
+                        ...filtroComercio(operador)
+                    },
+                    transaction
+                });
 
-                    if (articuloStock) {
-                        let nuevoStock = articuloStock.stock - diferencia;
-                        if (nuevoStock < 0) nuevoStock = 0;
+                if (articuloStock) {
+                    let nuevoStock = articuloStock.stock - diferencia;
+                    if (nuevoStock < 0) nuevoStock = 0;
 
-                        await Hardware.update(
-                            { stock: nuevoStock },
-                            { where: { id_hardware: articuloStock.id_hardware }, transaction }
-                        );
-                    }
+                    await Hardware.update(
+                        { stock: nuevoStock },
+                        { where: { id_hardware: articuloStock.id_hardware }, transaction }
+                    );
                 }
             }
-
-            await Ticket.update({
-                estado: estadoNuevo,
-                presupuesto: presupuestoFinal,
-                pago_parcial: pagoParcialFinal,
-                confirmado: req.body.checkbox_confirmado === 'true' || req.body.checkbox_confirmado === 'on',
-                fecha_egreso: fechaEgreso,
-                componentes_json: listaComponentesInput,
-                mano_obra: manoObraFinal
-            }, {
-                where: {
-                    id_ticket: req.params.id_cliente,
-                    ...filtroComercio(operador)
-                },
-                transaction
-            });
-
-            await transaction.commit();
-            res.redirect(`/detalle/${req.params.id_cliente}?actualizado=true`);
-
-        } catch (error) {
-            if (transaction) await transaction.rollback();
-            res.send("Error crítico al actualizar el ticket: " + error.message);
         }
-    },
+
+        // 🛡️ Update usando el id real encontrado
+        await Ticket.update({
+            estado: estadoNuevo,
+            presupuesto: presupuestoFinal,
+            pago_parcial: pagoParcialFinal,
+            confirmado: req.body.checkbox_confirmado === 'true' || req.body.checkbox_confirmado === 'on',
+            fecha_egreso: fechaEgreso,
+            componentes_json: listaComponentesInput,
+            mano_obra: manoObraFinal
+        }, {
+            where: {
+                id_ticket: ticketPrevio.id_ticket,
+                ...filtroComercio(operador)
+            },
+            transaction
+        });
+
+        await transaction.commit();
+        res.redirect(`/detalle/${ticketPrevio.id_ticket}?actualizado=true`);
+
+    } catch (error) {
+        if (transaction) await transaction.rollback();
+        res.send("Error crítico al actualizar el ticket: " + error.message);
+    }
+},
 
     // 9. Historial de caja mensual
     history: async (req, res) => {
