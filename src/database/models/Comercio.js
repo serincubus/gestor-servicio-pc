@@ -30,7 +30,7 @@ module.exports = (sequelize, dataTypes) => {
         },
          // ➕ PROPIEDAD DE MERCADO ASOCIADA:
         rubro: {
-            type: dataTypes.ENUM('tecnico_pc', 'electricista', 'seguridad_monitoreo'),
+            type: dataTypes.ENUM('tecnico_pc', 'electricista', 'electromecanico','seguridad_monitoreo'),
             allowNull: false,
             defaultValue: 'tecnico_pc'
         },

@@ -78,6 +78,43 @@ const diccionarioRubros = {
         }
     },
 
+        electromecanico: {
+        tituloGrilla: "Máquinas y Equipos en Servicio",
+        labelElemento: "Máquina / Equipo Industrial",
+        placeholderElemento: "Ej: Motor trifásico 5HP o Bomba centrífuga",
+        labelFalla: "Falla Mecánica / Eléctrica Reportada",
+        labelAccesorios: "Piezas y Repuestos Entregados",
+        labelManoObra: "⚙️ Mano de Obra Electromecánica ($)",
+        labelPresupuestoCatalogo: "Presupuestar Repuestos del Catálogo",
+        sinStockMensaje: "No hay repuestos registrados en el catálogo.",
+        msgSaldado: "¡Equipo totalmente saldado! No registra deuda.",
+        msgPendiente: "Pago Pendiente del servicio: Le resta abonar",
+        stockColumnaComponente: "Repuesto / Componente",
+        stockColumnaCategoria: "Tipo de Repuesto",
+        cardStockTitulo: "Depósito de Repuestos",
+        cardStockDesc: "Administrar stock de rulemanes, contactores, correas, bobinados, motores y componentes eléctricos.",
+        iconoCategoria: "⚙️",
+
+        // 🏷️ Estados del ticket
+        estados: {
+            Ingresado:     { label: "Equipo recibido",            color: "gris",     tipo: "inicial", icono: "📥" },
+            Diagnostico:   { label: "En diagnóstico técnico",     color: "amarillo", tipo: "proceso", icono: "🔍" },
+            Reparacion:    { label: "En reparación / armado",     color: "naranja",  tipo: "proceso", icono: "🔧" },
+            Listo:         { label: "Listo para despacho",        color: "verde",    tipo: "exito",   icono: "✅" },
+            Entregado:     { label: "Entregado y probado",        color: "azul",     tipo: "exito",   icono: "📦" },
+
+            Cancelado:     { label: "Servicio cancelado",         color: "rojo",     tipo: "cierre",  icono: "❌" },
+            Rechazado:     { label: "Presupuesto no aprobado",    color: "rojo",     tipo: "cierre",  icono: "🚫" },
+            SinReparacion: { label: "Irreparable / fuera de servicio", color: "rojo", tipo: "cierre", icono: "⛔" },
+            Garantia:      { label: "Reingreso por garantía",     color: "violeta",  tipo: "cierre",  icono: "🔁" }
+        },
+
+        drawer: {
+            tituloDetalle: "Detalle del equipo electromecánico",
+            sinAsignar:    "Sin técnico electromecánico asignado"
+        }
+    },
+
     seguridad_monitoreo: {
         tituloGrilla: "Instalaciones y Proyectos",
         labelElemento: "Establecimiento / Cliente",
