@@ -6,10 +6,15 @@ const diccionarioRubros = {
         labelElemento: "Equipo / Dispositivo",
         placeholderElemento: "Ej: Notebook Asus i7 o Consola PS5",
         labelFalla: "Falla Reportada o Servicio",
+        labelAccesorios: "Accesorios Entregados",
+        labelManoObra: "🛠️ Mano de Obra Taller ($)",
+        msgSaldado: "¡Equipo totalmente saldado! No registra deuda.",
+        msgPendiente: "Pago Pendiente: Le resta abonar",
         stockColumnaComponente: "Nombre del Componente",
         stockColumnaCategoria: "Categoría de Hardware",
         cardStockTitulo: "Catálogo de Repuestos",
         cardStockDesc: "Controlar stock físico de hardware, memorias, pantallas, componentes y precios de venta.",
+        iconoCategoria: "📦",
 
         // 🏷️ Estados del ticket
         // - label: lo visible
@@ -29,12 +34,7 @@ const diccionarioRubros = {
             Garantia:      { label: "Devuelto por garantía",    color: "violeta", tipo: "cierre" }
         },
 
-        camposTicket: {
-            equipo:     "Equipo (marca/modelo)",
-            falla:      "Falla reportada",
-            accesorios: "Accesorios entregados"
-        },
-
+      
         drawer: {
             tituloDetalle: "Detalle del equipo",
             sinAsignar:    "Sin técnico asignado"
@@ -46,10 +46,15 @@ const diccionarioRubros = {
         labelElemento: "Ubicación / Propiedad",
         placeholderElemento: "Ej: Residencia Calle Mitre 1420",
         labelFalla: "Trabajo / Diagnóstico Eléctrico",
+        labelAccesorios: "Materiales Entregados",
+        labelManoObra: "⚡ Mano de Obra Eléctrica ($)",
+        msgSaldado: "¡Obra totalmente saldada! No registra deuda.",
+        msgPendiente: "Pago Pendiente de la obra: Le resta abonar",
         stockColumnaComponente: "Material / Insumo",
         stockColumnaCategoria: "Tipo de Material",
         cardStockTitulo: "Inventario de Materiales",
         cardStockDesc: "Gestionar stock de cables, térmicas, disyuntores, cajas de pase y costos de insumos de obra.",
+        iconoCategoria: "🔌" ,
 
         estados: {
             Ingresado:     { label: "Relevamiento inicial",     color: "gris",     tipo: "inicial" },
@@ -64,13 +69,7 @@ const diccionarioRubros = {
             Garantia:      { label: "Revisita por garantía",    color: "violeta",  tipo: "cierre"  }
         },
 
-        camposTicket: {
-            equipo:     "Domicilio / Tablero",
-            falla:      "Descripción del trabajo",
-            accesorios: "Materiales entregados"
-        },
-
-        drawer: {
+       drawer: {
             tituloDetalle: "Detalle del servicio",
             sinAsignar:    "Sin electricista asignado"
         }
@@ -81,10 +80,17 @@ const diccionarioRubros = {
         labelElemento: "Establecimiento / Cliente",
         placeholderElemento: "Ej: Fábrica Textil Norte",
         labelFalla: "Requerimiento Técnico / Distribución",
+        labelAccesorios: "Equipos Entregados",
+        labelManoObra: "📷 Mano de Obra de Instalación ($)",
+        msgSaldado: "¡Instalación totalmente saldada! No registra deuda.",
+        msgPendiente: "Pago Pendiente: Le resta abonar",
         stockColumnaComponente: "Equipo de Seguridad",
         stockColumnaCategoria: "Línea de Producto",
         cardStockTitulo: "Pañol de Equipos",
         cardStockDesc: "Administrar stock de cámaras domo, grabadoras DVR/NVR, sensores de alarmas y cableados UTP.",
+        iconoCategoria: "🎥",
+        
+
 
         estados: {
             Ingresado:     { label: "Sitio relevado",           color: "gris",     tipo: "inicial" },
@@ -97,12 +103,6 @@ const diccionarioRubros = {
             Rechazado:     { label: "Instalación no aprobada",  color: "rojo",     tipo: "cierre"  },
             SinReparacion: { label: "Sitio no apto",            color: "rojo",     tipo: "cierre"  },
             Garantia:      { label: "Revisita técnica",         color: "violeta",  tipo: "cierre"  }
-        },
-
-        camposTicket: {
-            equipo:     "Sitio / Dirección",
-            falla:      "Requerimiento del cliente",
-            accesorios: "Equipos entregados"
         },
 
         drawer: {

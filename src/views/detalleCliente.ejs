@@ -5,6 +5,17 @@
 <!-- Importación robusta de SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<% 
+  if (typeof labels === 'undefined' || !labels) {
+      labels = {
+          estados: {
+              Ingresado: { label: "Ingresado", color: "gris", tipo: "inicial" },
+              Listo:     { label: "Listo",     color: "verde", tipo: "exito" }
+          }
+      };
+  }
+%>
+
 <div class="container-details container-detalle">
 
     <p class="badge-codigo-seguimiento">
@@ -83,85 +94,106 @@
 
         </p>
 
-        <p class="ficha-campo"><strong>Equipo a Reparar:</strong> <%= cliente.equipo %></p>
-        <p class="ficha-campo"><strong>Falla Reportada:</strong> <%= cliente.falla %></p>
-        <p class="ficha-campo"><small>Registrado el: <%= new Date(cliente.createdAt).toLocaleDateString('es-AR') %></small></p>
+       <p  class="ficha-campo" ><%= labels.labelElemento %><strong>:</strong></p> <%= cliente.equipo %>
+       <p class="ficha-campo" ><%= labels.labelFalla %><strong>:</strong></p> <%= cliente.falla %>
+        <small>Registrado el: <%= cliente.createdAt ? new Date(cliente.createdAt).toLocaleDateString('es-AR') : '—' %></small>
     </div>
 
     <!-- Formulario en detalleCliente.ejs -->
-    <form action="/actualizar-estado/<%= cliente.id_cliente %>" method="POST">
-        <label for="select-estado">Estado actual:</label>
-        <select name="estado" id="select-estado">
-            <option value="Ingresado" <%= cliente.estado == 'Ingresado' ? 'selected' : '' %>>Ingresado</option>
-            <option value="En Revisión" <%= cliente.estado == 'En Revisión' ? 'selected' : '' %>>En Revisión</option>
-            <option value="En Reparación" <%= cliente.estado == 'En Reparación' ? 'selected' : '' %>>En Reparación</option>
-            <option value="Listo" <%= cliente.estado == 'Listo' ? 'selected' : '' %>>Listo</option>
-        </select>
+    <form action="/actualizar-estado/<%= cliente.id_ticket %>" method="POST">
+       <label for="select-estado">Estado actual:</label>
+<select name="estado" id="select-estado">
+    <% 
+      // Agrupamos por tipo para mejor UX: en curso primero, luego finales OK, luego cierres
+      const grupos = {
+          enCurso:  { titulo: "En curso",              filtro: ['inicial', 'proceso'] },
+          exitosos: { titulo: "Finalizados con éxito", filtro: ['exito']              },
+          cierres:  { titulo: "Cierres alternativos",  filtro: ['cierre']             }
+      };
+    %>
+    <% Object.entries(grupos).forEach(([_, grupo]) => { 
+        const estadosDelGrupo = Object.entries(labels.estados || {})
+            .filter(([_, cfg]) => grupo.filtro.includes(cfg.tipo));
+        if (estadosDelGrupo.length > 0) { %>
+            <optgroup label="<%= grupo.titulo %>">
+                <% estadosDelGrupo.forEach(([valor, cfg]) => { %>
+                    <option value="<%= valor %>" <%= cliente.estado === valor ? 'selected' : '' %>>
+                        <%= cfg.icono || '•' %> <%= cfg.label %>
+                    </option>
+                <% }) %>
+            </optgroup>
+        <% } 
+    }) %>
+</select>
 
        <!-- SECCIÓN DE PRESUPUESTO CONTROLADA POR CLASES CSS -->
 <div id="seccion-presupuesto" class="seccion-presupuesto">
     
     <!-- SELECTOR MULTINIVEL DE HARDWARE: CATEGORÍAS PRIMERO -->
     <div class="componente-hardware-seccion-ux">
-        <label>🛠️ Presupuestar Hardware del Catálogo:</label>
-        
-        <!-- Botón Disparador Principal del Menú -->
-        <button type="button" id="btn-disparador-hardware" class="btn-ux-disparador">
-            <span id="txt-disparador-actual">🔍 Elegir por Categoría...</span>
-            <span>▼</span>
-        </button>
+    <label>🛠️ <%= labels.labelPresupuestoCatalogo || 'Presupuestar del Catálogo' %>:</label>
 
-        <!-- Persiana Desplegable Centralizada -->
-        <div id="dropdown-lista-hardware" class="dropdown-hardware-persiana">
-            <% if (typeof listaHardware !== 'undefined' && listaHardware.length > 0) { %>
-                <% 
-                let gruposHardware = {}; 
-                listaHardware.forEach(prod => { 
-                    if (!gruposHardware[prod.categoria]) { 
-                        gruposHardware[prod.categoria] = []; 
-                    } 
-                    gruposHardware[prod.categoria].push(prod); 
-                }); 
-                %>
-                
-                <!-- VISTA 1: LISTADO DE CATEGORÍAS (Se ve primero) -->
-                <div id="panel-categorias-raiz">
-                    <% let numCat = 0; for (let nombreCat in gruposHardware) { numCat++; %>
-                        <div class="item-categoria-click" onclick="mostrarSubmenuComponentes('panel-cat-<%= numCat %>')">
-                            <span>📦 <%= nombreCat %></span>
-                            <span class="badge-conteo-articulos"><%= gruposHardware[nombreCat].length %> artículos ➡️</span>
-                        </div>
-                    <% } %>
-                </div>
+    <!-- Botón Disparador Principal del Menú -->
+    <button type="button" id="btn-disparador-hardware" class="btn-ux-disparador">
+        <span id="txt-disparador-actual">🔍 Elegir por Categoría...</span>
+        <span>▼</span>
+    </button>
 
-                <!-- VISTA 2: SUBMENÚS DE COMPONENTES POR CATEGORÍA -->
-                <% let numPanel = 0; for (let nombreCat in gruposHardware) { numPanel++; %>
-                    <div id="panel-cat-<%= numPanel %>" class="panel-componentes-oculto">
-                        <!-- Botón superior para volver al menú de categorías -->
-                        <div onclick="regresarAlMenuCategorias()" class="btn-volver-categorias">
-                            ⬅️ Volver a Categorías
-                        </div>
-                        <% gruposHardware[nombreCat].forEach(prod => { %>
-                            <div class="fila-componente-disponible">
-                                <div class="txt-componente-info">
-                                    <strong><%= prod.componente %></strong>
-                                    <small>Disponibles: <%= prod.stock %> un.</small>
-                                </div>
-                                <div class="wrapper-precio-carga">
-                                    <span class="txt-precio-venta-hardware">$<%= Number(prod.precio_venta).toFixed(2) %></span>
-                                    <button type="button" class="btn-cargar-hardware-presupuesto" data-precio="<%= prod.precio_venta %>" data-nombre="<%= prod.componente %>" style="background-color: #3182ce; color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; white-space: nowrap; border:none; cursor:pointer; font-weight: bold;" onclick="sumarAlPresupuestoDirecto(this)">
-                                        ➕ Cargar
-                                    </button>
-                                </div>
-                            </div>
-                        <% }) %>
+    <!-- Persiana Desplegable Centralizada -->
+    <div id="dropdown-lista-hardware" class="dropdown-hardware-persiana">
+        <% if (typeof listaHardware !== 'undefined' && listaHardware.length > 0) { %>
+            <% 
+            let gruposHardware = {}; 
+            listaHardware.forEach(prod => { 
+                if (!gruposHardware[prod.categoria]) { 
+                    gruposHardware[prod.categoria] = []; 
+                } 
+                gruposHardware[prod.categoria].push(prod); 
+            }); 
+            %>
+
+            <!-- VISTA 1: LISTADO DE CATEGORÍAS -->
+            <div id="panel-categorias-raiz">
+                <% let numCat = 0; for (let nombreCat in gruposHardware) { numCat++; %>
+                    <div class="item-categoria-click" onclick="mostrarSubmenuComponentes('panel-cat-<%= numCat %>')">
+                        <span><%= labels.iconoCategoria || '📦' %> <%= nombreCat %></span>
+                        <span class="badge-conteo-articulos"><%= gruposHardware[nombreCat].length %> artículos ➡️</span>
                     </div>
                 <% } %>
-            <% } else { %>
-                <div class="txt-catalogo-vacio">No hay repuestos registrados en el catálogo.</div>
+            </div>
+
+            <!-- VISTA 2: SUBMENÚS DE COMPONENTES POR CATEGORÍA -->
+            <% let numPanel = 0; for (let nombreCat in gruposHardware) { numPanel++; %>
+                <div id="panel-cat-<%= numPanel %>" class="panel-componentes-oculto">
+                    <div onclick="regresarAlMenuCategorias()" class="btn-volver-categorias">
+                        ⬅️ Volver a Categorías
+                    </div>
+                    <% gruposHardware[nombreCat].forEach(prod => { %>
+                        <div class="fila-componente-disponible">
+                            <div class="txt-componente-info">
+                                <strong><%= prod.componente %></strong>
+                                <small>Disponibles: <%= prod.stock %> un.</small>
+                            </div>
+                            <div class="wrapper-precio-carga">
+                                <span class="txt-precio-venta-hardware">$<%= Number(prod.precio_venta).toFixed(2) %></span>
+                                <button type="button" 
+                                        class="btn-cargar-hardware-presupuesto" 
+                                        data-precio="<%= prod.precio_venta %>" 
+                                        data-nombre="<%= prod.componente %>" 
+                                        style="background-color: #3182ce; color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; white-space: nowrap; border:none; cursor:pointer; font-weight: bold;" 
+                                        onclick="sumarAlPresupuestoDirecto(this)">
+                                    ➕ Cargar
+                                </button>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
             <% } %>
-        </div>
+        <% } else { %>
+            <div class="txt-catalogo-vacio"><%= labels.sinStockMensaje || 'No hay repuestos registrados en el catálogo.' %></div>
+        <% } %>
     </div>
+</div>
 
     <!-- CONTENEDOR UNIFICADO DE ITEMS CARGADOS CON INPUT OCULTO SINCRONIZADO -->
     <div id="contenedor-items-cargados" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
@@ -172,7 +204,7 @@
     <input type="hidden" name="componentes_array_json" id="input-componentes-json" value="[]">
 
     <!-- ➕ NUEVO CASILLERO: Mano de Obra Técnica (Editable de forma plana) -->
-    <label><strong>🛠️ Mano de Obra Taller ($):</strong></label>
+   <label><strong><%= labels.labelManoObra || 'Mano de Obra ($)' %>:</strong></label>
     <input type="number" name="mano_obra" id="input-mano-obra" value="<%= cliente.mano_obra %>" step="0.01" min="0" placeholder="0.00" oninput="recalcularPresupuestoTotal()">
 
     <!-- Casillero de Presupuesto Total (Protegido con Readonly para evitar saltos manuales) -->
@@ -191,14 +223,23 @@
 
 
     <!-- CÁLCULO VISUAL DE DEUDA UTILIZANDO CLASES DEL CSS -->
-    <% let pendiente = Number(cliente.presupuesto) - Number(cliente.pago_parcial); %>
-    <div class="estado-cuenta <%= pendiente <= 0 ? 'cuenta-saldada' : 'cuenta-pendiente' %>">
-        <% if (pendiente <= 0) { %>
-            <span>✅ <strong>¡Equipo totalmente saldado!</strong> No registra deuda.</span>
-        <% } else { %>
-            <span>⚠️ <strong>Pago Pendiente:</strong> Le resta abonar <strong>$<%= pendiente.toFixed(2) %></strong></span>
-        <% } %>
-    </div>
+    <% 
+  const total = Number(cliente.presupuesto) || 0;
+  const pagado = Number(cliente.pago_parcial) || 0;
+  const pendiente = total - pagado;
+%>
+<div class="estado-cuenta <%= pendiente <= 0 ? 'cuenta-saldada' : 'cuenta-pendiente' %>">
+    <% if (pendiente <= 0) { %>
+        <span>
+            ✅ <strong><%= labels.msgSaldado || '¡Totalmente saldado! No registra deuda.' %></strong>
+        </span>
+    <% } else { %>
+        <span>
+            ⚠️ <strong><%= labels.msgPendiente || 'Pago Pendiente' %>:</strong>
+            Le resta abonar <strong>$<%= pendiente.toFixed(2) %></strong>
+        </span>
+    <% } %>
+</div>
 
     <label class="label-confirmado-checkbox">
         <input type="checkbox" name="checkbox_confirmado" value="true" <%= cliente.confirmado ? 'checked' : '' %>> 
