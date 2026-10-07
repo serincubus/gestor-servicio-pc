@@ -9,6 +9,8 @@ const diccionarioRubros = {
         labelAccesorios: "Accesorios Entregados",
         labelManoObra: "🛠️ Mano de Obra Taller ($)",
         msgSaldado: "¡Equipo totalmente saldado! No registra deuda.",
+        labelPresupuestoCatalogo: "Presupuestar Hardware del Catálogo",
+        sinStockMensaje: "No hay repuestos registrados en el catálogo.",
         msgPendiente: "Pago Pendiente: Le resta abonar",
         stockColumnaComponente: "Nombre del Componente",
         stockColumnaCategoria: "Categoría de Hardware",
@@ -21,18 +23,17 @@ const diccionarioRubros = {
         // - color: clase CSS del badge
         // - tipo:  "inicial" | "proceso" | "exito" | "cierre"
         estados: {
-            Ingresado:     { label: "Ingresado",              color: "gris",     tipo: "inicial" },
-            Diagnostico:   { label: "En diagnóstico",         color: "amarillo", tipo: "proceso" },
-            Reparacion:    { label: "En reparación",          color: "naranja",  tipo: "proceso" },
-            Listo:         { label: "Listo para entregar",    color: "verde",    tipo: "exito"   },
-            Entregado:     { label: "Entregado",              color: "azul",     tipo: "exito"   },
+    Ingresado:     { label: "Ingresado",              color: "gris",     tipo: "inicial", icono: "📥" },
+    Diagnostico:   { label: "En diagnóstico",         color: "amarillo", tipo: "proceso", icono: "🔍" },
+    Reparacion:    { label: "En reparación",          color: "naranja",  tipo: "proceso", icono: "🛠️" },
+    Listo:         { label: "Listo para entregar",    color: "verde",    tipo: "exito",   icono: "✅" },
+    Entregado:     { label: "Entregado",              color: "azul",     tipo: "exito",   icono: "📦" },
 
-            // 🔴 Cierres alternativos
-            Cancelado:     { label: "Cancelado por el cliente", color: "rojo",    tipo: "cierre" },
-            Rechazado:     { label: "Reparación rechazada",     color: "rojo",    tipo: "cierre" },
-            SinReparacion: { label: "No tiene reparación",      color: "rojo",    tipo: "cierre" },
-            Garantia:      { label: "Devuelto por garantía",    color: "violeta", tipo: "cierre" }
-        },
+    Cancelado:     { label: "Cancelado por el cliente", color: "rojo",   tipo: "cierre",  icono: "❌" },
+    Rechazado:     { label: "Reparación rechazada",     color: "rojo",   tipo: "cierre",  icono: "🚫" },
+    SinReparacion: { label: "No tiene reparación",      color: "rojo",   tipo: "cierre",  icono: "⛔" },
+    Garantia:      { label: "Devuelto por garantía",    color: "violeta", tipo: "cierre", icono: "🔁" }
+},
 
       
         drawer: {
@@ -48,6 +49,8 @@ const diccionarioRubros = {
         labelFalla: "Trabajo / Diagnóstico Eléctrico",
         labelAccesorios: "Materiales Entregados",
         labelManoObra: "⚡ Mano de Obra Eléctrica ($)",
+        labelPresupuestoCatalogo: "Presupuestar Materiales del Catálogo",
+        sinStockMensaje: "No hay materiales registrados en el catálogo.",
         msgSaldado: "¡Obra totalmente saldada! No registra deuda.",
         msgPendiente: "Pago Pendiente de la obra: Le resta abonar",
         stockColumnaComponente: "Material / Insumo",
@@ -57,16 +60,16 @@ const diccionarioRubros = {
         iconoCategoria: "🔌" ,
 
         estados: {
-            Ingresado:     { label: "Relevamiento inicial",     color: "gris",     tipo: "inicial" },
-            Diagnostico:   { label: "Presupuestando",           color: "amarillo", tipo: "proceso" },
-            Reparacion:    { label: "Instalación en curso",     color: "naranja",  tipo: "proceso" },
-            Listo:         { label: "Trabajo finalizado",       color: "verde",    tipo: "exito"   },
-            Entregado:     { label: "Conformado por cliente",   color: "azul",     tipo: "exito"   },
+            Ingresado:     { label: "Relevamiento inicial",     color: "gris",     tipo: "inicial", icono: "📋"  },
+            Diagnostico:   { label: "Presupuestando",           color: "amarillo", tipo: "proceso", icono: "📐" },
+            Reparacion:    { label: "Instalación en curso",     color: "naranja",  tipo: "proceso", icono: "⚡" },
+            Listo:         { label: "Trabajo finalizado",       color: "verde",    tipo: "exito",  icono: "✅"  },
+            Entregado:     { label: "Conformado por cliente",   color: "azul",     tipo: "exito",  icono: "🏠"   },
 
-            Cancelado:     { label: "Obra cancelada",           color: "rojo",     tipo: "cierre"  },
-            Rechazado:     { label: "Presupuesto no aprobado",  color: "rojo",     tipo: "cierre"  },
-            SinReparacion: { label: "Sin solución técnica",     color: "rojo",     tipo: "cierre"  },
-            Garantia:      { label: "Revisita por garantía",    color: "violeta",  tipo: "cierre"  }
+            Cancelado:     { label: "Obra cancelada",           color: "rojo",     tipo: "cierre", icono: "❌"   },
+            Rechazado:     { label: "Presupuesto no aprobado",  color: "rojo",     tipo: "cierre", icono: "🚫"  },
+            SinReparacion: { label: "Sin solución técnica",     color: "rojo",     tipo: "cierre", icono: "⛔"   },
+            Garantia:      { label: "Revisita por garantía",    color: "violeta",  tipo: "cierre",  icono: "🔁"  }
         },
 
        drawer: {
@@ -82,6 +85,8 @@ const diccionarioRubros = {
         labelFalla: "Requerimiento Técnico / Distribución",
         labelAccesorios: "Equipos Entregados",
         labelManoObra: "📷 Mano de Obra de Instalación ($)",
+        labelPresupuestoCatalogo: "Presupuestar Equipos del Catálogo",
+        sinStockMensaje: "No hay equipos registrados en el catálogo.",
         msgSaldado: "¡Instalación totalmente saldada! No registra deuda.",
         msgPendiente: "Pago Pendiente: Le resta abonar",
         stockColumnaComponente: "Equipo de Seguridad",
@@ -93,16 +98,16 @@ const diccionarioRubros = {
 
 
         estados: {
-            Ingresado:     { label: "Sitio relevado",           color: "gris",     tipo: "inicial" },
-            Diagnostico:   { label: "Diseño de instalación",    color: "amarillo", tipo: "proceso" },
-            Reparacion:    { label: "Instalación en curso",     color: "naranja",  tipo: "proceso" },
-            Listo:         { label: "Sistema operativo",        color: "verde",    tipo: "exito"   },
-            Entregado:     { label: "Cliente capacitado",       color: "azul",     tipo: "exito"   },
+            Ingresado:     { label: "Sitio relevado",           color: "gris",     tipo: "inicial",  icono: "📋" },
+            Diagnostico:   { label: "Diseño de instalación",    color: "amarillo", tipo: "proceso" , icono: "📐" },
+            Reparacion:    { label: "Instalación en curso",     color: "naranja",  tipo: "proceso", icono: "🛠️" },
+            Listo:         { label: "Sistema operativo",        color: "verde",    tipo: "exito" , icono: "✅" },
+            Entregado:     { label: "Cliente capacitado",       color: "azul",     tipo: "exito", icono: "🎓"  },
 
-            Cancelado:     { label: "Proyecto cancelado",       color: "rojo",     tipo: "cierre"  },
-            Rechazado:     { label: "Instalación no aprobada",  color: "rojo",     tipo: "cierre"  },
-            SinReparacion: { label: "Sitio no apto",            color: "rojo",     tipo: "cierre"  },
-            Garantia:      { label: "Revisita técnica",         color: "violeta",  tipo: "cierre"  }
+            Cancelado:     { label: "Proyecto cancelado",       color: "rojo",     tipo: "cierre", icono: "❌"  },
+            Rechazado:     { label: "Instalación no aprobada",  color: "rojo",     tipo: "cierre",  icono: "🚫" },
+            SinReparacion: { label: "Sitio no apto",            color: "rojo",     tipo: "cierre",  icono: "⛔" },
+            Garantia:      { label: "Revisita técnica",         color: "violeta",  tipo: "cierre", icono: "🔁"  }
         },
 
         drawer: {
