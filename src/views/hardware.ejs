@@ -6,9 +6,18 @@
 <% 
   if (typeof labels === 'undefined' || !labels) {
       labels = {
-          stockColumnaCategoria: "Categoría de Hardware",
+          stockColumnaCategoria: "Categoría",
           stockColumnaComponente: "Nombre del Componente",
-          categoriasStock: ["Almacenamiento", "Memorias RAM", "Placas de Video", "Fuentes", "Repuestos Varios"]
+          labelBotonRegistrar: "Registrar Componente",
+          labelBotonVolver: "Volver al Inicio",
+          tituloInventario: "Inventario",
+          tituloEditarComponente: "Modificar Componente",
+          tituloAgregarComponente: "Agregar Componente",
+          categoriasStock: [
+              "Memorias RAM", "Discos Rígidos (HDD)", "Discos Sólidos (SSD/NVMe)",
+              "Combos de Actualización", "Placas de Video", "Fuentes de Alimentación",
+              "Pantallas de Notebook"
+          ]
       };
   }
 %>
@@ -23,9 +32,11 @@
         <div style="display: flex; gap: 10px;">
             <!-- BOTÓN QUE DISPARA EL DRAWER DE ALTA -->
             <button type="button" id="btn-abrir-alta" class="btn-ux btn-ux-nuevo" style="padding: 10px 15px;">
-                ➕ Registrar Componente
+    ➕          <%= labels.labelBotonRegistrar || 'Registrar Componente' %>
             </button>
-            <a href="/" class="btn-ux btn-ux-editar" style="padding: 10px 15px;">⬅️ Volver al Inicio</a>
+            <a href="/" class="btn-ux btn-ux-editar" style="padding: 10px 15px;">
+    ⬅️           <%= labels.labelBotonVolver || 'Volver al Inicio' %>
+            </a>
         </div>
     </div>
 
@@ -41,7 +52,11 @@
         <!-- DRAWER LATERAL DERECHO (FORMULARIO OCULTO) -->
         <div class="bloque-formulario hardware-drawer" id="hardware-drawer">
             <div class="drawer-header">
-                <h3><%= hardwareEditar ? '📝 Modificar Componente' : '➕ Agregar Componente' %></h3>
+                <h3>
+            <%= hardwareEditar 
+             ? '📝 ' + (labels.tituloEditarComponente || 'Modificar Componente')
+              : '➕ ' + (labels.tituloAgregarComponente || 'Agregar Componente') %>
+            </h3>
                 <button type="button" class="btn-cerrar-drawer" id="btn-cerrar-drawer">✕</button>
             </div>
             
@@ -50,18 +65,26 @@
                   enctype="multipart/form-data" 
                   class="form-hardware">
                 
-                <label>Nombre del Componente:</label>
-                <input type="text" name="componente" placeholder="Ej: Memoria RAM Kingston 8GB DDR4" required value="<%= hardwareEditar ? hardwareEditar.componente : '' %>">
+                <label><%= labels.stockColumnaComponente || 'Nombre del Componente' %>:</label>
+                <input type="text" name="componente" 
+                       placeholder="<%= labels.placeholderElemento || 'Ej: Componente' %>" 
+                       required 
+                       value="<%= hardwareEditar ? hardwareEditar.componente : '' %>">
                 
-                <label>Categoría:</label>
+                <label><%= labels.stockColumnaCategoria || 'Categoría' %>:</label>
                 <select name="categoria" required>
-                    <option value="Memorias RAM" <%= hardwareEditar && hardwareEditar.categoria === 'Memorias RAM' ? 'selected' : '' %>>Memorias RAM</option>
-                    <option value="Discos Rígidos (HDD)" <%= hardwareEditar && hardwareEditar.categoria === 'Discos Rígidos (HDD)' ? 'selected' : '' %>>Discos Rígidos (HDD)</option>
-                    <option value="Discos Sólidos (SSD/NVMe)" <%= hardwareEditar && hardwareEditar.categoria === 'Discos Sólidos (SSD/NVMe)' ? 'selected' : '' %>>Discos Sólidos (SSD/NVMe)</option>
-                    <option value="Combos de Actualización" <%= hardwareEditar && hardwareEditar.categoria === 'Combos de Actualización' ? 'selected' : '' %>>Combos de Actualización</option>
-                    <option value="Placas de Video" <%= hardwareEditar && hardwareEditar.categoria === 'Placas de Video' ? 'selected' : '' %>>Placas de Video</option>
-                    <option value="Fuentes de Alimentación" <%= hardwareEditar && hardwareEditar.categoria === 'Fuentes de Alimentación' ? 'selected' : '' %>>Fuentes de Alimentación</option>
-                    <option value="Pantallas de Notebook" <%= hardwareEditar && hardwareEditar.categoria === 'Pantallas de Notebook' ? 'selected' : '' %>>Pantallas de Notebook</option>
+                    <% 
+                        const categorias = labels.categoriasStock || [
+                            'Memorias RAM', 'Discos Rígidos (HDD)', 'Discos Sólidos (SSD/NVMe)', 
+                            'Combos de Actualización', 'Placas de Video', 'Fuentes de Alimentación', 
+                            'Pantallas de Notebook'
+                        ];
+                    %>
+                    <% categorias.forEach(cat => { %>
+                            <option value="<%= cat %>" <%= hardwareEditar && hardwareEditar.categoria === cat ? 'selected' : '' %>>
+                    <%= cat %>
+                            </option>
+                    <% }) %>
                 </select>
 
                 <label>Precio de Costo ($):</label>
@@ -95,7 +118,7 @@
 
         <!-- COLUMNA DERECHA COMPLETA: TABLA DE INVENTARIO -->
         <div class="bloque-tabla">
-            <h3>Inventario en Taller</h3>
+            <h3><%= labels.tituloInventario || 'Inventario' %></h3>
             <table class="tabla-hardware">
                 <thead>
                     <tr>

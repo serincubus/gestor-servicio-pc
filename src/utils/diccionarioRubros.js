@@ -39,7 +39,22 @@ const diccionarioRubros = {
         drawer: {
             tituloDetalle: "Detalle del equipo",
             sinAsignar:    "Sin técnico asignado"
-        }
+        },
+
+        labelBotonRegistrar: "Registrar Componente",
+        tituloInventario: "Inventario en Taller",
+        labelBotonVolver: "Volver al Inicio",
+        tituloEditarComponente: "Modificar Componente",
+        tituloAgregarComponente: "Agregar Componente",
+        categoriasStock: [
+            "Memorias RAM",
+            "Discos Rígidos (HDD)",
+            "Discos Sólidos (SSD/NVMe)",
+            "Combos de Actualización",
+            "Placas de Video",
+            "Fuentes de Alimentación",
+            "Pantallas de Notebook"
+        ]
     },
 
     electricista: {
@@ -75,7 +90,22 @@ const diccionarioRubros = {
        drawer: {
             tituloDetalle: "Detalle del servicio",
             sinAsignar:    "Sin electricista asignado"
-        }
+        },
+
+        labelBotonRegistrar: "Registrar Material",
+        tituloInventario: "Inventario de Materiales",
+        labelBotonVolver: "Volver al Inicio",
+        tituloEditarComponente: "Modificar Material",
+        tituloAgregarComponente: "Agregar Material",
+        categoriasStock: [
+            "Cables y Conductores",
+            "Térmicas y Disyuntores",
+            "Tableros y Gabinetes",
+            "Cajas de Paso y Conexión",
+            "Llaves y Tomas",
+            "Luminarias y Artefactos",
+            "Herramientas de Obra"
+]
     },
 
         electromecanico: {
@@ -112,7 +142,22 @@ const diccionarioRubros = {
         drawer: {
             tituloDetalle: "Detalle del equipo electromecánico",
             sinAsignar:    "Sin técnico electromecánico asignado"
-        }
+        },
+
+        labelBotonRegistrar: "Registrar Repuesto",
+        tituloInventario: "Depósito de Repuestos",
+        labelBotonVolver: "Volver al Inicio",
+        tituloEditarComponente: "Modificar Repuesto",
+        tituloAgregarComponente: "Agregar Repuesto",
+        categoriasStock: [
+            "Rulemanes y Rodamientos",
+            "Correas y Cadenas",
+            "Contactores y Relés",
+            "Motores Eléctricos",
+            "Bobinados y Barnices",
+            "Acoplamientos y Engranajes",
+            "Sensores y Encoders"
+        ]
     },
 
     seguridad_monitoreo: {
@@ -150,7 +195,23 @@ const diccionarioRubros = {
         drawer: {
             tituloDetalle: "Detalle de la instalación",
             sinAsignar:    "Sin instalador asignado"
-        }
+        },
+
+        labelBotonRegistrar: "Registrar Equipo",
+tituloInventario: "Pañol de Equipos",
+labelBotonVolver: "Volver al Inicio",
+tituloEditarComponente: "Modificar Equipo",
+tituloAgregarComponente: "Agregar Equipo",
+categoriasStock: [
+    "Cámaras Domo",
+    "Cámaras Bala",
+    "Grabadoras DVR",
+    "Grabadoras NVR",
+    "Sensores de Movimiento",
+    "Sirenas y Alarmas",
+    "Cableado UTP / Coaxial",
+    "Fuentes y Accesorios"
+]
     }
 };
 
